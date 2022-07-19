@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"app/models"
+	"app/pkg/logging"
+	"app/pkg/setting"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"gitlab.com/369-engineer/369backend/account/models"
-	"gitlab.com/369-engineer/369backend/account/pkg/logging"
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
 )
 
 var S3Conn *s3.S3

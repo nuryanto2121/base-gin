@@ -2,7 +2,7 @@ package logging
 
 import (
 
-	// "gitlab.com/369-engineer/369backend/account/pkg/monggodb"
+	// "app/pkg/monggodb"
 
 	"time"
 )

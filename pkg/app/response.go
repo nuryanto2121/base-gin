@@ -3,9 +3,9 @@ package app
 import (
 	"fmt"
 
+	multilanguage "app/pkg/multiLanguage"
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	multilanguage "gitlab.com/369-engineer/369backend/account/pkg/multiLanguage"
 )
 
 type Gin struct {

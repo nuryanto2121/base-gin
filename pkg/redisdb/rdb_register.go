@@ -3,7 +3,7 @@ package redisdb
 import (
 	"encoding/json"
 
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
+	"app/pkg/setting"
 
 	"github.com/mitchellh/mapstructure"
 )

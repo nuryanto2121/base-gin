@@ -3,8 +3,8 @@ package iusers
 import (
 	"context"
 
+	"app/models"
 	uuid "github.com/satori/go.uuid"
-	"gitlab.com/369-engineer/369backend/account/models"
 )
 
 type Repository interface {

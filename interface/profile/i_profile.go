@@ -3,8 +3,8 @@ package iprofile
 import (
 	"context"
 
-	"gitlab.com/369-engineer/369backend/account/models"
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
+	"app/models"
+	util "app/pkg/utils"
 )
 
 type Usecase interface {

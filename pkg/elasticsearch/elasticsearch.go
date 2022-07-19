@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
+	"app/pkg/setting"
 	"github.com/olivere/elastic/v7"
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
 )
 
 var Client *elastic.Client

@@ -23,31 +23,11 @@ definitions:
       account:
         type: string
     type: object
-  models.LoginAdminWebForm:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    type: object
   models.LoginForm:
     properties:
       account:
         type: string
       pwd:
-        type: string
-    type: object
-  models.ProfileForm:
-    properties:
-      about:
-        type: string
-      avatar:
-        type: string
-      email:
-        type: string
-      name:
-        type: string
-      phone_no:
         type: string
     type: object
   models.RegisterForm:
@@ -66,17 +46,6 @@ definitions:
       account:
         type: string
       confirm_pwd:
-        type: string
-      pwd:
-        type: string
-    type: object
-  models.ResetPasswdProfile:
-    properties:
-      access_token:
-        type: string
-      confirm_pwd:
-        type: string
-      old_pwd:
         type: string
       pwd:
         type: string
@@ -119,118 +88,6 @@ info:
   title: Base 369
   version: "1.0"
 paths:
-  /v1/account/admin-web/login:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: 'req param #changes are possible to adjust the form of the registration
-          form from frontend'
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.LoginAdminWebForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: Login Admin Web
-      tags:
-      - Auth
-  /v1/account/admin-web/logout:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: Logout Admin Web
-      tags:
-      - Auth
-  /v1/account/change-password:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: account set from verify forgot otp
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.ResetPasswd'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: Change Password
-      tags:
-      - Auth
-  /v1/account/check-phone-no/{phone_no}:
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: phone no
-        in: path
-        name: phone_no
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: get profile
-      tags:
-      - Auth
   /v1/account/fileupload:
     delete:
       parameters:
@@ -299,7 +156,64 @@ paths:
       summary: File Upload
       tags:
       - FileUpload
-  /v1/account/forgot:
+  /v1/cms/change-password:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: account set from verify forgot otp
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPasswd'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Change Password
+      tags:
+      - Auth
+  /v1/cms/check-phone-no/{phone_no}:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: phone no
+        in: path
+        name: phone_no
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: get profile
+      tags:
+      - Auth
+  /v1/cms/forgot:
     post:
       parameters:
       - description: Device Type
@@ -329,12 +243,17 @@ paths:
       summary: Forgot Password
       tags:
       - Auth
-  /v1/account/login:
+  /v1/cms/login:
     post:
       parameters:
       - description: Device Type
         in: header
         name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
         required: true
         type: string
       - description: Language Apps
@@ -359,7 +278,7 @@ paths:
       summary: Login
       tags:
       - Auth
-  /v1/account/logout:
+  /v1/cms/logout:
     post:
       parameters:
       - description: Device Type
@@ -384,94 +303,7 @@ paths:
       summary: logout
       tags:
       - Auth
-  /v1/account/profile:
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: get profile
-      tags:
-      - Profile
-    put:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: 'req param #changes are possible to adjust the form of the registration
-          form from frontend'
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.ProfileForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: Edit profile
-      tags:
-      - Profile
-  /v1/account/profile/change-password:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: account set from verify forgot otp
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.ResetPasswdProfile'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: Change Password
-      tags:
-      - Profile
-  /v1/account/register:
+  /v1/cms/register:
     post:
       parameters:
       - description: Device Type
@@ -500,7 +332,7 @@ paths:
       summary: Register
       tags:
       - Auth
-  /v1/account/sosmed:
+  /v1/cms/sosmed:
     post:
       parameters:
       - description: Device Type
@@ -530,7 +362,7 @@ paths:
         else OTP
       tags:
       - Auth
-  /v1/account/verify-forgot-otp:
+  /v1/cms/verify-forgot-otp:
     post:
       parameters:
       - description: Device Type
@@ -560,7 +392,7 @@ paths:
       summary: Verify OTP Forgot
       tags:
       - Auth
-  /v1/account/verify-register-otp:
+  /v1/cms/verify-register-otp:
     post:
       parameters:
       - description: Device Type

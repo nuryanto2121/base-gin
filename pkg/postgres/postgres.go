@@ -7,10 +7,11 @@ import (
 	"os"
 	"time"
 
-	"gitlab.com/369-engineer/369backend/account/models"
-	version "gitlab.com/369-engineer/369backend/account/pkg/middleware/versioning"
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
+	"app/models"
+	version "app/pkg/middleware/versioning"
+	"app/pkg/setting"
+	util "app/pkg/utils"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -97,12 +98,17 @@ func autoMigrate() {
 	}
 
 	log.Println("STARTING AUTO MIGRATE ")
-	Conn.AutoMigrate(
+	err = Conn.AutoMigrate(
 		// models.Users{},
 		models.Users{},
+		models.UserSession{},
 		models.UserGroup{},
 		version.AppVersion{},
 	)
+	if err != nil {
+		log.Printf("\nAutoMigrate : %#v", err)
+		panic(err)
+	}
 	go Create()
 
 	log.Println("FINISHING AUTO MIGRATE ")

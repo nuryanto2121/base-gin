@@ -1,9 +1,9 @@
 package usesafileupload
 
 import (
+	ifileupload "app/interface/fileupload"
+	"app/models"
 	"context"
-	ifileupload "gitlab.com/369-engineer/369backend/account/interface/fileupload"
-	"gitlab.com/369-engineer/369backend/account/models"
 	"time"
 )
 

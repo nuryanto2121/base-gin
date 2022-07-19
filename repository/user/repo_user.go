@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	iusers "app/interface/user"
+	"app/models"
+	"app/pkg/logging"
+	"app/pkg/setting"
+
 	uuid "github.com/satori/go.uuid"
-	iusers "gitlab.com/369-engineer/369backend/account/interface/user"
-	"gitlab.com/369-engineer/369backend/account/models"
-	"gitlab.com/369-engineer/369backend/account/pkg/logging"
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +22,7 @@ func NewRepoSysUser(Conn *gorm.DB) iusers.Repository {
 }
 func (db *repoSysUser) GetByAccount(ctx context.Context, Account string) (result *models.Users, err error) {
 
-	query := db.Conn.WithContext(ctx).Where("(email like ? OR phone_no = ?)", Account, Account).First(&result)
+	query := db.Conn.WithContext(ctx).Where("(username like ? OR phone_no = ?)", Account, Account).First(&result)
 	err = query.Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {

@@ -1,7 +1,7 @@
 package repofunction
 
 import (
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
+	util "app/pkg/utils"
 )
 
 type FN struct {

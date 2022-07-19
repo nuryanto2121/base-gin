@@ -1,8 +1,8 @@
 package ifileupload
 
 import (
+	"app/models"
 	"context"
-	"gitlab.com/369-engineer/369backend/account/models"
 )
 
 type Repository interface {

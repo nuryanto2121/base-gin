@@ -5,23 +5,32 @@ import (
 	"strings"
 	"time"
 
-	iauth "gitlab.com/369-engineer/369backend/account/interface/auth"
-	ifileupload "gitlab.com/369-engineer/369backend/account/interface/fileupload"
-	iusers "gitlab.com/369-engineer/369backend/account/interface/user"
-	"gitlab.com/369-engineer/369backend/account/models"
+	iauth "app/interface/auth"
+	ifileupload "app/interface/fileupload"
+	iusers "app/interface/user"
+	iusersession "app/interface/user_session"
+	"app/models"
 
-	"gitlab.com/369-engineer/369backend/account/pkg/redisdb"
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
+	"app/pkg/logging"
+	"app/pkg/redisdb"
+	"app/pkg/setting"
+	util "app/pkg/utils"
 )
 
 type useAuht struct {
-	repoAuth       iusers.Repository
-	repoFile       ifileupload.Repository
-	contextTimeOut time.Duration
+	repoAuth        iusers.Repository
+	repoFile        ifileupload.Repository
+	repoUserSession iusersession.Repository
+	contextTimeOut  time.Duration
 }
 
-func NewUserAuth(a iusers.Repository, b ifileupload.Repository, timeout time.Duration) iauth.Usecase {
-	return &useAuht{repoAuth: a, repoFile: b, contextTimeOut: timeout}
+func NewUserAuth(a iusers.Repository, b ifileupload.Repository, c iusersession.Repository, timeout time.Duration) iauth.Usecase {
+	return &useAuht{
+		repoAuth:        a,
+		repoFile:        b,
+		repoUserSession: c,
+		contextTimeOut:  timeout,
+	}
 }
 
 func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (output interface{}, err error) {
@@ -29,37 +38,47 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 
 	defer cancel()
 
-	// var (
-	// 	dataUser = &models.Users{}
-	// )
+	var (
+		logger   = logging.Logger{}
+		dataUser = &models.Users{}
+	)
 
-	// dataUser, err = fb.GetUserByAccount(ctx, util.NameStruct(models.Users{}), dataLogin.Account)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	dataUser, err = u.repoAuth.GetByAccount(ctx, dataLogin.Account)
+	if err != nil {
+		logger.Error("error usecase.LoginCms().GetByAccount ", err)
+		return nil, models.ErrUnauthorized
+	}
 
-	// if !util.ComparePassword(dataUser.Password, util.GetPassword(dataLogin.Password)) {
-	// 	return nil, models.ErrInvalidPassword
-	// }
+	if !util.ComparePassword(dataUser.Password, util.GetPassword(dataLogin.Password)) {
+		logger.Error("error usecase.LoginCms().ComparePassword ")
+		return nil, models.ErrInvalidPassword
+	}
 
-	// if !dataUser.IsActive {
-	// 	return nil, models.ErrAccountNotActive
-	// }
+	if !dataUser.IsActive {
+		return nil, models.ErrAccountNotActive
+	}
 
-	// token, err := util.GenerateToken(dataUser.ID, dataUser.Name, "")
-	// if err != nil {
-	// 	return nil, err
-	// }
+	//get user group
 
-	// redisdb.AddSession(token, dataUser.ID, time.Duration(setting.AppSetting.ExpiredJwt)*time.Hour)
+	token, err := util.GenerateToken(dataUser.Id.String(), dataUser.Username, "")
+	if err != nil {
+		return nil, err
+	}
+
+	//save to session
+	dataSession := &models.UserSession{
+		UserId:      dataUser.Id,
+		Token:       token,
+		ExpiredDate: time.Now().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour),
+	}
+	err = u.repoUserSession.Create(ctx, dataSession)
+	if err != nil {
+		return nil, err
+	}
 
 	response := map[string]interface{}{
-		"user_id": "",
-		// "token":    token,
-		// "email":    dataUser.Email,
-		// "name":     dataUser.Name,
-		// "avatar":   dataUser.Avatar,
-		// "phone_no": dataUser.PhoneNo,
+		"users": dataUser,
+		"token": token,
 	}
 	return response, nil
 }

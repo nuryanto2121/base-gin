@@ -4,15 +4,15 @@ import (
 	"context"
 	"net/http"
 
-	ifileupload "gitlab.com/369-engineer/369backend/account/interface/fileupload"
-	"gitlab.com/369-engineer/369backend/account/models"
-	"gitlab.com/369-engineer/369backend/account/pkg/app"
-	"gitlab.com/369-engineer/369backend/account/pkg/middleware"
-	s3gateway "gitlab.com/369-engineer/369backend/account/pkg/s3"
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
+	ifileupload "app/interface/fileupload"
+	"app/models"
+	"app/pkg/app"
+	"app/pkg/middleware"
+	s3gateway "app/pkg/s3"
+	util "app/pkg/utils"
 
-	"gitlab.com/369-engineer/369backend/account/pkg/logging"
-	tool "gitlab.com/369-engineer/369backend/account/pkg/tools"
+	"app/pkg/logging"
+	tool "app/pkg/tools"
 
 	"github.com/gin-gonic/gin"
 )

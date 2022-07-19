@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"app/models"
+	multilanguage "app/pkg/multiLanguage"
+	util "app/pkg/utils"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"gitlab.com/369-engineer/369backend/account/models"
-	multilanguage "gitlab.com/369-engineer/369backend/account/pkg/multiLanguage"
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
 )
 
 // BindAndValid binds and validates data

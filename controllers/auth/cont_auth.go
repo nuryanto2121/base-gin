@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"net/http"
 
-	iauth "gitlab.com/369-engineer/369backend/account/interface/auth"
-	"gitlab.com/369-engineer/369backend/account/models"
-	app "gitlab.com/369-engineer/369backend/account/pkg/app"
-	"gitlab.com/369-engineer/369backend/account/pkg/logging"
-	"gitlab.com/369-engineer/369backend/account/pkg/middleware"
-	tool "gitlab.com/369-engineer/369backend/account/pkg/tools"
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
+	iauth "app/interface/auth"
+	"app/models"
+	app "app/pkg/app"
+	"app/pkg/logging"
+	"app/pkg/middleware"
+	tool "app/pkg/tools"
+	util "app/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -168,6 +168,7 @@ func (u *ContAuth) Logout(e *gin.Context) {
 // @Tags Auth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param req body models.LoginForm true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	iusers "app/interface/user"
+	"app/models"
 	uuid "github.com/satori/go.uuid"
-	iusers "gitlab.com/369-engineer/369backend/account/interface/user"
-	"gitlab.com/369-engineer/369backend/account/models"
 )
 
 type useSysUser struct {

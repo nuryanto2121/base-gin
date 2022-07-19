@@ -52,14 +52,14 @@ Project information and existing API
  - using code:	gin.SetMode(gin.ReleaseMode)
 
 [GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (6 handlers)
-[GIN-debug] GET    /health_check             --> gitlab.com/369-engineer/369backend/account/controllers/auth.(*ContAuth).Health-fm (6 handlers)
-[GIN-debug] POST   /api/auth/login           --> gitlab.com/369-engineer/369backend/account/controllers/auth.(*ContAuth).Login-fm (6 handlers)
-[GIN-debug] POST   /api/auth/forgot          --> gitlab.com/369-engineer/369backend/account/controllers/auth.(*ContAuth).ForgotPassword-fm (6 handlers)
-[GIN-debug] POST   /api/auth/change_password --> gitlab.com/369-engineer/369backend/account/controllers/auth.(*ContAuth).ChangePassword-fm (6 handlers)
-[GIN-debug] POST   /api/auth/register        --> gitlab.com/369-engineer/369backend/account/controllers/auth.(*ContAuth).Register-fm (6 handlers)
-[GIN-debug] POST   /api/auth/verify_otp      --> gitlab.com/369-engineer/369backend/account/controllers/auth.(*ContAuth).VerifyOTP-fm (6 handlers)
-[GIN-debug] POST   /api/auth/logout          --> gitlab.com/369-engineer/369backend/account/controllers/auth.(*ContAuth).Logout-fm (6 handlers)
-[GIN-debug] POST   /fileupload               --> gitlab.com/369-engineer/369backend/account/controllers/fileupload.(*ContFileUpload).CreateImage-fm (6 handlers)
+[GIN-debug] GET    /health_check             --> app/controllers/auth.(*ContAuth).Health-fm (6 handlers)
+[GIN-debug] POST   /api/auth/login           --> app/controllers/auth.(*ContAuth).Login-fm (6 handlers)
+[GIN-debug] POST   /api/auth/forgot          --> app/controllers/auth.(*ContAuth).ForgotPassword-fm (6 handlers)
+[GIN-debug] POST   /api/auth/change_password --> app/controllers/auth.(*ContAuth).ChangePassword-fm (6 handlers)
+[GIN-debug] POST   /api/auth/register        --> app/controllers/auth.(*ContAuth).Register-fm (6 handlers)
+[GIN-debug] POST   /api/auth/verify_otp      --> app/controllers/auth.(*ContAuth).VerifyOTP-fm (6 handlers)
+[GIN-debug] POST   /api/auth/logout          --> app/controllers/auth.(*ContAuth).Logout-fm (6 handlers)
+[GIN-debug] POST   /fileupload               --> app/controllers/fileupload.(*ContFileUpload).CreateImage-fm (6 handlers)
 
 
 Listening port is 8000

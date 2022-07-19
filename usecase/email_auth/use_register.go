@@ -3,8 +3,8 @@ package useemailauth
 import (
 	"strings"
 
-	templateemail "gitlab.com/369-engineer/369backend/account/pkg/email"
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
+	templateemail "app/pkg/email"
+	util "app/pkg/utils"
 )
 
 type Register struct {

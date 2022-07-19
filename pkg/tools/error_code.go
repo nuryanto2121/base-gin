@@ -3,7 +3,7 @@ package tool
 import (
 	"net/http"
 
-	"gitlab.com/369-engineer/369backend/account/models"
+	"app/models"
 
 	"github.com/sirupsen/logrus"
 )

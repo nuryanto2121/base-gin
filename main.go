@@ -5,22 +5,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"gitlab.com/369-engineer/369backend/account/pkg/logging"
-	maria "gitlab.com/369-engineer/369backend/account/pkg/mariadb"
-	"gitlab.com/369-engineer/369backend/account/pkg/middleware"
-	multilanguage "gitlab.com/369-engineer/369backend/account/pkg/multiLanguage"
+	"app/pkg/logging"
+	"app/pkg/middleware"
+	multilanguage "app/pkg/multiLanguage"
+	"app/pkg/postgres"
 
-	"gitlab.com/369-engineer/369backend/account/pkg/redisdb"
-	s3gateway "gitlab.com/369-engineer/369backend/account/pkg/s3"
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
-	"gitlab.com/369-engineer/369backend/account/routers"
+	"app/pkg/redisdb"
+	s3gateway "app/pkg/s3"
+	"app/pkg/setting"
+	"app/routers"
 )
 
 func init() {
 	setting.Setup()
 	multilanguage.Setup()
 	logging.Setup()
-	maria.Setup()
+	postgres.Setup()
 	redisdb.Setup()
 	s3gateway.Setup()
 }

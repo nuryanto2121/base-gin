@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/369-engineer/369backend/account/pkg/app"
-	maria "gitlab.com/369-engineer/369backend/account/pkg/mariadb"
-	version "gitlab.com/369-engineer/369backend/account/pkg/middleware/versioning"
-	"gitlab.com/369-engineer/369backend/account/pkg/redisdb"
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
-	util "gitlab.com/369-engineer/369backend/account/pkg/utils"
+	"app/pkg/app"
+	version "app/pkg/middleware/versioning"
+	postgres "app/pkg/postgres"
+	"app/pkg/redisdb"
+	"app/pkg/setting"
+	util "app/pkg/utils"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -52,7 +52,7 @@ func Versioning() gin.HandlerFunc {
 			DeviceType: DeviceType,
 			Version:    Version,
 		}
-		dataVersion, err := verService.GetVersion(ctx, maria.Conn)
+		dataVersion, err := verService.GetVersion(ctx, postgres.Conn)
 		if err != nil {
 			resp := app.Response{
 				Error: fmt.Sprintf("Versioning : %v", err),

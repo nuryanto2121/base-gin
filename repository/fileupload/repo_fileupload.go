@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	ifileupload "gitlab.com/369-engineer/369backend/account/interface/fileupload"
-	"gitlab.com/369-engineer/369backend/account/models"
-	"gitlab.com/369-engineer/369backend/account/pkg/logging"
+	ifileupload "app/interface/fileupload"
+	"app/models"
+	"app/pkg/logging"
 
 	"gorm.io/gorm"
 )

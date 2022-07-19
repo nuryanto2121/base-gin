@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
+	"app/pkg/setting"
 	"golang.org/x/crypto/bcrypt"
 )
 

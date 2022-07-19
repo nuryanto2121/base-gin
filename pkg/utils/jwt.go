@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"app/pkg/setting"
 	"github.com/dgrijalva/jwt-go"
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
 )
 
 // Claims :

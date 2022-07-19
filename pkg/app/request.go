@@ -5,7 +5,7 @@ import (
 
 	"github.com/astaxie/beego/validation"
 
-	"gitlab.com/369-engineer/369backend/account/pkg/logging"
+	"app/pkg/logging"
 )
 
 // MarkErrors logs error logs

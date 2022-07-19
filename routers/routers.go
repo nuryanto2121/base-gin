@@ -3,22 +3,26 @@ package routers
 import (
 	"time"
 
+	_ "app/docs"
+	postgres "app/pkg/postgres"
+	"app/pkg/setting"
+
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
-	_ "gitlab.com/369-engineer/369backend/account/docs"
-	maria "gitlab.com/369-engineer/369backend/account/pkg/mariadb"
-	"gitlab.com/369-engineer/369backend/account/pkg/setting"
 
-	_contAuth "gitlab.com/369-engineer/369backend/account/controllers/auth"
+	swaggerFiles "github.com/swaggo/files"
 
-	_repoUser "gitlab.com/369-engineer/369backend/account/repository/user"
-	_useAuth "gitlab.com/369-engineer/369backend/account/usecase/auth"
-	_useUser "gitlab.com/369-engineer/369backend/account/usecase/user"
+	_repoUserSession "app/repository/user_session"
 
-	_contFileUpload "gitlab.com/369-engineer/369backend/account/controllers/fileupload"
-	_repoFileUpload "gitlab.com/369-engineer/369backend/account/repository/fileupload"
-	_useFileUpload "gitlab.com/369-engineer/369backend/account/usecase/fileupload"
+	_contAuth "app/controllers/auth"
+
+	_repoUser "app/repository/user"
+	_useAuth "app/usecase/auth"
+	_useUser "app/usecase/user"
+
+	_contFileUpload "app/controllers/fileupload"
+	_repoFileUpload "app/repository/fileupload"
+	_useFileUpload "app/usecase/fileupload"
 )
 
 type GinRoutes struct {
@@ -29,13 +33,15 @@ func (g *GinRoutes) Init() {
 	timeoutContext := time.Duration(setting.ServerSetting.ReadTimeout) * time.Second
 
 	r := g.G
-	r.GET("/v1/account//swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/v1//swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	repoFileUpload := _repoFileUpload.NewRepoFileUpload(maria.Conn)
+	repoUserSession := _repoUserSession.NewRepoUserSession(postgres.Conn)
+
+	repoFileUpload := _repoFileUpload.NewRepoFileUpload(postgres.Conn)
 	useFileUpload := _useFileUpload.NewSaFileUpload(repoFileUpload, timeoutContext)
 
-	repoUser := _repoUser.NewRepoSysUser(maria.Conn)
-	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, timeoutContext)
+	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
+	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, timeoutContext)
 	_ = _useUser.NewUserSysUser(repoUser, timeoutContext)
 
 	_contAuth.NewContAuth(g.G, useAuth)
