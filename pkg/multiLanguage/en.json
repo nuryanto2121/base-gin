@@ -1,0 +1,45 @@
+{
+    "internal_server_error": "Internal server error",
+    "data_not_found": "Data not found",
+    "otp_not_found": "OTP not found",
+    "expired_otp": "Expired otp",
+    "conflict": "Conflict",
+    "conflict_account": "Conflict account",
+    "bad_parameter": "Bad parameter",
+    "unauthorized": "Unauthorized",
+    "invalid_login": "Invalid_login",
+    "account_not_found": "Account not found",
+    "account_not_active": "Account not active",
+    "account_already_exist": "Account already exist",
+    "versioning_not_found": "Versioning not found",
+    "versioning_header_not_found": "Versioning header not found",
+    "update_your_app": "Update your app",
+    "force_update_your_app": "Force update your app",
+    "invalid_password": "Invalid password",
+    "password_and_confirm_not_same": "Password and confirm not same",
+    "file_upload_not_found": "File upload not found",
+    "no_email_cant_forgot_password": "No email cant forgot password",
+    "first_account_needed": "First account needed",
+    "email_not_found": "Email not found",
+    "expired_firebase_token": "Expired firebase token",
+    "invalid_otp": "Invalid otp",
+    "format_email": "Wrong format email",
+    "message_error_Required":{
+        "description":"",
+        "one":"{{.Name}} Can not be empty.",
+        "other":"{{.Name}} Can not be empty."
+    },
+    "message_error_Email":{
+        "description":"",
+        "one":"{{.Name}} Must be a valid email address.",
+        "other":"{{.Name}} Must be a valid email address."
+    },
+    "message_error_MinSize":{
+        "description":"",
+        "one":"{{.Name}} Minimum size {{.data}}.",
+        "other":"{{.Name}} Minimum size {{.data}}."
+    },
+    "request_access_token": "Access Token is required",
+    "invalid_old_password": "Your Password old is wrong",
+    "conflict_phone_no":"Phone Number already exist."
+}

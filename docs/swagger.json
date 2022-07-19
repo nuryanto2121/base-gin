@@ -1,0 +1,910 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Backend REST API for golang nuryanto2121",
+        "title": "Base 369",
+        "contact": {
+            "name": "Nuryanto",
+            "url": "https://www.linkedin.com/in/nuryanto-1b2721156/",
+            "email": "nuryantofattih@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/v1/account/admin-web/login": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login Admin Web",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginAdminWebForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/admin-web/logout": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout Admin Web",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/change-password": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Change Password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "account set from verify forgot otp",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ResetPasswd"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/check-phone-no/{phone_no}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "get profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "phone no",
+                        "name": "phone_no",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/fileupload": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload file",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FileUpload"
+                ],
+                "summary": "File Upload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "account image",
+                        "name": "upload_file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "path images",
+                        "name": "path",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "FileUpload"
+                ],
+                "summary": "Delete FileUpload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #pakai yang file_path ajah",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FileResponse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/forgot": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Forgot Password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ForgotForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/login": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/logout": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "logout",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/profile": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "get profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Edit profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfileForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/profile/change-password": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Change Password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "account set from verify forgot otp",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ResetPasswdProfile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/register": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Body with file zip",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RegisterForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/sosmed": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "auth from sosmed sdk firebase if login then get token and data user else OTP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "this model set from firebase",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SosmedForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/verify-forgot-otp": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify OTP Forgot",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.VerifyForgotForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/account/verify-register-otp": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify OTP Register",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.VerifyForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "app.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string"
+                },
+                "errors": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FileResponse": {
+            "type": "object",
+            "properties": {
+                "file_name": {
+                    "description": "ID       int    `json:\"id\"`",
+                    "type": "string"
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "file_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ForgotForm": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LoginAdminWebForm": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LoginForm": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "pwd": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProfileForm": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone_no": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.RegisterForm": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone_no": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ResetPasswd": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "confirm_pwd": {
+                    "type": "string"
+                },
+                "pwd": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ResetPasswdProfile": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "confirm_pwd": {
+                    "type": "string"
+                },
+                "old_pwd": {
+                    "type": "string"
+                },
+                "pwd": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SosmedForm": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.VerifyForgotForm": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "otp": {
+                    "type": "string"
+                },
+                "phone_no": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.VerifyForm": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "phone_no": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

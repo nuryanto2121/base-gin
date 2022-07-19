@@ -1,0 +1,598 @@
+definitions:
+  app.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      errors: {}
+      msg:
+        type: string
+    type: object
+  models.FileResponse:
+    properties:
+      file_name:
+        description: ID       int    `json:"id"`
+        type: string
+      file_path:
+        type: string
+      file_type:
+        type: string
+    type: object
+  models.ForgotForm:
+    properties:
+      account:
+        type: string
+    type: object
+  models.LoginAdminWebForm:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.LoginForm:
+    properties:
+      account:
+        type: string
+      pwd:
+        type: string
+    type: object
+  models.ProfileForm:
+    properties:
+      about:
+        type: string
+      avatar:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone_no:
+        type: string
+    type: object
+  models.RegisterForm:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone_no:
+        type: string
+    type: object
+  models.ResetPasswd:
+    properties:
+      account:
+        type: string
+      confirm_pwd:
+        type: string
+      pwd:
+        type: string
+    type: object
+  models.ResetPasswdProfile:
+    properties:
+      access_token:
+        type: string
+      confirm_pwd:
+        type: string
+      old_pwd:
+        type: string
+      pwd:
+        type: string
+    type: object
+  models.SosmedForm:
+    properties:
+      access_token:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  models.VerifyForgotForm:
+    properties:
+      access_token:
+        type: string
+      email:
+        type: string
+      otp:
+        type: string
+      phone_no:
+        type: string
+    type: object
+  models.VerifyForm:
+    properties:
+      access_token:
+        type: string
+      email:
+        type: string
+      phone_no:
+        type: string
+    type: object
+info:
+  contact:
+    email: nuryantofattih@gmail.com
+    name: Nuryanto
+    url: https://www.linkedin.com/in/nuryanto-1b2721156/
+  description: Backend REST API for golang nuryanto2121
+  title: Base 369
+  version: "1.0"
+paths:
+  /v1/account/admin-web/login:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginAdminWebForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Login Admin Web
+      tags:
+      - Auth
+  /v1/account/admin-web/logout:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Logout Admin Web
+      tags:
+      - Auth
+  /v1/account/change-password:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: account set from verify forgot otp
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPasswd'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Change Password
+      tags:
+      - Auth
+  /v1/account/check-phone-no/{phone_no}:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: phone no
+        in: path
+        name: phone_no
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: get profile
+      tags:
+      - Auth
+  /v1/account/fileupload:
+    delete:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #pakai yang file_path ajah'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.FileResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete FileUpload
+      tags:
+      - FileUpload
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload file
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: account image
+        in: formData
+        name: upload_file
+        required: true
+        type: file
+      - description: path images
+        in: formData
+        name: path
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: File Upload
+      tags:
+      - FileUpload
+  /v1/account/forgot:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.ForgotForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Forgot Password
+      tags:
+      - Auth
+  /v1/account/login:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Login
+      tags:
+      - Auth
+  /v1/account/logout:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: logout
+      tags:
+      - Auth
+  /v1/account/profile:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: get profile
+      tags:
+      - Profile
+    put:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProfileForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Edit profile
+      tags:
+      - Profile
+  /v1/account/profile/change-password:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: account set from verify forgot otp
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPasswdProfile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Change Password
+      tags:
+      - Profile
+  /v1/account/register:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: Body with file zip
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Register
+      tags:
+      - Auth
+  /v1/account/sosmed:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.SosmedForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: auth from sosmed sdk firebase if login then get token and data user
+        else OTP
+      tags:
+      - Auth
+  /v1/account/verify-forgot-otp:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.VerifyForgotForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Verify OTP Forgot
+      tags:
+      - Auth
+  /v1/account/verify-register-otp:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.VerifyForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Verify OTP Register
+      tags:
+      - Auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,23 @@
+version: "2"
+
+services:  
+  d-nightswatch-service:
+    build:
+      context: ./service
+      dockerfile: _dockerfiles/app.docker.dev
+    container_name: "d-nightswatch-service"
+    env_file: ./service/.env
+    image: gcr.io/peak-nimbus-307910/d-nightswatch-service:VERSION
+    networks:
+      - default
+      - bridge-network
+    ports:
+      - "50060:50050"
+    volumes:
+      - ./service:/usr/src/app
+    working_dir: /usr/src/app
+networks:
+  default:
+    driver: bridge
+  bridge-network:
+    external: true

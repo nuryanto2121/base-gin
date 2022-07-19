@@ -1,0 +1,12 @@
+.idea/
+.DS_Store
+
+
+
+!runtime/qrcode/bg.jpg
+!runtime/fonts
+DB/*
+config.ini
+.vscode/launch.json
+wwwroot/runtime/*
+wwwroot/uploads/*

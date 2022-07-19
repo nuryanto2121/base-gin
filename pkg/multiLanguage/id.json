@@ -1,0 +1,45 @@
+{
+    "internal_server_error": "Kesalahan pada Server",
+    "data_not_found": "Data tidak ditemukan",
+    "otp_not_found": "OTP tidak ditemukan",
+    "expired_otp": "OTP Kadaluwarsa",
+    "conflict": "Terjadi Konflik",
+    "conflict_account": "Akun Konflik",
+    "bad_parameter": "Kesalahan Parameter",
+    "unauthorized": "Tidak Sah",
+    "invalid_login": "Login tidak valid",
+    "account_not_found": "Akun tidak ditemukan",
+    "account_not_active": "Akun tidak aktif",
+    "account_already_exist": "Akun sudah terdaftar",
+    "versioning_not_found": "Versi tidak ditemukan",
+    "versioning_header_not_found": "Versi header tidak ditemukan",
+    "update_your_app": "Perbarui aplikasi anda",
+    "force_update_your_app": "Paksa perbarui aplikasi anda",
+    "invalid_password": "Kata sandi salah",
+    "password_and_confirm_not_same": "Password dan konfirmasi password tidak sama",
+    "file_upload_not_found": "Unggahan file tidak ditemukan",
+    "no_email_cant_forgot_password": "Tidak ada email tidak bisa lupa kata sandi",
+    "first_account_needed": "Diperlukan akun pertama",
+    "email_not_found": "Email tidak ditemukan",
+    "expired_firebase_token": "Token Firebase Kadaluwarsa",
+    "invalid_otp": "OTP salah",
+    "format_email": "Format email salah",
+    "message_error_Required":{
+        "description":"",
+        "one":"{{.Name}} Tidak boleh kosong.",
+        "other":"{{.Name}} Tidak boleh kosong."
+    },
+    "message_error_Email":{
+        "description":"",
+        "one":"{{.Name}} Harus alamat e-mail yang valid.",
+        "other":"{{.Name}} Harus alamat e-mail yang valid."
+    },
+    "message_error_MinSize":{
+        "description":"",
+        "one":"{{.Name}} Ukuran minimal {{.Value}}.",
+        "other":"{{.Name}} Ukuran minimal {{.Value}}."
+    },
+    "request_access_token": "Access Token tidak boleh kosong",
+    "invalid_old_password": "Password lama anda salah",
+    "conflict_phone_no":"No Handphone sudah terdaftar"
+}

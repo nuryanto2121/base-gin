@@ -1,0 +1,69 @@
+[app]
+PageSize = 10
+JwtSecret = 233
+ExpiredJwt = 8760
+PrefixUrl = http://127.0.0.1:8000
+RuntimeRootPath = wwwroot/runtime/
+ImageSavePath = upload/images/
+# MB
+ImageMaxSize = 5
+ImageAllowExts = .jpg,.jpeg,.png
+ExportSavePath = export/
+QrCodeSavePath = qrcode/
+FontSavePath = fonts/
+LogSavePath = logs/
+LogSaveName = log
+LogFileExt = log
+TimeFormat = 20060102
+Issuer = 369App
+SaltKey = 
+ExpiredAgora = 120 #2 jam
+
+[server]
+#debug or release
+RunMode = debug
+HttpPort = 8000
+GrpcPort = 9000
+ReadTimeout = 60
+WriteTimeout = 60
+
+[smtp]
+Server = smtp.gmail.com
+Port = 
+User = 
+Password =
+Identity =
+Sender =
+
+[database]
+Type = mariab
+User = 
+Password =
+Host =
+Port =
+Name =
+TablePrefix = 
+
+[redis]
+Host =
+Port =
+Password = 
+Db = 1
+
+[S3]
+SpaceName = 
+SpaceKey = 
+SpaceSecret =
+SpaceBucket =
+Region =
+EndPoint =
+
+[Agora]
+AppID = 9e0974d91b9e45d198faf123313ae3f8
+AppCertificate = c5fc404853474c939b784763b815cd6b
+
+[Elastic]
+ElasticHost= https://search-osdev369-7ltjv43457moc2jcetnc5aw7ry.ap-southeast-1.es.amazonaws.com/
+ElasticAuth= true
+ElasticAuthUsername= admindev
+ElasticAuthPassword= Sebuah4!
