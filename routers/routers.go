@@ -23,6 +23,10 @@ import (
 	_contFileUpload "app/controllers/fileupload"
 	_repoFileUpload "app/repository/fileupload"
 	_useFileUpload "app/usecase/fileupload"
+
+	_contHolidays "app/controllers/holidays"
+	_repoHolidays "app/repository/holidays"
+	_useHolidays "app/usecase/holidays"
 )
 
 type GinRoutes struct {
@@ -47,5 +51,9 @@ func (g *GinRoutes) Init() {
 	_contAuth.NewContAuth(g.G, useAuth)
 
 	_contFileUpload.NewContFileUpload(g.G, useFileUpload)
+
+	repoHolidays := _repoHolidays.NewRepoHolidays(postgres.Conn)
+	userHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
+	_contHolidays.NewContHolidays(g.G, userHolidays)
 
 }
