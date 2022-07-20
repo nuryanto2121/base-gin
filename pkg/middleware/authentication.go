@@ -100,42 +100,42 @@ func Authorize() gin.HandlerFunc {
 			msg = "Auth Token Required"
 		} else {
 			// validasi JWT
-			existToken := redisdb.GetSession(token)
-			if existToken == "" {
+			// existToken := redisdb.GetSession(token)
+			// if existToken == "" {
+			// 	code = http.StatusUnauthorized
+			// 	msg = "Token Failed"
+			// } else {
+			//Validasi Session
+			claims, err := util.ParseToken(token)
+			if err != nil {
 				code = http.StatusUnauthorized
-				msg = "Token Failed"
+				switch err.(*jwt.ValidationError).Errors {
+				case jwt.ValidationErrorExpired:
+					msg = "Token Expired"
+				default:
+					msg = "Token Failed"
+				}
 			} else {
-				//Validasi Session
-				claims, err := util.ParseToken(token)
-				if err != nil {
+				var issuer = setting.AppSetting.Issuer
+				valid := claims.VerifyIssuer(issuer, true)
+				if !valid {
 					code = http.StatusUnauthorized
-					switch err.(*jwt.ValidationError).Errors {
-					case jwt.ValidationErrorExpired:
-						msg = "Token Expired"
-					default:
-						msg = "Token Failed"
-					}
-				} else {
-					var issuer = setting.AppSetting.Issuer
-					valid := claims.VerifyIssuer(issuer, true)
-					if !valid {
-						code = http.StatusUnauthorized
-						msg = "Issuer is not valid"
-					}
-					e.Set("claims", claims)
+					msg = "Issuer is not valid"
 				}
-				expiredDate := util.Int64ToTime(claims.StandardClaims.ExpiresAt)
-				if expiredDate.Before(util.GetTimeNow()) {
-					resp := app.Response{
-						Msg:   "Token Expired",
-						Data:  data,
-						Error: "Token Expired",
-					}
-					e.AbortWithStatusJSON(http.StatusUnauthorized, resp)
-					return
-				}
-
+				e.Set("claims", claims)
 			}
+			expiredDate := util.Int64ToTime(claims.StandardClaims.ExpiresAt)
+			if expiredDate.Before(util.GetTimeNow()) {
+				resp := app.Response{
+					Msg:   "Token Expired",
+					Data:  data,
+					Error: "Token Expired",
+				}
+				e.AbortWithStatusJSON(http.StatusUnauthorized, resp)
+				return
+			}
+
+			// }
 		}
 		if code != http.StatusOK {
 			resp := app.Response{

@@ -10,7 +10,6 @@ import (
 	multilanguage "app/pkg/multiLanguage"
 	"app/pkg/postgres"
 
-	"app/pkg/redisdb"
 	s3gateway "app/pkg/s3"
 	"app/pkg/setting"
 	"app/routers"
@@ -21,7 +20,6 @@ func init() {
 	multilanguage.Setup()
 	logging.Setup()
 	postgres.Setup()
-	redisdb.Setup()
 	s3gateway.Setup()
 }
 
