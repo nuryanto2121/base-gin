@@ -104,6 +104,7 @@ func autoMigrate() {
 		models.UserSession{},
 		models.UserGroup{},
 		version.AppVersion{},
+		models.Holidays{},
 	)
 	if err != nil {
 		log.Printf("\nAutoMigrate : %#v", err)
