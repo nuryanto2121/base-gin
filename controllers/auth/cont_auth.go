@@ -29,7 +29,7 @@ func NewContAuth(e *gin.Engine, useAuth iauth.Usecase) {
 	r := e.Group("/v1/cms")
 	// r.Use(middleware.Versioning())
 	r.POST("/login", cont.Login)
-	r.POST("/sosmed", cont.LoginSosmed)
+
 	r.POST("/forgot", cont.ForgotPassword)
 	r.POST("/change-password", cont.ChangePassword)
 	r.POST("/register", cont.Register)
@@ -40,6 +40,11 @@ func NewContAuth(e *gin.Engine, useAuth iauth.Usecase) {
 	L := e.Group("/v1/cms/logout")
 	L.Use(middleware.Authorize())
 	L.POST("", cont.Logout)
+
+	v1 := e.Group("/v1")
+	v1.POST("/login", cont.LoginSosmed)
+	v1.Use(middleware.Authorize())
+	v1.POST("/logout", cont.Logout)
 
 }
 

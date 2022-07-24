@@ -58,12 +58,3 @@ SpaceBucket =
 Region =
 EndPoint =
 
-[Agora]
-AppID = 9e0974d91b9e45d198faf123313ae3f8
-AppCertificate = c5fc404853474c939b784763b815cd6b
-
-[Elastic]
-ElasticHost= https://search-osdev369-7ltjv43457moc2jcetnc5aw7ry.ap-southeast-1.es.amazonaws.com/
-ElasticAuth= true
-ElasticAuthUsername= admindev
-ElasticAuthPassword= Sebuah4!

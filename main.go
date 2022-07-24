@@ -23,7 +23,7 @@ func init() {
 	s3gateway.Setup()
 }
 
-// @title Base 369
+// @title Base Playtopia
 // @version 1.0
 // @description Backend REST API for golang nuryanto2121
 
