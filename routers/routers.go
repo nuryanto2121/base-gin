@@ -27,6 +27,10 @@ import (
 	_contHolidays "app/controllers/holidays"
 	_repoHolidays "app/repository/holidays"
 	_useHolidays "app/usecase/holidays"
+
+	_contGroups "app/controllers/group"
+	_repoGroups "app/repository/group"
+	_useGroups "app/usecase/group"
 )
 
 type GinRoutes struct {
@@ -56,4 +60,7 @@ func (g *GinRoutes) Init() {
 	userHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
 	_contHolidays.NewContHolidays(g.G, userHolidays)
 
+	repoGroups := _repoGroups.NewRepoGroups(postgres.Conn)
+	useGroups := _useGroups.NewGroups(repoGroups, timeoutContext)
+	_contGroups.NewContGroup(g.G, useGroups)
 }
