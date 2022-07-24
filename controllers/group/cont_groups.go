@@ -77,7 +77,7 @@ func (c *ContGroups) Create(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.GroupsForm true "this model set from firebase"
+// @Param req body models.GroupForm true "this model set from firebase"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/groups/{id} [put]
