@@ -59,7 +59,7 @@ func (u *useGroups) Create(ctx context.Context, data *models.GroupForm) (err err
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var form = &models.GroupForm{}
+	var form = &models.Groups{}
 	err = mapstructure.Decode(data, &form)
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (u *useGroups) Update(ctx context.Context, ID uuid.UUID, data interface{}) 
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var form = models.GroupForm{}
+	var form = models.Groups{}
 	dataOld, err := u.repoGroups.GetDataBy(ctx, ID)
 	if err != nil {
 		return err

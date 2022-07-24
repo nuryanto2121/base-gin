@@ -88,7 +88,7 @@ func (db *repoGroups) GetList(ctx context.Context, queryparam models.ParamList) 
 	}
 	return result, nil
 }
-func (db *repoGroups) Create(ctx context.Context, data *models.GroupForm) (err error) {
+func (db *repoGroups) Create(ctx context.Context, data *models.Groups) (err error) {
 	query := db.Conn.WithContext(ctx).Create(data)
 	err = query.Error
 	if err != nil {
