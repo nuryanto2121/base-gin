@@ -7,6 +7,7 @@ require (
 	github.com/astaxie/beego v1.12.3
 	github.com/aws/aws-sdk-go v1.44.57
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fatih/structs v1.1.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-ini/ini v1.66.6
