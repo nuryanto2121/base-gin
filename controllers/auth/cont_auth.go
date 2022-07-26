@@ -29,13 +29,8 @@ func NewContAuth(e *gin.Engine, useAuth iauth.Usecase) {
 	r := e.Group("/v1/cms")
 	// r.Use(middleware.Versioning())
 	r.POST("/login", cont.Login)
-
 	r.POST("/forgot", cont.ForgotPassword)
 	r.POST("/change-password", cont.ChangePassword)
-	r.POST("/register", cont.Register)
-	r.POST("/verify-register-otp", cont.RegisterOTP)
-	r.POST("/verify-forgot-otp", cont.ForgotOTP)
-	r.GET("/check-phone-no/:phone_no", cont.CheckPhoneNo)
 
 	L := e.Group("/v1/cms/logout")
 	L.Use(middleware.Authorize())
@@ -43,6 +38,7 @@ func NewContAuth(e *gin.Engine, useAuth iauth.Usecase) {
 
 	v1 := e.Group("/v1")
 	v1.POST("/login", cont.LoginSosmed)
+	v1.POST("/register", cont.Register)
 	v1.Use(middleware.Authorize())
 	v1.POST("/logout", cont.Logout)
 
@@ -52,94 +48,13 @@ func (u *ContAuth) Health(e *gin.Context) {
 	e.JSON(http.StatusOK, "success")
 }
 
-// RegisterOTP :
-// @Summary Verify OTP Forgot
-// @Tags Auth
-// @Produce json
-// @Param Device-Type header string true "Device Type"
-// @Param Language header string true "Language Apps"
-// @Param req body models.VerifyForgotForm true "req param #changes are possible to adjust the form of the registration form from frontend"
-// @Success 200 {object} app.Response
-// @Router /v1/cms/verify-forgot-otp [post]
-func (u *ContAuth) ForgotOTP(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	var (
-		logger = logging.Logger{}
-		appE   = app.Gin{C: e}
-		form   = models.VerifyForgotForm{}
-	)
-
-	// validasi and bind to struct
-	httpCode, errMsg := app.BindAndValidMulti(e, &form)
-	logger.Info(util.Stringify(form))
-	if httpCode != 200 {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
-		return
-	}
-
-	if form.Email != "" {
-		if errMessage, isTrue := app.ValidEmail(form.Email); !isTrue {
-			appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMessage)
-			return
-		}
-	}
-
-	data, err := u.useAuth.VerifyForgot(ctx, form)
-	if err != nil {
-		// appE.ResponseError(http.StatusUnauthorized, fmt.Sprintf("%v", err))
-		appE.ResponseError(http.StatusUnauthorized, err)
-		return
-	}
-	appE.Response(http.StatusOK, "Ok", data)
-}
-
-// RegisterOTP :
-// @Summary Verify OTP Register
-// @Tags Auth
-// @Produce json
-// @Param Device-Type header string true "Device Type"
-// @Param Language header string true "Language Apps"
-// @Param req body models.VerifyForm true "req param #changes are possible to adjust the form of the registration form from frontend"
-// @Success 200 {object} app.Response
-// @Router /v1/cms/verify-register-otp [post]
-func (u *ContAuth) RegisterOTP(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	var (
-		logger = logging.Logger{}
-		appE   = app.Gin{C: e}
-		form   = models.VerifyForm{}
-	)
-
-	// validasi and bind to struct
-	httpCode, errMsg := app.BindAndValidMulti(e, &form)
-	logger.Info(util.Stringify(form))
-	if httpCode != 200 {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
-		return
-	}
-
-	data, err := u.useAuth.Verify(ctx, form)
-	if err != nil {
-		appE.ResponseError(http.StatusUnauthorized, err)
-		return
-	}
-	appE.Response(http.StatusOK, "Ok", data)
-}
-
 // Logout :
 // @Summary logout
 // @Security ApiKeyAuth
 // @Tags Auth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/logout [post]
@@ -208,14 +123,15 @@ func (u *ContAuth) Login(e *gin.Context) {
 }
 
 // Login :
-// @Summary auth from sosmed sdk firebase if login then get token and data user else OTP
-// @Tags Auth
+// @Summary auth
+// @Tags Auth Mobile
 // @Produce json
 // @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param req body models.SosmedForm true "this model set from firebase"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/sosmed [post]
+// @Router /v1/login [post]
 func (u *ContAuth) LoginSosmed(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -250,6 +166,7 @@ func (u *ContAuth) LoginSosmed(e *gin.Context) {
 // @Tags Auth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param req body models.ResetPasswd true "account set from verify forgot otp"
 // @Success 200 {object} app.Response
@@ -286,13 +203,14 @@ func (u *ContAuth) ChangePassword(e *gin.Context) {
 
 // Register :
 // @Summary Register
-// @Tags Auth
+// @Tags Auth Mobile
 // @Produce json
 // @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param req body models.RegisterForm true "Body with file zip"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/register [post]
+// @Router /v1/register [post]
 func (u *ContAuth) Register(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -327,6 +245,7 @@ func (u *ContAuth) Register(e *gin.Context) {
 // @Tags Auth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param req body models.ForgotForm true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response
@@ -358,41 +277,4 @@ func (u *ContAuth) ForgotPassword(e *gin.Context) {
 
 	appE.Response(http.StatusOK, "Check Your Email", nil)
 
-}
-
-//Check Phone No
-// GetDataBy :
-// @Summary get profile
-// @Tags Auth
-// @Produce json
-// @Param Device-Type header string true "Device Type"
-// @Param Language header string true "Language Apps"
-// @Param phone_no path string true "phone no"
-// @Success 200 {object} app.Response
-// @Router /v1/cms/check-phone-no/{phone_no} [get]
-func (u *ContAuth) CheckPhoneNo(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	var (
-		logger = logging.Logger{} // wajib
-		appE   = app.Gin{C: e}    // wajib
-		id     = e.Param("phone_no")
-	)
-
-	logger.Info(id)
-
-	if errMessage, isTrue := app.ValidPhoneNo(id); !isTrue {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMessage)
-		return
-	}
-
-	err := u.useAuth.CheckPhoneNo(ctx, id)
-	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
-		return
-	}
-
-	appE.Response(http.StatusOK, "Ok", nil)
 }

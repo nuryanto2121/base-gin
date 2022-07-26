@@ -8,6 +8,17 @@ definitions:
       msg:
         type: string
     type: object
+  models.AddOutletDetail:
+    properties:
+      outlet_id:
+        type: string
+      outlet_price_weekday:
+        type: number
+      outlet_price_weekend:
+        type: number
+      product_id:
+        type: string
+    type: object
   models.AddOutlets:
     properties:
       outlet_city:
@@ -51,6 +62,17 @@ definitions:
       pwd:
         type: string
     type: object
+  models.OutletForm:
+    properties:
+      outlet_city:
+        type: string
+      outlet_detail:
+        items:
+          $ref: '#/definitions/models.AddOutletDetail'
+        type: array
+      outlet_name:
+        type: string
+    type: object
   models.RegisterForm:
     properties:
       email:
@@ -92,26 +114,6 @@ definitions:
       email:
         type: string
       name:
-        type: string
-    type: object
-  models.VerifyForgotForm:
-    properties:
-      access_token:
-        type: string
-      email:
-        type: string
-      otp:
-        type: string
-      phone_no:
-        type: string
-    type: object
-  models.VerifyForm:
-    properties:
-      access_token:
-        type: string
-      email:
-        type: string
-      phone_no:
         type: string
     type: object
 info:
@@ -199,6 +201,11 @@ paths:
         name: Device-Type
         required: true
         type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
       - description: Language Apps
         in: header
         name: Language
@@ -220,40 +227,17 @@ paths:
       summary: Change Password
       tags:
       - Auth
-  /v1/cms/check-phone-no/{phone_no}:
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: phone no
-        in: path
-        name: phone_no
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: get profile
-      tags:
-      - Auth
   /v1/cms/forgot:
     post:
       parameters:
       - description: Device Type
         in: header
         name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
         required: true
         type: string
       - description: Language Apps
@@ -325,6 +309,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.ResponseModelList'
+      security:
+      - ApiKeyAuth: []
       summary: GetList Groups
       tags:
       - Groups
@@ -358,6 +344,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Create Groups
       tags:
       - Groups
@@ -391,6 +379,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Delete Groups
       tags:
       - Groups
@@ -423,6 +413,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: GetById Groups
       tags:
       - Groups
@@ -461,6 +453,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Update Groups
       tags:
       - Groups
@@ -511,6 +505,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.ResponseModelList'
+      security:
+      - ApiKeyAuth: []
       summary: GetList Holidays
       tags:
       - Holidays
@@ -544,6 +540,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Create Holidays
       tags:
       - Holidays
@@ -577,6 +575,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Delete Holidays
       tags:
       - Holidays
@@ -609,6 +609,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: GetById Holidays
       tags:
       - Holidays
@@ -647,6 +649,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Update Holidays
       tags:
       - Holidays
@@ -691,6 +695,11 @@ paths:
       - description: Device Type
         in: header
         name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
         required: true
         type: string
       - description: Language Apps
@@ -785,7 +794,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.AddOutlets'
+          $ref: '#/definitions/models.OutletForm'
       produces:
       - application/json
       responses:
@@ -908,12 +917,51 @@ paths:
       summary: Rubah Outlets
       tags:
       - Outlets
-  /v1/cms/register:
+  /v1/login:
     post:
       parameters:
       - description: Device Type
         in: header
         name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.SosmedForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: auth
+      tags:
+      - Auth Mobile
+  /v1/register:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
         required: true
         type: string
       - description: Language Apps
@@ -936,97 +984,7 @@ paths:
             $ref: '#/definitions/app.Response'
       summary: Register
       tags:
-      - Auth
-  /v1/cms/sosmed:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: this model set from firebase
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.SosmedForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: auth from sosmed sdk firebase if login then get token and data user
-        else OTP
-      tags:
-      - Auth
-  /v1/cms/verify-forgot-otp:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: 'req param #changes are possible to adjust the form of the registration
-          form from frontend'
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.VerifyForgotForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: Verify OTP Forgot
-      tags:
-      - Auth
-  /v1/cms/verify-register-otp:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: 'req param #changes are possible to adjust the form of the registration
-          form from frontend'
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.VerifyForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: Verify OTP Register
-      tags:
-      - Auth
+      - Auth Mobile
 securityDefinitions:
   ApiKeyAuth:
     in: header

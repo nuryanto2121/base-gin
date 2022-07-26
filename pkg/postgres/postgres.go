@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"app/models"
-	version "app/pkg/middleware/versioning"
+	authorize "app/pkg/middleware/authorize"
 	"app/pkg/setting"
 	util "app/pkg/utils"
 
@@ -103,7 +103,7 @@ func autoMigrate() {
 		models.Users{},
 		models.UserSession{},
 		models.UserGroup{},
-		version.AppVersion{},
+		authorize.AppVersion{},
 		models.Holidays{},
 		models.Groups{},
 		models.UserGroup{},

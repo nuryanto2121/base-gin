@@ -5,6 +5,7 @@ import (
 	"app/models"
 	"app/pkg/app"
 	"app/pkg/logging"
+	"app/pkg/middleware"
 	tool "app/pkg/tools"
 	util "app/pkg/utils"
 	"context"
@@ -24,6 +25,7 @@ func NewContGroup(e *gin.Engine, useGroups igroup.Usecase) {
 	}
 
 	r := e.Group("/v1/cms/groups")
+	r.Use(middleware.Authorize())
 	r.POST("", cont.Create)
 	r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)
@@ -34,6 +36,7 @@ func NewContGroup(e *gin.Engine, useGroups igroup.Usecase) {
 // Create :
 // @Summary Create Groups
 // @Tags Groups
+// @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -73,6 +76,7 @@ func (c *ContGroups) Create(e *gin.Context) {
 // Update :
 // @Summary Update Groups
 // @Tags Groups
+// @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -115,6 +119,7 @@ func (c *ContGroups) Update(e *gin.Context) {
 // GetById :
 // @Summary GetById Groups
 // @Tags Groups
+// @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -149,6 +154,7 @@ func (c *ContGroups) GetById(e *gin.Context) {
 // GetList :
 // @Summary GetList Groups
 // @Tags Groups
+// @Security ApiKeyAuth
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -192,6 +198,7 @@ func (c *ContGroups) GetList(e *gin.Context) {
 // Delete :
 // @Summary Delete Groups
 // @Tags Groups
+// @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"

@@ -12,7 +12,7 @@ LABEL maintainer="Nuryanto <nuryantofattih@gmail.com>"
 WORKDIR /usr/src/app
 
 # Copy go mod , sum files config.json
-COPY go.mod go.sum firebase-sdk-key.json ./
+COPY go.mod go.sum ./
 
 COPY config.ini.example ./config.ini 
 
@@ -54,7 +54,6 @@ RUN mkdir -p ${LANG_DIR}
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /usr/src/app/main .
 COPY --from=builder /usr/src/app/config.ini .
-COPY --from=builder /usr/src/app/firebase-sdk-key.json .
 COPY --from=builder /usr/src/app/pkg/multiLanguage/en.json ./pkg/multiLanguage/
 COPY --from=builder /usr/src/app/pkg/multiLanguage/id.json ./pkg/multiLanguage/
 

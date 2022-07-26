@@ -39,8 +39,9 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	defer cancel()
 
 	var (
-		logger   = logging.Logger{}
-		dataUser = &models.Users{}
+		logger            = logging.Logger{}
+		dataUser          = &models.Users{}
+		role     (string) = ""
 	)
 
 	dataUser, err = u.repoAuth.GetByAccount(ctx, dataLogin.Account)
@@ -59,6 +60,9 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	}
 
 	//get user group
+	if dataLogin.Account == "root" {
+		role = "root"
+	}
 
 	token, err := util.GenerateToken(dataUser.Id.String(), dataUser.Username, "")
 	if err != nil {
@@ -79,6 +83,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	response := map[string]interface{}{
 		"users": dataUser,
 		"token": token,
+		"role":  role,
 	}
 	return response, nil
 }
@@ -197,6 +202,10 @@ func (u *useAuht) ResetPassword(ctx context.Context, dataReset *models.ResetPass
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 
 	defer cancel()
+	var (
+		logger   = logging.Logger{}
+		dataUser = &models.Users{}
+	)
 
 	if dataReset.Passwd != dataReset.ConfirmPasswd {
 		return models.ErrWrongPasswordConfirm
@@ -207,20 +216,22 @@ func (u *useAuht) ResetPassword(ctx context.Context, dataReset *models.ResetPass
 	// 	return models.ErrInternalServerError
 	// }
 
-	// dataUser, err := fb.GetUserByAccount(ctx, util.NameStruct(models.Users{}), account)
-	// if err != nil {
-	// 	return err
-	// }
+	dataUser, err = u.repoAuth.GetByAccount(ctx, dataReset.Account)
+	if err != nil {
+		logger.Error("error usecase.LoginCms().GetByAccount ", err)
+		return err
+	}
 
-	// dataUser.Password, _ = util.Hash(dataReset.Passwd)
-	// dtUpdate := map[string]interface{}{
-	// 	"password": dataUser.Password,
-	// }
+	dataUser.Password, _ = util.Hash(dataReset.Passwd)
+	dtUpdate := map[string]interface{}{
+		"password": dataUser.Password,
+	}
 
-	// _, err = fb.Update(ctx, util.NameStruct(models.Users{}), dataUser.ID, dtUpdate)
-	// if err != nil {
-	// 	return err
-	// }
+	err = u.repoAuth.Update(ctx, dataUser.Id, dtUpdate)
+	if err != nil {
+		logger.Error("error usecase.ResetPassword().Update ", err)
+		return err
+	}
 	return nil
 }
 
