@@ -31,6 +31,10 @@ import (
 	_contGroups "app/controllers/group"
 	_repoGroups "app/repository/group"
 	_useGroups "app/usecase/group"
+
+	_contSkumanagement "app/controllers/sku_management"
+	_repoSkumanagement "app/repository/sku_management"
+	_useSkumanagement "app/usecase/sku_management"
 )
 
 type GinRoutes struct {
@@ -63,4 +67,8 @@ func (g *GinRoutes) Init() {
 	repoGroups := _repoGroups.NewRepoGroups(postgres.Conn)
 	useGroups := _useGroups.NewGroups(repoGroups, timeoutContext)
 	_contGroups.NewContGroup(g.G, useGroups)
+
+	reposkumanagement := _repoSkumanagement.NewRepoSkuManagement(postgres.Conn)
+	useskumanagement := _useSkumanagement.NewSkuManagement(reposkumanagement, timeoutContext)
+	_contSkumanagement.NewContSkuManagement(g.G, useskumanagement)
 }
