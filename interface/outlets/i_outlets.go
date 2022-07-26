@@ -20,7 +20,7 @@ type Repository interface {
 type Usecase interface {
 	GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Outlets, err error)
 	GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
-	Create(ctx context.Context, Claims util.Claims, data *models.AddOutlets) (err error)
+	Create(ctx context.Context, Claims util.Claims, data *models.OutletForm) (err error)
 	Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.AddOutlets) (err error)
 	Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error)
 }

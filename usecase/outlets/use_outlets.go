@@ -1,6 +1,7 @@
 package useoutlets
 
 import (
+	ioutletDetail "app/interface/outlet_detail"
 	ioutlets "app/interface/outlets"
 	"app/models"
 	util "app/pkg/utils"
@@ -17,12 +18,17 @@ import (
 )
 
 type useOutlets struct {
-	repoOutlets    ioutlets.Repository
-	contextTimeOut time.Duration
+	repoOutlets      ioutlets.Repository
+	repoOutletDetail ioutletDetail.Repository
+	contextTimeOut   time.Duration
 }
 
-func NewUseOutlets(a ioutlets.Repository, timeout time.Duration) ioutlets.Usecase {
-	return &useOutlets{repoOutlets: a, contextTimeOut: timeout}
+func NewUseOutlets(a ioutlets.Repository, b ioutletDetail.Repository, timeout time.Duration) ioutlets.Usecase {
+	return &useOutlets{
+		repoOutlets:      a,
+		repoOutletDetail: b,
+		contextTimeOut:   timeout,
+	}
 }
 
 func (u *useOutlets) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Outlets, err error) {
@@ -63,7 +69,7 @@ func (u *useOutlets) GetList(ctx context.Context, Claims util.Claims, queryparam
 	return result, nil
 }
 
-func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *models.AddOutlets) (err error) {
+func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *models.OutletForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
@@ -82,6 +88,26 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 	err = u.repoOutlets.Create(ctx, &mOutlets)
 	if err != nil {
 		return err
+	}
+
+	//insert detail
+	for _, val := range data.OutletDetail {
+		var mOutletDetail = models.OutletDetail{}
+		val.ProductId = mOutlets.Id
+
+		err = mapstructure.Decode(val, &mOutletDetail.AddOutletDetail)
+		if err != nil {
+			return err
+		}
+
+		mOutletDetail.CreatedBy = uuid.FromStringOrNil(Claims.Id)
+		mOutletDetail.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+
+		err = u.repoOutletDetail.Create(ctx, &mOutletDetail)
+		if err != nil {
+			return err
+		}
+
 	}
 	return nil
 
