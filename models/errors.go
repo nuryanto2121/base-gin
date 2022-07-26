@@ -35,4 +35,5 @@ var (
 	ErrRequreidPhoneNo           = errors.New("required_phone_no")
 	ErrRequestAccessToken        = errors.New("request_access_token")
 	ErrPushNotificationFailed    = errors.New("push_notification_failed")
+	ErrClaimsDecode              = errors.New("claims_decode")
 )

@@ -7,6 +7,7 @@ import (
 	"app/models"
 	multilanguage "app/pkg/multiLanguage"
 	util "app/pkg/utils"
+
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
@@ -108,7 +109,7 @@ func GetClaims(c *gin.Context) (util.Claims, error) {
 
 	err := mapstructure.Decode(claimsx, &clm)
 	if err != nil {
-		return clm, err
+		return clm, models.ErrClaimsDecode
 	}
 
 	return clm, nil

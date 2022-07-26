@@ -31,6 +31,12 @@ import (
 	_contGroups "app/controllers/group"
 	_repoGroups "app/repository/group"
 	_useGroups "app/usecase/group"
+
+	_contOutlets "app/controllers/outlets"
+	_repoOutlets "app/repository/outlets"
+	_useOutlets "app/usecase/outlets"
+
+	_repoOutletDetail "app/repository/outlet_detail"
 )
 
 type GinRoutes struct {
@@ -63,4 +69,9 @@ func (g *GinRoutes) Init() {
 	repoGroups := _repoGroups.NewRepoGroups(postgres.Conn)
 	useGroups := _useGroups.NewGroups(repoGroups, timeoutContext)
 	_contGroups.NewContGroup(g.G, useGroups)
+
+	repoOutlet := _repoOutlets.NewRepoOutlets(postgres.Conn)
+	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(postgres.Conn)
+	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, timeoutContext)
+	_contOutlets.NewContOutlets(g.G, useOutlet)
 }
