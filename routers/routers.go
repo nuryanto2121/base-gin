@@ -32,6 +32,12 @@ import (
 	_repoGroups "app/repository/group"
 	_useGroups "app/usecase/group"
 
+	_repoGroupOutlet "app/repository/group_outlet"
+	_useGroupOutlet "app/usecase/group_outlet"
+
+	_repoUserGroups "app/repository/user_group"
+	_useUserGroups "app/usecase/user_group"
+
 	_contOutlets "app/controllers/outlets"
 	_repoOutlets "app/repository/outlets"
 	_useOutlets "app/usecase/outlets"
@@ -54,9 +60,19 @@ func (g *GinRoutes) Init() {
 	repoFileUpload := _repoFileUpload.NewRepoFileUpload(postgres.Conn)
 	useFileUpload := _useFileUpload.NewSaFileUpload(repoFileUpload, timeoutContext)
 
+	repoGroups := _repoGroups.NewRepoGroups(postgres.Conn)
+	useGroups := _useGroups.NewGroups(repoGroups, timeoutContext)
+	_contGroups.NewContGroup(g.G, useGroups)
+
+	repoUserGroup := _repoUserGroups.NewRepoUserGroup(postgres.Conn)
+	useUserGroup := _useUserGroups.NewUseUserGroup(repoUserGroup, timeoutContext)
+
+	repoGroupOutlet := _repoGroupOutlet.NewRepoGroupOutlet(postgres.Conn)
+	useGroupOutlet := _useGroupOutlet.NewUseGroupOutlet(repoGroupOutlet, timeoutContext)
+
 	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
 	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, timeoutContext)
-	_ = _useUser.NewUserSysUser(repoUser, timeoutContext)
+	_ = _useUser.NewUserSysUser(repoUser, useUserGroup, useGroupOutlet, timeoutContext)
 
 	_contAuth.NewContAuth(g.G, useAuth)
 
@@ -65,10 +81,6 @@ func (g *GinRoutes) Init() {
 	repoHolidays := _repoHolidays.NewRepoHolidays(postgres.Conn)
 	userHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
 	_contHolidays.NewContHolidays(g.G, userHolidays)
-
-	repoGroups := _repoGroups.NewRepoGroups(postgres.Conn)
-	useGroups := _useGroups.NewGroups(repoGroups, timeoutContext)
-	_contGroups.NewContGroup(g.G, useGroups)
 
 	repoOutlet := _repoOutlets.NewRepoOutlets(postgres.Conn)
 	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(postgres.Conn)

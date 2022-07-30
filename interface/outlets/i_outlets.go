@@ -9,7 +9,7 @@ import (
 )
 
 type Repository interface {
-	GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Outlets, err error)
+	GetDataBy(ctx context.Context, key, value string) (result *models.Outlets, err error)
 	GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Outlets, err error)
 	Create(ctx context.Context, data *models.Outlets) (err error)
 	Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error)

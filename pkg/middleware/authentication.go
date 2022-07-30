@@ -81,16 +81,32 @@ func Versioning() gin.HandlerFunc {
 func Authorize() gin.HandlerFunc {
 	return func(e *gin.Context) {
 		var (
-			code  = http.StatusOK
-			msg   = ""
-			data  interface{}
-			token = "" //strings.Split(e.Request.Header.Get("Authorization"), "Bearer ")[1]
+			code        = http.StatusOK
+			msg         = ""
+			data        interface{}
+			token       = "" //strings.Split(e.Request.Header.Get("Authorization"), "Bearer ")[1]
+			SCHEME_AUTH = "Bearer"
 		)
-		if e.Request.Header.Get("Authorization") == "" {
-			token = ""
-		} else {
-			token = strings.Split(e.Request.Header.Get("Authorization"), "Bearer ")[1]
+		_, ok := e.Request.Header["Authorization"]
+		if !ok || !strings.Contains(e.Request.Header.Get("Authorization"), SCHEME_AUTH) {
+			code = http.StatusUnauthorized
+			msg = "Header Authorization"
+			resp := app.Response{
+				Msg:   msg,
+				Data:  data,
+				Error: msg,
+			}
+			e.AbortWithStatusJSON(code, resp)
+			return
 		}
+		// if len(dt)
+		token = strings.Replace(e.Request.Header.Get("Authorization"), "Bearer ", "", 1)
+
+		// if e.Request.Header.Get("Authorization") == "" {
+		// 	token = ""
+		// } else {
+		// 	token = strings.Split(e.Request.Header.Get("Authorization"), "Bearer ")[1]
+		// }
 
 		data = map[string]string{
 			"token": token,

@@ -8,6 +8,4 @@ services:
     ports:
       - "80:8000"
       # - "9000:9000"
-    volumes:
-      - ./:/usr/src/app/wwwroot
-    working_dir: /usr/src/app
+    

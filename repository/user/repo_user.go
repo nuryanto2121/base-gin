@@ -34,7 +34,7 @@ func (db *repoSysUser) GetByAccount(ctx context.Context, Account string) (result
 	return result, err
 }
 
-func (db *repoSysUser) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Users, err error) {
+func (db *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *models.Users, err error) {
 	var sysUser = &models.Users{}
 	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysUser)
 	err = query.Error
@@ -45,6 +45,41 @@ func (db *repoSysUser) GetDataBy(ctx context.Context, ID uuid.UUID) (result *mod
 		return nil, err
 	}
 	return sysUser, nil
+
+}
+func (db *repoSysUser) GetDataBy(ctx context.Context, key, value string) (*models.Users, error) {
+	var (
+		logger = logging.Logger{}
+		result = &models.Users{}
+	)
+	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(result)
+
+	err := query.Error
+	if err != nil {
+		logger.Error("repo user GetDataBy ", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return result, nil
+}
+
+func (db *repoSysUser) IsExist(ctx context.Context, key, value string) (bool, error) {
+	var (
+		logger       = logging.Logger{}
+		result int64 = 0
+	)
+	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Count(&result) //.Find(result)
+	err := query.Error
+	if err != nil {
+		logger.Error("repo user Count ", err)
+		if err == gorm.ErrRecordNotFound {
+			return false, models.ErrNotFound
+		}
+		return false, err
+	}
+	return result > 0, nil
 }
 
 func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Users, err error) {

@@ -103,10 +103,11 @@ func autoMigrate() {
 		models.Users{},
 		models.UserSession{},
 		models.UserGroup{},
+		models.UserOutlets{},
+		models.Groups{},
+		models.GroupOutlet{},
 		authorize.AppVersion{},
 		models.Holidays{},
-		models.Groups{},
-		models.UserGroup{},
 		models.Outlets{},
 		models.OutletDetail{},
 	)

@@ -35,7 +35,7 @@ func (u *useOutlets) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoOutlets.GetDataBy(ctx, ID)
+	result, err = u.repoOutlets.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return result, err
 	}
@@ -80,6 +80,15 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 	err = mapstructure.Decode(data, &mOutlets.AddOutlets)
 	if err != nil {
 		return err
+	}
+	//check outlet by name
+	isExist, err := u.repoOutlets.GetDataBy(ctx, "outlet_name", data.OutletName)
+	if err != nil {
+		return err
+	}
+
+	if isExist != nil && isExist.Id != uuid.Nil {
+		return models.ErrConflict
 	}
 
 	mOutlets.CreatedBy = uuid.FromStringOrNil(Claims.Id)
