@@ -102,7 +102,7 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 	//insert detail
 	for _, val := range data.OutletDetail {
 		var mOutletDetail = models.OutletDetail{}
-		val.ProductId = mOutlets.Id
+		val.OutletId = mOutlets.Id
 
 		err = mapstructure.Decode(val, &mOutletDetail.AddOutletDetail)
 		if err != nil {

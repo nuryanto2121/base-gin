@@ -16,6 +16,7 @@ import (
 
 	_contAuth "app/controllers/auth"
 
+	_contUser "app/controllers/users"
 	_repoUser "app/repository/user"
 	_useAuth "app/usecase/auth"
 	_useUser "app/usecase/user"
@@ -72,8 +73,9 @@ func (g *GinRoutes) Init() {
 
 	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
 	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, timeoutContext)
-	_ = _useUser.NewUserSysUser(repoUser, useUserGroup, useGroupOutlet, timeoutContext)
+	useUser := _useUser.NewUserSysUser(repoUser, useUserGroup, useGroupOutlet, timeoutContext)
 
+	_contUser.NewContGroup(g.G, useUser)
 	_contAuth.NewContAuth(g.G, useAuth)
 
 	_contFileUpload.NewContFileUpload(g.G, useFileUpload)
