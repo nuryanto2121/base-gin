@@ -26,7 +26,12 @@ require (
 	gorm.io/gorm v1.23.8
 )
 
-require github.com/BurntSushi/toml v1.1.0 // indirect
+require (
+	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	gorm.io/datatypes v1.0.7 // indirect
+	gorm.io/driver/mysql v1.3.2 // indirect
+)
 
 require (
 	cloud.google.com/go v0.103.0 // indirect

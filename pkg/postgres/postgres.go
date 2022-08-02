@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"app/models"
@@ -33,14 +32,14 @@ func Setup() {
 		setting.DatabaseSetting.Port)
 	fmt.Printf("%s", connectionstring)
 
-	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-		logger.Config{
-			SlowThreshold: time.Second,   // Slow SQL threshold
-			LogLevel:      logger.Silent, // Log level
-			Colorful:      false,         // Disable color
-		},
-	)
+	// newLogger := logger.New(
+	// 	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+	// 	logger.Config{
+	// 		SlowThreshold: time.Second,   // Slow SQL threshold
+	// 		LogLevel:      logger.Silent, // Log level
+	// 		Colorful:      false,         // Disable color
+	// 	},
+	// )
 
 	// dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Jakarta"
 	Conn, err = gorm.Open(postgres.Open(connectionstring), &gorm.Config{
@@ -48,8 +47,9 @@ func Setup() {
 			TablePrefix:   setting.DatabaseSetting.TablePrefix,
 			SingularTable: true,
 		},
-		// PrepareStmt: true,
-		Logger: newLogger,
+		PrepareStmt: true,
+		// Logger:      newLogger,
+		Logger: logger.Default.LogMode(logger.Info),
 		// DryRun: true,
 	})
 

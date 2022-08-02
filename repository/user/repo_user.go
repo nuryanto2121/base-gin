@@ -119,31 +119,14 @@ func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList)
 		}
 	}
 
-	// end where
-	// if pageNum >= 0 && pageSize > 0 {
-	// query := db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	query := db.Conn.WithContext(ctx).Table("users u").Select(`
-		u.id as user_id,u.username,g.group_code , json_agg(otl) as group_outlet
+		u.id as user_id,u.username
 	`).Joins(`
 	inner join user_group ug
 	on u.id = ug.user_id
-	`).Joins(`
-	left join "groups" g 
-	on ug.group_id = g.id
-	`).Joins(`
-	left join
-	(select o.outlet_name ,o.outlet_city,go2.user_id, go2.group_id  
-	from outlets o 
-	inner join group_outlet go2
-		on o.id = go2.outlet_id 
-	) as otl on otl.user_id = u.id
-		and otl.group_id = g.id
-	`).Group(`u.id, u.username,g.group_code ,g.description`).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+	`).Group(`u.id, u.username`).
+		Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	err = query.Error
-	// } else {
-	// 	query := db.Conn.WithContext(ctx).Where(sWhere).Order(orderBy).Find(&result)
-	// 	err = query.Error
-	// }
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -198,10 +181,16 @@ func (db *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (
 	}
 	// end where
 
-	query := db.Conn.WithContext(ctx).Model(&models.Users{}).Where(sWhere).Count(&result)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+	query := db.Conn.WithContext(ctx).Table("users u").Select(`
+		u.id as user_id,u.username
+	`).Joins(`
+	inner join user_group ug
+	on u.id = ug.user_id
+	`).Group(`u.id, u.username`).
+		Where(sWhere).Count(&result)
 	err = query.Error
 	if err != nil {
+		logger.Error(err)
 		return 0, err
 	}
 

@@ -25,11 +25,22 @@ func NewUseUserGroup(a iusergroup.Repository, timeout time.Duration) iusergroup.
 	return &useUserGroup{repoUserGroup: a, contextTimeOut: timeout}
 }
 
-func (u *useUserGroup) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.UserGroup, err error) {
+func (u *useUserGroup) GetDataBy(ctx context.Context, Claims util.Claims, key, value string) (result *models.UserGroupDesc, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoUserGroup.GetDataBy(ctx, ID)
+	result, err = u.repoUserGroup.GetDataBy(ctx, key, value)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
+func (u *useUserGroup) GetById(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.UserGroup, err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	result, err = u.repoUserGroup.GetById(ctx, ID)
 	if err != nil {
 		return result, err
 	}

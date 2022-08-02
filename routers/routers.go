@@ -66,14 +66,14 @@ func (g *GinRoutes) Init() {
 	_contGroups.NewContGroup(g.G, useGroups)
 
 	repoUserGroup := _repoUserGroups.NewRepoUserGroup(postgres.Conn)
-	useUserGroup := _useUserGroups.NewUseUserGroup(repoUserGroup, timeoutContext)
+	_ = _useUserGroups.NewUseUserGroup(repoUserGroup, timeoutContext)
 
 	repoGroupOutlet := _repoGroupOutlet.NewRepoGroupOutlet(postgres.Conn)
 	useGroupOutlet := _useGroupOutlet.NewUseGroupOutlet(repoGroupOutlet, timeoutContext)
 
 	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
 	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, timeoutContext)
-	useUser := _useUser.NewUserSysUser(repoUser, useUserGroup, useGroupOutlet, timeoutContext)
+	useUser := _useUser.NewUserSysUser(repoUser, repoUserGroup, useGroupOutlet, timeoutContext)
 
 	_contUser.NewContGroup(g.G, useUser)
 	_contAuth.NewContAuth(g.G, useAuth)

@@ -16,10 +16,23 @@ type AddGroupIds struct {
 type AddOutletIds struct {
 	OutletId uuid.UUID `json:"outlet_id"`
 }
-
 type ListUserCms struct {
-	UserId      uuid.UUID `json:"user_id"`
-	Username    string    `json:"username"`
-	GroupCode   string    `json:"group_code"`
-	GroupOutlet string    `json:"group_outlet" `
+	UserId   uuid.UUID `json:"user_id"`
+	Username string    `json:"username"`
+}
+type ResponseListUserCms struct {
+	UserId    uuid.UUID        `json:"user_id"`
+	Username  string           `json:"username"`
+	GroupCode []*UserGroupDesc `json:"group_code"`
+}
+
+type GroupCodes struct {
+	GroupId   uuid.UUID     `json:"group_id"`
+	GroupCode string        `json:"group_code"`
+	Outlet    []*OutletList `json:"outlets"`
+}
+
+type OutletList struct {
+	OutletId   uuid.UUID `json:"outlet_id"`
+	OutletName string    `json:"outlet_name"`
 }

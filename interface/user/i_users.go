@@ -20,7 +20,7 @@ type Repository interface {
 	Count(ctx context.Context, queryparam models.ParamList) (result int64, err error)
 }
 type Usecase interface {
-	GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Users, err error)
+	GetDataBy(ctx context.Context, ID uuid.UUID) (result interface{}, err error)
 	GetByEmailSaUser(ctx context.Context, email string) (result *models.Users, err error)
 	GetList(ctx context.Context, queryparam models.ParamList) (result models.ResponseModelList, err error)
 	CreateCms(ctx context.Context, data *models.AddUserCms) (err error)
