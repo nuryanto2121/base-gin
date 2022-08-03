@@ -33,6 +33,7 @@ func NewContSkuManagement(e *gin.Engine, useskumanagement iskumanagement.Usecase
 
 // Create :
 // @Summary Create SkuManagement
+// @Security ApiKeyAuth
 // @Tags SkuManagement
 // @Produce json
 // @Param Device-Type header string true "Device Type"
@@ -72,6 +73,7 @@ func (c *contskumanagement) Create(e *gin.Context) {
 
 // Update :
 // @Summary Update SkuManagement
+// @Security ApiKeyAuth
 // @Tags SkuManagement
 // @Produce json
 // @Param Device-Type header string true "Device Type"
@@ -114,6 +116,7 @@ func (c *contskumanagement) Update(e *gin.Context) {
 
 // GetById :
 // @Summary GetById SkuManagement
+// @Security ApiKeyAuth
 // @Tags SkuManagement
 // @Produce json
 // @Param Device-Type header string true "Device Type"
@@ -148,6 +151,7 @@ func (c *contskumanagement) GetById(e *gin.Context) {
 
 // GetList :
 // @Summary GetList SkuManagement
+// @Security ApiKeyAuth
 // @Tags SkuManagement
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
@@ -191,6 +195,7 @@ func (c *contskumanagement) GetList(e *gin.Context) {
 
 // Delete :
 // @Summary Delete SKuManagement
+// @Security ApiKeyAuth
 // @Tags SkuManagement
 // @Produce json
 // @Param Device-Type header string true "Device Type"
