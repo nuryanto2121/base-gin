@@ -17,7 +17,7 @@ LogFileExt = log
 TimeFormat = 20060102
 Issuer = 369App
 SaltKey = 
-ExpiredAgora = 120 #2 jam
+
 
 [server]
 #debug or release

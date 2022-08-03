@@ -25,7 +25,6 @@ type App struct {
 	TimeFormat      string
 	Issuer          string
 	SaltKey         string
-	ExpiredAgora    int
 }
 
 var AppSetting = &App{}

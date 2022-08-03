@@ -8,15 +8,6 @@ definitions:
       msg:
         type: string
     type: object
-  models.AddGroupIds:
-    properties:
-      group_id:
-        type: string
-      outlets:
-        items:
-          $ref: '#/definitions/models.AddOutletIds'
-        type: array
-    type: object
   models.AddOutletDetail:
     properties:
       outlet_id:
@@ -40,16 +31,25 @@ definitions:
       outlet_name:
         type: string
     type: object
+  models.AddRoles:
+    properties:
+      outlets:
+        items:
+          $ref: '#/definitions/models.AddOutletIds'
+        type: array
+      role:
+        type: string
+    type: object
   models.AddUserCms:
     properties:
       confirm_password:
         type: string
-      groups:
-        items:
-          $ref: '#/definitions/models.AddGroupIds'
-        type: array
       password:
         type: string
+      roles:
+        items:
+          $ref: '#/definitions/models.AddRoles'
+        type: array
       username:
         type: string
     type: object
@@ -66,13 +66,6 @@ definitions:
   models.ForgotForm:
     properties:
       account:
-        type: string
-    type: object
-  models.GroupForm:
-    properties:
-      GroupCode:
-        type: string
-      description:
         type: string
     type: object
   models.HolidayForm:
@@ -134,6 +127,13 @@ definitions:
       total:
         type: integer
     type: object
+  models.RoleForm:
+    properties:
+      role:
+        type: string
+      role_name:
+        type: string
+    type: object
   models.SkuManagement:
     properties:
       created_at:
@@ -145,9 +145,9 @@ definitions:
       id:
         type: string
       price_weekday:
-        type: integer
+        type: number
       price_weekend:
-        type: integer
+        type: number
       sku_name:
         type: string
       updated_at:
@@ -310,202 +310,6 @@ paths:
       summary: Forgot Password
       tags:
       - Auth
-  /v1/cms/groups:
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: Page
-        in: query
-        name: page
-        required: true
-        type: integer
-      - description: PerPage
-        in: query
-        name: perpage
-        required: true
-        type: integer
-      - description: Search
-        in: query
-        name: search
-        type: string
-      - description: InitSearch
-        in: query
-        name: initsearch
-        type: string
-      - description: SortField
-        in: query
-        name: sortfield
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ResponseModelList'
-      security:
-      - ApiKeyAuth: []
-      summary: GetList Groups
-      tags:
-      - Groups
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: this model set from firebase
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.GroupForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: Create Groups
-      tags:
-      - Groups
-  /v1/cms/groups/{id}:
-    delete:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: Delete Groups
-      tags:
-      - Groups
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: GetById Groups
-      tags:
-      - Groups
-    put:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: this model set from firebase
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.GroupForm'
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: Update Groups
-      tags:
-      - Groups
   /v1/cms/holidays:
     get:
       parameters:
@@ -965,6 +769,202 @@ paths:
       summary: Rubah Outlets
       tags:
       - Outlets
+  /v1/cms/roles:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: PerPage
+        in: query
+        name: perpage
+        required: true
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: InitSearch
+        in: query
+        name: initsearch
+        type: string
+      - description: SortField
+        in: query
+        name: sortfield
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseModelList'
+      security:
+      - ApiKeyAuth: []
+      summary: GetList Roles
+      tags:
+      - Roles
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.RoleForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Roles
+      tags:
+      - Roles
+  /v1/cms/roles/{id}:
+    delete:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Roles
+      tags:
+      - Roles
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: GetById Roles
+      tags:
+      - Roles
+    put:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.RoleForm'
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Roles
+      tags:
+      - Roles
   /v1/cms/skumanagement:
     get:
       parameters:

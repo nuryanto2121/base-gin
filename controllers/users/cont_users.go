@@ -19,7 +19,7 @@ type ContUsers struct {
 	useUsers iuser.Usecase
 }
 
-func NewContGroup(e *gin.Engine, useUsers iuser.Usecase) {
+func NewContRole(e *gin.Engine, useUsers iuser.Usecase) {
 	cont := ContUsers{
 		useUsers: useUsers,
 	}

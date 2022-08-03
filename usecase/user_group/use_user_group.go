@@ -16,38 +16,38 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type useUserGroup struct {
-	repoUserGroup  iusergroup.Repository
+type useUserRole struct {
+	repoUserRole   iusergroup.Repository
 	contextTimeOut time.Duration
 }
 
-func NewUseUserGroup(a iusergroup.Repository, timeout time.Duration) iusergroup.Usecase {
-	return &useUserGroup{repoUserGroup: a, contextTimeOut: timeout}
+func NewUseUserRole(a iusergroup.Repository, timeout time.Duration) iusergroup.Usecase {
+	return &useUserRole{repoUserRole: a, contextTimeOut: timeout}
 }
 
-func (u *useUserGroup) GetDataBy(ctx context.Context, Claims util.Claims, key, value string) (result *models.UserGroupDesc, err error) {
+func (u *useUserRole) GetDataBy(ctx context.Context, Claims util.Claims, key, value string) (result *models.UserRoleDesc, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoUserGroup.GetDataBy(ctx, key, value)
+	result, err = u.repoUserRole.GetDataBy(ctx, key, value)
 	if err != nil {
 		return result, err
 	}
 	return result, nil
 }
 
-func (u *useUserGroup) GetById(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.UserGroup, err error) {
+func (u *useUserRole) GetById(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.UserRole, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoUserGroup.GetById(ctx, ID)
+	result, err = u.repoUserRole.GetById(ctx, ID)
 	if err != nil {
 		return result, err
 	}
 	return result, nil
 }
 
-func (u *useUserGroup) GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error) {
+func (u *useUserRole) GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -58,12 +58,12 @@ func (u *useUserGroup) GetList(ctx context.Context, Claims util.Claims, querypar
 	if queryparam.InitSearch != "" {
 
 	}
-	result.Data, err = u.repoUserGroup.GetList(ctx, queryparam)
+	result.Data, err = u.repoUserRole.GetList(ctx, queryparam)
 	if err != nil {
 		return result, err
 	}
 
-	result.Total, err = u.repoUserGroup.Count(ctx, queryparam)
+	result.Total, err = u.repoUserRole.Count(ctx, queryparam)
 	if err != nil {
 		return result, err
 	}
@@ -74,23 +74,23 @@ func (u *useUserGroup) GetList(ctx context.Context, Claims util.Claims, querypar
 	return result, nil
 }
 
-func (u *useUserGroup) Create(ctx context.Context, Claims util.Claims, data *models.AddUserGroup) (err error) {
+func (u *useUserRole) Create(ctx context.Context, Claims util.Claims, data *models.AddUserRole) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
-		mUserGroup = models.UserGroup{}
+		mUserRole = models.UserRole{}
 	)
 
 	// mapping to struct model saRole
-	err = mapstructure.Decode(data, &mUserGroup.AddUserGroup)
+	err = mapstructure.Decode(data, &mUserRole.AddUserRole)
 	if err != nil {
 		return err
 	}
 
-	mUserGroup.CreatedBy = uuid.FromStringOrNil(Claims.Id)
-	mUserGroup.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+	mUserRole.CreatedBy = uuid.FromStringOrNil(Claims.Id)
+	mUserRole.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
 
-	err = u.repoUserGroup.Create(ctx, &mUserGroup)
+	err = u.repoUserRole.Create(ctx, &mUserRole)
 	if err != nil {
 		return err
 	}
@@ -98,35 +98,35 @@ func (u *useUserGroup) Create(ctx context.Context, Claims util.Claims, data *mod
 
 }
 
-func (u *useUserGroup) Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.AddUserGroup) (err error) {
+func (u *useUserRole) Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.AddUserRole) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
 	myMap := structs.Map(data)
 	myMap["user_edit"] = Claims.UserID
 	fmt.Println(myMap)
-	err = u.repoUserGroup.Update(ctx, ID, myMap)
+	err = u.repoUserRole.Update(ctx, ID, myMap)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *useUserGroup) Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error) {
+func (u *useUserRole) Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	err = u.repoUserGroup.Delete(ctx, ID)
+	err = u.repoUserRole.Delete(ctx, ID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (u *useUserGroup) DeleteByUserId(ctx context.Context, Claims util.Claims, UserID uuid.UUID) (err error) {
+func (u *useUserRole) DeleteByUserId(ctx context.Context, Claims util.Claims, UserID uuid.UUID) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	err = u.repoUserGroup.Delete(ctx, UserID)
+	err = u.repoUserRole.Delete(ctx, UserID)
 	if err != nil {
 		return err
 	}
