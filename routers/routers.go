@@ -16,6 +16,7 @@ import (
 
 	_contAuth "app/controllers/auth"
 
+	_contUser "app/controllers/users"
 	_repoUser "app/repository/user"
 	_useAuth "app/usecase/auth"
 	_useUser "app/usecase/user"
@@ -33,8 +34,19 @@ import (
 	_useGroups "app/usecase/group"
 
 	_contSkumanagement "app/controllers/sku_management"
+	_repoGroupOutlet "app/repository/group_outlet"
 	_repoSkumanagement "app/repository/sku_management"
+	_useGroupOutlet "app/usecase/group_outlet"
 	_useSkumanagement "app/usecase/sku_management"
+
+	_repoUserGroups "app/repository/user_group"
+	_useUserGroups "app/usecase/user_group"
+
+	_contOutlets "app/controllers/outlets"
+	_repoOutlets "app/repository/outlets"
+	_useOutlets "app/usecase/outlets"
+
+	_repoOutletDetail "app/repository/outlet_detail"
 )
 
 type GinRoutes struct {
@@ -52,10 +64,21 @@ func (g *GinRoutes) Init() {
 	repoFileUpload := _repoFileUpload.NewRepoFileUpload(postgres.Conn)
 	useFileUpload := _useFileUpload.NewSaFileUpload(repoFileUpload, timeoutContext)
 
-	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
-	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, timeoutContext)
-	_ = _useUser.NewUserSysUser(repoUser, timeoutContext)
+	repoGroups := _repoGroups.NewRepoGroups(postgres.Conn)
+	useGroups := _useGroups.NewGroups(repoGroups, timeoutContext)
+	_contGroups.NewContGroup(g.G, useGroups)
 
+	repoUserGroup := _repoUserGroups.NewRepoUserGroup(postgres.Conn)
+	_ = _useUserGroups.NewUseUserGroup(repoUserGroup, timeoutContext)
+
+	repoGroupOutlet := _repoGroupOutlet.NewRepoGroupOutlet(postgres.Conn)
+	useGroupOutlet := _useGroupOutlet.NewUseGroupOutlet(repoGroupOutlet, timeoutContext)
+
+	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
+	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserGroup, timeoutContext)
+	useUser := _useUser.NewUserSysUser(repoUser, repoUserGroup, useGroupOutlet, timeoutContext)
+
+	_contUser.NewContGroup(g.G, useUser)
 	_contAuth.NewContAuth(g.G, useAuth)
 
 	_contFileUpload.NewContFileUpload(g.G, useFileUpload)
@@ -64,11 +87,11 @@ func (g *GinRoutes) Init() {
 	userHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
 	_contHolidays.NewContHolidays(g.G, userHolidays)
 
-	repoGroups := _repoGroups.NewRepoGroups(postgres.Conn)
-	useGroups := _useGroups.NewGroups(repoGroups, timeoutContext)
-	_contGroups.NewContGroup(g.G, useGroups)
-
 	reposkumanagement := _repoSkumanagement.NewRepoSkuManagement(postgres.Conn)
 	useskumanagement := _useSkumanagement.NewSkuManagement(reposkumanagement, timeoutContext)
 	_contSkumanagement.NewContSkuManagement(g.G, useskumanagement)
+	repoOutlet := _repoOutlets.NewRepoOutlets(postgres.Conn)
+	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(postgres.Conn)
+	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, timeoutContext)
+	_contOutlets.NewContOutlets(g.G, useOutlet)
 }

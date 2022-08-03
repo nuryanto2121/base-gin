@@ -2,12 +2,14 @@ package useauth
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
 	iauth "app/interface/auth"
 	ifileupload "app/interface/fileupload"
 	iusers "app/interface/user"
+	iusergroup "app/interface/user_group"
 	iusersession "app/interface/user_session"
 	"app/models"
 
@@ -21,14 +23,16 @@ type useAuht struct {
 	repoAuth        iusers.Repository
 	repoFile        ifileupload.Repository
 	repoUserSession iusersession.Repository
+	repoUserGroup   iusergroup.Repository
 	contextTimeOut  time.Duration
 }
 
-func NewUserAuth(a iusers.Repository, b ifileupload.Repository, c iusersession.Repository, timeout time.Duration) iauth.Usecase {
+func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository, repoUserSession iusersession.Repository, repoUserGroup iusergroup.Repository, timeout time.Duration) iauth.Usecase {
 	return &useAuht{
-		repoAuth:        a,
-		repoFile:        b,
-		repoUserSession: c,
+		repoAuth:        repoAuth,
+		repoFile:        repoFile,
+		repoUserSession: repoUserSession,
+		repoUserGroup:   repoUserGroup,
 		contextTimeOut:  timeout,
 	}
 }
@@ -41,6 +45,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	var (
 		logger   = logging.Logger{}
 		dataUser = &models.Users{}
+		role     []string
 	)
 
 	dataUser, err = u.repoAuth.GetByAccount(ctx, dataLogin.Account)
@@ -59,6 +64,19 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	}
 
 	//get user group
+	if dataLogin.Account == "root" {
+		role = []string{"root"}
+	} else {
+		userGroup, err := u.repoUserGroup.GetListByUser(ctx, "user_id", dataUser.Id.String())
+		if err != nil {
+			logger.Error("error useauth.LoginCms().GetListByUser ", err)
+			return nil, models.ErrInternalServerError
+		}
+
+		fmt.Printf("\n%#v", userGroup)
+	}
+
+	//get outlet
 
 	token, err := util.GenerateToken(dataUser.Id.String(), dataUser.Username, "")
 	if err != nil {
@@ -79,6 +97,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	response := map[string]interface{}{
 		"users": dataUser,
 		"token": token,
+		"role":  role,
 	}
 	return response, nil
 }
@@ -197,6 +216,10 @@ func (u *useAuht) ResetPassword(ctx context.Context, dataReset *models.ResetPass
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 
 	defer cancel()
+	var (
+		logger   = logging.Logger{}
+		dataUser = &models.Users{}
+	)
 
 	if dataReset.Passwd != dataReset.ConfirmPasswd {
 		return models.ErrWrongPasswordConfirm
@@ -207,20 +230,22 @@ func (u *useAuht) ResetPassword(ctx context.Context, dataReset *models.ResetPass
 	// 	return models.ErrInternalServerError
 	// }
 
-	// dataUser, err := fb.GetUserByAccount(ctx, util.NameStruct(models.Users{}), account)
-	// if err != nil {
-	// 	return err
-	// }
+	dataUser, err = u.repoAuth.GetByAccount(ctx, dataReset.Account)
+	if err != nil {
+		logger.Error("error usecase.LoginCms().GetByAccount ", err)
+		return err
+	}
 
-	// dataUser.Password, _ = util.Hash(dataReset.Passwd)
-	// dtUpdate := map[string]interface{}{
-	// 	"password": dataUser.Password,
-	// }
+	dataUser.Password, _ = util.Hash(dataReset.Passwd)
+	dtUpdate := map[string]interface{}{
+		"password": dataUser.Password,
+	}
 
-	// _, err = fb.Update(ctx, util.NameStruct(models.Users{}), dataUser.ID, dtUpdate)
-	// if err != nil {
-	// 	return err
-	// }
+	err = u.repoAuth.Update(ctx, dataUser.Id, dtUpdate)
+	if err != nil {
+		logger.Error("error usecase.ResetPassword().Update ", err)
+		return err
+	}
 	return nil
 }
 

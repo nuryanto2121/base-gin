@@ -34,6 +34,7 @@ func NewContHolidays(e *gin.Engine, useHolidays iholidays.Usecase) {
 // Create :
 // @Summary Create Holidays
 // @Tags Holidays
+// @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -73,6 +74,7 @@ func (c *ContHolidays) Create(e *gin.Context) {
 // Update :
 // @Summary Update Holidays
 // @Tags Holidays
+// @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -115,6 +117,7 @@ func (c *ContHolidays) Update(e *gin.Context) {
 // GetById :
 // @Summary GetById Holidays
 // @Tags Holidays
+// @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -149,6 +152,7 @@ func (c *ContHolidays) GetById(e *gin.Context) {
 // GetList :
 // @Summary GetList Holidays
 // @Tags Holidays
+// @Security ApiKeyAuth
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -192,6 +196,7 @@ func (c *ContHolidays) GetList(e *gin.Context) {
 // Delete :
 // @Summary Delete Holidays
 // @Tags Holidays
+// @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"

@@ -34,7 +34,7 @@ func (db *repoSysUser) GetByAccount(ctx context.Context, Account string) (result
 	return result, err
 }
 
-func (db *repoSysUser) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Users, err error) {
+func (db *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *models.Users, err error) {
 	var sysUser = &models.Users{}
 	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysUser)
 	err = query.Error
@@ -45,9 +45,44 @@ func (db *repoSysUser) GetDataBy(ctx context.Context, ID uuid.UUID) (result *mod
 		return nil, err
 	}
 	return sysUser, nil
+
+}
+func (db *repoSysUser) GetDataBy(ctx context.Context, key, value string) (*models.Users, error) {
+	var (
+		logger = logging.Logger{}
+		result = &models.Users{}
+	)
+	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(result)
+
+	err := query.Error
+	if err != nil {
+		logger.Error("repo user GetDataBy ", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return result, nil
 }
 
-func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Users, err error) {
+func (db *repoSysUser) IsExist(ctx context.Context, key, value string) (bool, error) {
+	var (
+		logger       = logging.Logger{}
+		result int64 = 0
+	)
+	query := db.Conn.Model(&models.Users{}).Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Count(&result) //.Find(result)
+	err := query.Error
+	if err != nil {
+		logger.Error("repo user Count ", err)
+		if err == gorm.ErrRecordNotFound {
+			return false, models.ErrNotFound
+		}
+		return false, err
+	}
+	return result > 0, nil
+}
+
+func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.ListUserCms, err error) {
 
 	var (
 		pageNum  = 0
@@ -84,14 +119,14 @@ func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList)
 		}
 	}
 
-	// end where
-	if pageNum >= 0 && pageSize > 0 {
-		query := db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
-		err = query.Error
-	} else {
-		query := db.Conn.WithContext(ctx).Where(sWhere).Order(orderBy).Find(&result)
-		err = query.Error
-	}
+	query := db.Conn.WithContext(ctx).Table("users u").Select(`
+		u.id as user_id,u.username
+	`).Joins(`
+	inner join user_group ug
+	on u.id = ug.user_id
+	`).Group(`u.id, u.username`).
+		Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+	err = query.Error
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -146,10 +181,16 @@ func (db *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (
 	}
 	// end where
 
-	query := db.Conn.WithContext(ctx).Model(&models.Users{}).Where(sWhere).Count(&result)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+	query := db.Conn.WithContext(ctx).Table("users u").Select(`
+		u.id as user_id,u.username
+	`).Joins(`
+	inner join user_group ug
+	on u.id = ug.user_id
+	`).Group(`u.id, u.username`).
+		Where(sWhere).Count(&result)
 	err = query.Error
 	if err != nil {
+		logger.Error(err)
 		return 0, err
 	}
 

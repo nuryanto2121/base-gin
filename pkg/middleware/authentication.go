@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -8,7 +9,7 @@ import (
 	"strings"
 
 	"app/pkg/app"
-	version "app/pkg/middleware/versioning"
+	authorize "app/pkg/middleware/authorize"
 	postgres "app/pkg/postgres"
 	"app/pkg/redisdb"
 	"app/pkg/setting"
@@ -48,7 +49,7 @@ func Versioning() gin.HandlerFunc {
 			return
 		}
 
-		verService := &version.AppVersion{
+		verService := &authorize.AppVersion{
 			DeviceType: DeviceType,
 			Version:    Version,
 		}
@@ -80,16 +81,32 @@ func Versioning() gin.HandlerFunc {
 func Authorize() gin.HandlerFunc {
 	return func(e *gin.Context) {
 		var (
-			code  = http.StatusOK
-			msg   = ""
-			data  interface{}
-			token = "" //strings.Split(e.Request.Header.Get("Authorization"), "Bearer ")[1]
+			code        = http.StatusOK
+			msg         = ""
+			data        interface{}
+			token       = "" //strings.Split(e.Request.Header.Get("Authorization"), "Bearer ")[1]
+			SCHEME_AUTH = "Bearer"
 		)
-		if e.Request.Header.Get("Authorization") == "" {
-			token = ""
-		} else {
-			token = strings.Split(e.Request.Header.Get("Authorization"), "Bearer ")[1]
+		_, ok := e.Request.Header["Authorization"]
+		if !ok || !strings.Contains(e.Request.Header.Get("Authorization"), SCHEME_AUTH) {
+			code = http.StatusUnauthorized
+			msg = "Header Authorization"
+			resp := app.Response{
+				Msg:   msg,
+				Data:  data,
+				Error: msg,
+			}
+			e.AbortWithStatusJSON(code, resp)
+			return
 		}
+		// if len(dt)
+		token = strings.Replace(e.Request.Header.Get("Authorization"), "Bearer ", "", 1)
+
+		// if e.Request.Header.Get("Authorization") == "" {
+		// 	token = ""
+		// } else {
+		// 	token = strings.Split(e.Request.Header.Get("Authorization"), "Bearer ")[1]
+		// }
 
 		data = map[string]string{
 			"token": token,
@@ -99,13 +116,34 @@ func Authorize() gin.HandlerFunc {
 			code = http.StatusNetworkAuthenticationRequired
 			msg = "Auth Token Required"
 		} else {
-			// validasi JWT
-			// existToken := redisdb.GetSession(token)
-			// if existToken == "" {
-			// 	code = http.StatusUnauthorized
-			// 	msg = "Token Failed"
-			// } else {
-			//Validasi Session
+			// validasi Session And JWT
+
+			auth := authorize.Session{
+				Token: token,
+			}
+			dtSession, err := auth.GetSession(context.Background(), postgres.Conn)
+			if err != nil {
+				code = http.StatusUnauthorized
+				msg = "Token Failed"
+				resp := app.Response{
+					Msg:   msg,
+					Data:  data,
+					Error: msg,
+				}
+				e.AbortWithStatusJSON(code, resp)
+				return
+			}
+			if dtSession.ExpiredDate.Before(util.GetTimeNow()) {
+				resp := app.Response{
+					Msg:   "Token Expired",
+					Data:  data,
+					Error: "Token Expired",
+				}
+				e.AbortWithStatusJSON(http.StatusUnauthorized, resp)
+				return
+			}
+
+			//Validasi JWT
 			claims, err := util.ParseToken(token)
 			if err != nil {
 				code = http.StatusUnauthorized

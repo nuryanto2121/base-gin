@@ -1,39 +1,11 @@
 version: "2"
 services:
-  account-369-dev:
+  playtopia-dev:
     build: 
       context: ./
       dockerfile: Dockerfile
-    container_name: c-account-369-dev
-    networks:
-      - default
-      - bridge-network
+    container_name: c-playtopia-dev
     ports:
-      - "8000:8000"
+      - "80:8000"
       # - "9000:9000"
-    volumes:
-      - ./:/usr/src/app/wwwroot
-    working_dir: /usr/src/app
-    depends_on:
-      - c-my_redis
-
-  my_redis:
-    image: "redis"
-    restart: "always"
-    container_name: "c-my_redis"
-    command: redis-server --requirepass redis_dev
-    ports:
-      - "6379:6379"
-    volumes:
-      - "./DB/Redis:/data"
-    networks:
-      - default
-      - bridge-network
-networks:
-  default:
-    driver: bridge
-  bridge-network:
-    external: true
-
-# volumes:
-#   Redis:
+    

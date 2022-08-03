@@ -21,7 +21,7 @@ func GetStatusCode(err error) int {
 		return http.StatusNotFound
 	case models.ErrConflict, models.ErrAccountConflict, models.ErrAccountAlreadyExist:
 		return http.StatusConflict
-	case models.ErrUnauthorized, models.ErrInvalidLogin, models.ErrInvalidPassword:
+	case models.ErrUnauthorized, models.ErrInvalidLogin, models.ErrInvalidPassword, models.ErrClaimsDecode:
 		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError

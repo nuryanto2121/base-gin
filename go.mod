@@ -7,6 +7,7 @@ require (
 	github.com/astaxie/beego v1.12.3
 	github.com/aws/aws-sdk-go v1.44.57
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fatih/structs v1.1.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-ini/ini v1.66.6
@@ -25,7 +26,12 @@ require (
 	gorm.io/gorm v1.23.8
 )
 
-require github.com/BurntSushi/toml v1.1.0 // indirect
+require (
+	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	gorm.io/datatypes v1.0.7 // indirect
+	gorm.io/driver/mysql v1.3.2 // indirect
+)
 
 require (
 	cloud.google.com/go v0.103.0 // indirect
