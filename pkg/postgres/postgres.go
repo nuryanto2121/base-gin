@@ -100,7 +100,7 @@ func autoMigrate() {
 	log.Println("STARTING AUTO MIGRATE ")
 	err = Conn.AutoMigrate(
 		// models.Users{},
-		models.Users{},
+		// models.Users{},
 		models.UserSession{},
 		models.UserGroup{},
 		version.AppVersion{},
