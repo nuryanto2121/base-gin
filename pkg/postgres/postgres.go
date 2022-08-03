@@ -105,6 +105,7 @@ func autoMigrate() {
 		models.UserSession{},
 		models.UserRole{},
 		models.UserOutlets{},
+		models.SkuManagement{},
 		models.Roles{},
 		models.RoleOutlet{},
 		authorize.AppVersion{},

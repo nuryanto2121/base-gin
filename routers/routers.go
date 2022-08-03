@@ -33,6 +33,10 @@ import (
 	_repoRoles "app/repository/group"
 	_useRoles "app/usecase/group"
 
+	_contSkumanagement "app/controllers/sku_management"
+	_repoSkumanagement "app/repository/sku_management"
+	_useSkumanagement "app/usecase/sku_management"
+
 	_repoRoleOutlet "app/repository/group_outlet"
 	_useRoleOutlet "app/usecase/group_outlet"
 
@@ -84,6 +88,9 @@ func (g *GinRoutes) Init() {
 	userHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
 	_contHolidays.NewContHolidays(g.G, userHolidays)
 
+	reposkumanagement := _repoSkumanagement.NewRepoSkuManagement(postgres.Conn)
+	useskumanagement := _useSkumanagement.NewSkuManagement(reposkumanagement, timeoutContext)
+	_contSkumanagement.NewContSkuManagement(g.G, useskumanagement)
 	repoOutlet := _repoOutlets.NewRepoOutlets(postgres.Conn)
 	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(postgres.Conn)
 	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, timeoutContext)
