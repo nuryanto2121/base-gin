@@ -29,15 +29,15 @@ import (
 	_repoHolidays "app/repository/holidays"
 	_useHolidays "app/usecase/holidays"
 
-	_contGroups "app/controllers/group"
-	_repoGroups "app/repository/group"
-	_useGroups "app/usecase/group"
+	_contRoles "app/controllers/group"
+	_repoRoles "app/repository/group"
+	_useRoles "app/usecase/group"
 
-	_repoGroupOutlet "app/repository/group_outlet"
-	_useGroupOutlet "app/usecase/group_outlet"
+	_repoRoleOutlet "app/repository/group_outlet"
+	_useRoleOutlet "app/usecase/group_outlet"
 
-	_repoUserGroups "app/repository/user_group"
-	_useUserGroups "app/usecase/user_group"
+	_repoUserRoles "app/repository/user_group"
+	_useUserRoles "app/usecase/user_group"
 
 	_contOutlets "app/controllers/outlets"
 	_repoOutlets "app/repository/outlets"
@@ -61,21 +61,21 @@ func (g *GinRoutes) Init() {
 	repoFileUpload := _repoFileUpload.NewRepoFileUpload(postgres.Conn)
 	useFileUpload := _useFileUpload.NewSaFileUpload(repoFileUpload, timeoutContext)
 
-	repoGroups := _repoGroups.NewRepoGroups(postgres.Conn)
-	useGroups := _useGroups.NewGroups(repoGroups, timeoutContext)
-	_contGroups.NewContGroup(g.G, useGroups)
+	repoRoles := _repoRoles.NewRepoRoles(postgres.Conn)
+	useRoles := _useRoles.NewRoles(repoRoles, timeoutContext)
+	_contRoles.NewContRole(g.G, useRoles)
 
-	repoUserGroup := _repoUserGroups.NewRepoUserGroup(postgres.Conn)
-	_ = _useUserGroups.NewUseUserGroup(repoUserGroup, timeoutContext)
+	repoUserRole := _repoUserRoles.NewRepoUserRole(postgres.Conn)
+	_ = _useUserRoles.NewUseUserRole(repoUserRole, timeoutContext)
 
-	repoGroupOutlet := _repoGroupOutlet.NewRepoGroupOutlet(postgres.Conn)
-	useGroupOutlet := _useGroupOutlet.NewUseGroupOutlet(repoGroupOutlet, timeoutContext)
+	repoRoleOutlet := _repoRoleOutlet.NewRepoRoleOutlet(postgres.Conn)
+	useRoleOutlet := _useRoleOutlet.NewUseRoleOutlet(repoRoleOutlet, timeoutContext)
 
 	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
-	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserGroup, timeoutContext)
-	useUser := _useUser.NewUserSysUser(repoUser, repoUserGroup, useGroupOutlet, timeoutContext)
+	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, timeoutContext)
+	useUser := _useUser.NewUserSysUser(repoUser, repoUserRole, useRoleOutlet, timeoutContext)
 
-	_contUser.NewContGroup(g.G, useUser)
+	_contUser.NewContRole(g.G, useUser)
 	_contAuth.NewContAuth(g.G, useAuth)
 
 	_contFileUpload.NewContFileUpload(g.G, useFileUpload)

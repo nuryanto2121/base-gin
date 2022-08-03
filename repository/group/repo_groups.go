@@ -13,17 +13,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type repoGroups struct {
+type repoRoles struct {
 	Conn *gorm.DB
 }
 
-func NewRepoGroups(Conn *gorm.DB) igroup.Repository {
-	return &repoGroups{Conn}
+func NewRepoRoles(Conn *gorm.DB) igroup.Repository {
+	return &repoRoles{Conn}
 }
 
-func (db *repoGroups) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Groups, err error) {
-	var sysGroups = &models.Groups{}
-	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysGroups)
+func (db *repoRoles) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Roles, err error) {
+	var sysRoles = &models.Roles{}
+	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysRoles)
 	err = query.Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -31,10 +31,10 @@ func (db *repoGroups) GetDataBy(ctx context.Context, ID uuid.UUID) (result *mode
 		}
 		return nil, err
 	}
-	return sysGroups, nil
+	return sysRoles, nil
 }
 
-func (db *repoGroups) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Groups, err error) {
+func (db *repoRoles) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Roles, err error) {
 
 	var (
 		pageNum  = 0
@@ -88,7 +88,7 @@ func (db *repoGroups) GetList(ctx context.Context, queryparam models.ParamList) 
 	}
 	return result, nil
 }
-func (db *repoGroups) Create(ctx context.Context, data *models.Groups) (err error) {
+func (db *repoRoles) Create(ctx context.Context, data *models.Roles) (err error) {
 	query := db.Conn.WithContext(ctx).Create(data)
 	err = query.Error
 	if err != nil {
@@ -96,16 +96,16 @@ func (db *repoGroups) Create(ctx context.Context, data *models.Groups) (err erro
 	}
 	return nil
 }
-func (db *repoGroups) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
+func (db *repoRoles) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
 
-	query := db.Conn.WithContext(ctx).Model(models.Groups{}).Where("id = ?", ID).Updates(data)
+	query := db.Conn.WithContext(ctx).Model(models.Roles{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (db *repoGroups) Delete(ctx context.Context, ID uuid.UUID) (err error) {
+func (db *repoRoles) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 
 	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Holidays{})
 	err = query.Error
@@ -114,7 +114,7 @@ func (db *repoGroups) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	}
 	return nil
 }
-func (db *repoGroups) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (db *repoRoles) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
 		sWhere = ""
 		logger = logging.Logger{}

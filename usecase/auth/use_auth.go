@@ -2,7 +2,6 @@ package useauth
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -23,16 +22,16 @@ type useAuht struct {
 	repoAuth        iusers.Repository
 	repoFile        ifileupload.Repository
 	repoUserSession iusersession.Repository
-	repoUserGroup   iusergroup.Repository
+	repoUserRole    iusergroup.Repository
 	contextTimeOut  time.Duration
 }
 
-func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository, repoUserSession iusersession.Repository, repoUserGroup iusergroup.Repository, timeout time.Duration) iauth.Usecase {
+func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository, repoUserSession iusersession.Repository, repoUserRole iusergroup.Repository, timeout time.Duration) iauth.Usecase {
 	return &useAuht{
 		repoAuth:        repoAuth,
 		repoFile:        repoFile,
 		repoUserSession: repoUserSession,
-		repoUserGroup:   repoUserGroup,
+		repoUserRole:    repoUserRole,
 		contextTimeOut:  timeout,
 	}
 }
@@ -46,6 +45,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 		logger   = logging.Logger{}
 		dataUser = &models.Users{}
 		role     []string
+		outlets  = []*models.OutletList{}
 	)
 
 	dataUser, err = u.repoAuth.GetByAccount(ctx, dataLogin.Account)
@@ -67,13 +67,14 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	if dataLogin.Account == "root" {
 		role = []string{"root"}
 	} else {
-		userGroup, err := u.repoUserGroup.GetListByUser(ctx, "user_id", dataUser.Id.String())
+		userRole, err := u.repoUserRole.GetListByUser(ctx, "user_id", dataUser.Id.String())
 		if err != nil {
 			logger.Error("error useauth.LoginCms().GetListByUser ", err)
 			return nil, models.ErrInternalServerError
 		}
+		role, outlets = genRole(userRole)
 
-		fmt.Printf("\n%#v", userGroup)
+		// fmt.Printf("\n%#v", userRole)
 	}
 
 	//get outlet
@@ -95,9 +96,10 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	}
 
 	response := map[string]interface{}{
-		"users": dataUser,
-		"token": token,
-		"role":  role,
+		"users":   dataUser,
+		"token":   token,
+		"role":    role,
+		"outlets": outlets,
 	}
 	return response, nil
 }
