@@ -2,12 +2,14 @@ package useauth
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
 	iauth "app/interface/auth"
 	ifileupload "app/interface/fileupload"
 	iusers "app/interface/user"
+	iusergroup "app/interface/user_group"
 	iusersession "app/interface/user_session"
 	"app/models"
 
@@ -21,14 +23,16 @@ type useAuht struct {
 	repoAuth        iusers.Repository
 	repoFile        ifileupload.Repository
 	repoUserSession iusersession.Repository
+	repoUserGroup   iusergroup.Repository
 	contextTimeOut  time.Duration
 }
 
-func NewUserAuth(a iusers.Repository, b ifileupload.Repository, c iusersession.Repository, timeout time.Duration) iauth.Usecase {
+func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository, repoUserSession iusersession.Repository, repoUserGroup iusergroup.Repository, timeout time.Duration) iauth.Usecase {
 	return &useAuht{
-		repoAuth:        a,
-		repoFile:        b,
-		repoUserSession: c,
+		repoAuth:        repoAuth,
+		repoFile:        repoFile,
+		repoUserSession: repoUserSession,
+		repoUserGroup:   repoUserGroup,
 		contextTimeOut:  timeout,
 	}
 }
@@ -39,9 +43,9 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	defer cancel()
 
 	var (
-		logger            = logging.Logger{}
-		dataUser          = &models.Users{}
-		role     (string) = ""
+		logger   = logging.Logger{}
+		dataUser = &models.Users{}
+		role     []string
 	)
 
 	dataUser, err = u.repoAuth.GetByAccount(ctx, dataLogin.Account)
@@ -61,8 +65,18 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 
 	//get user group
 	if dataLogin.Account == "root" {
-		role = "root"
+		role = []string{"root"}
+	} else {
+		userGroup, err := u.repoUserGroup.GetListByUser(ctx, "user_id", dataUser.Id.String())
+		if err != nil {
+			logger.Error("error useauth.LoginCms().GetListByUser ", err)
+			return nil, models.ErrInternalServerError
+		}
+
+		fmt.Printf("\n%#v", userGroup)
 	}
+
+	//get outlet
 
 	token, err := util.GenerateToken(dataUser.Id.String(), dataUser.Username, "")
 	if err != nil {

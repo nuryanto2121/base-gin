@@ -72,7 +72,7 @@ func (g *GinRoutes) Init() {
 	useGroupOutlet := _useGroupOutlet.NewUseGroupOutlet(repoGroupOutlet, timeoutContext)
 
 	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
-	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, timeoutContext)
+	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserGroup, timeoutContext)
 	useUser := _useUser.NewUserSysUser(repoUser, repoUserGroup, useGroupOutlet, timeoutContext)
 
 	_contUser.NewContGroup(g.G, useUser)
