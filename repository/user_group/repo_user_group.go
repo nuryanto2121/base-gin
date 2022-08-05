@@ -33,7 +33,7 @@ func (db *repoUserRole) GetById(ctx context.Context, ID uuid.UUID) (result *mode
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
-		return nil, err
+		return nil, models.ErrInternalServerError
 	}
 	return mUserRole, nil
 }
@@ -50,7 +50,7 @@ func (db *repoUserRole) GetDataBy(ctx context.Context, key, value string) (resul
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
-		return nil, err
+		return nil, models.ErrInternalServerError
 	}
 	return mUserRole, nil
 }
@@ -87,7 +87,7 @@ func (db *repoUserRole) GetListByUser(ctx context.Context, key, value string) (r
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
-		return nil, err
+		return nil, models.ErrInternalServerError
 	}
 	return mUserRole, nil
 }
@@ -133,14 +133,14 @@ func (db *repoUserRole) GetList(ctx context.Context, queryparam models.ParamList
 		query = db.Conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
 	err = query.Error
 
 	if err != nil {
+		logger.Error("repo user group GetList ", err)
 		if err == gorm.ErrRecordNotFound {
-			return nil, err
+			return nil, models.ErrNotFound
 		}
-		return nil, err
+		return nil, models.ErrInternalServerError
 	}
 	return result, nil
 }
@@ -151,10 +151,11 @@ func (db *repoUserRole) Create(ctx context.Context, data *models.UserRole) error
 		err    error
 	)
 	query := db.Conn.Create(data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo user group Create ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -164,10 +165,11 @@ func (db *repoUserRole) Update(ctx context.Context, ID uuid.UUID, data interface
 		err    error
 	)
 	query := db.Conn.Model(models.UserRole{}).Where("usergroup_id = ?", ID).Updates(data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo user group Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -178,10 +180,11 @@ func (db *repoUserRole) Delete(ctx context.Context, ID uuid.UUID) error {
 		err    error
 	)
 	query := db.Conn.Where("user_id = ?", ID).Delete(&models.UserRole{})
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo user group Delete ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -211,9 +214,9 @@ func (db *repoUserRole) Count(ctx context.Context, queryparam models.ParamList) 
 	}
 	// end where
 
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
 	err = query.Error
 	if err != nil {
+		logger.Error("repo user group Count ", err)
 		return 0, err
 	}
 

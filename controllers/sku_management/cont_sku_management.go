@@ -23,7 +23,7 @@ func NewContSkuManagement(e *gin.Engine, useskumanagement iskumanagement.Usecase
 		useskumanagement: useskumanagement,
 	}
 
-	r := e.Group("/v1/cms/skumanagement")
+	r := e.Group("/v1/cms/sku-management")
 	r.POST("", cont.Create)
 	r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)
@@ -41,7 +41,7 @@ func NewContSkuManagement(e *gin.Engine, useskumanagement iskumanagement.Usecase
 // @Param Language header string true "Language Apps"
 // @Param req body models.SkuManagement true "this model set from firebase"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/skumanagement [post]
+// @Router /v1/cms/sku-management [post]
 func (c *contskumanagement) Create(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -82,7 +82,7 @@ func (c *contskumanagement) Create(e *gin.Context) {
 // @Param req body models.SkuManagement true "this model set from firebase"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/skumanagement/{id} [put]
+// @Router /v1/cms/sku-management/{id} [put]
 func (c *contskumanagement) Update(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -124,7 +124,7 @@ func (c *contskumanagement) Update(e *gin.Context) {
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/skumanagement/{id} [get]
+// @Router /v1/cms/sku-management/{id} [get]
 func (c *contskumanagement) GetById(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -163,7 +163,7 @@ func (c *contskumanagement) GetById(e *gin.Context) {
 // @Param initsearch query string false "InitSearch"
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
-// @Router /v1/cms/skumanagement [get]
+// @Router /v1/cms/sku-management [get]
 func (c *contskumanagement) GetList(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -203,7 +203,7 @@ func (c *contskumanagement) GetList(e *gin.Context) {
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/skumanagement/{id} [delete]
+// @Router /v1/cms/sku-management/{id} [delete]
 func (c *contskumanagement) Delete(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {

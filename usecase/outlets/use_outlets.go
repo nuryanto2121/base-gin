@@ -31,13 +31,17 @@ func NewUseOutlets(a ioutlets.Repository, b ioutletDetail.Repository, timeout ti
 	}
 }
 
+func (u *useOutlets) GetDataByRole(ctx context.Context, Claims util.Claims, role string) (result *models.Outlets, err error) {
+	return result, nil
+}
+
 func (u *useOutlets) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Outlets, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
 	result, err = u.repoOutlets.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	return result, nil
 }

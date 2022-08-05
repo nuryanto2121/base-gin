@@ -133,6 +133,8 @@ func Authorize() gin.HandlerFunc {
 				e.AbortWithStatusJSON(code, resp)
 				return
 			}
+			fmt.Println(dtSession.ExpiredDate)
+			fmt.Println(util.GetTimeNow())
 			if dtSession.ExpiredDate.Before(util.GetTimeNow()) {
 				resp := app.Response{
 					Msg:   "Token Expired",

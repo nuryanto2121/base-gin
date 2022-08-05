@@ -769,6 +769,41 @@ paths:
       summary: Rubah Outlets
       tags:
       - Outlets
+  /v1/cms/outlets/role/{role}:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: GetById
+      tags:
+      - Outlets
   /v1/cms/roles:
     get:
       parameters:
@@ -965,7 +1000,7 @@ paths:
       summary: Update Roles
       tags:
       - Roles
-  /v1/cms/skumanagement:
+  /v1/cms/sku-management:
     get:
       parameters:
       - description: Device Type
@@ -1052,7 +1087,7 @@ paths:
       summary: Create SkuManagement
       tags:
       - SkuManagement
-  /v1/cms/skumanagement/{id}:
+  /v1/cms/sku-management/{id}:
     delete:
       parameters:
       - description: Device Type

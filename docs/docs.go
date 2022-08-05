@@ -765,6 +765,60 @@ var doc = `{
                 }
             }
         },
+        "/v1/cms/outlets/role/{role}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Outlets"
+                ],
+                "summary": "GetById",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/cms/outlets/{id}": {
             "get": {
                 "security": [
@@ -1232,7 +1286,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/cms/skumanagement": {
+        "/v1/cms/sku-management": {
             "get": {
                 "security": [
                     {
@@ -1365,7 +1419,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/cms/skumanagement/{id}": {
+        "/v1/cms/sku-management/{id}": {
             "get": {
                 "security": [
                     {

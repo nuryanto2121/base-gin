@@ -6,8 +6,9 @@ import (
 
 var (
 	ErrInternalServerError       = errors.New("internal_server_error") // ErrInternalServerError : will throw if any the Internal Server Error happen
-	ErrNotFound                  = errors.New("data_not_found")        // ErrNotFound : will throw if the requested item is not exists
-	ErrOtpNotFound               = errors.New("otp_not_found")         //ErrOtpNotFound
+	ErrQueryDbError              = errors.New("query_db_error")
+	ErrNotFound                  = errors.New("data_not_found") // ErrNotFound : will throw if the requested item is not exists
+	ErrOtpNotFound               = errors.New("otp_not_found")  //ErrOtpNotFound
 	ErrExpiredOtp                = errors.New("expired_otp")
 	ErrConflict                  = errors.New("conflict")          // ErrConflict : will throw if the current action already exists
 	ErrAccountConflict           = errors.New("conflict_account")  // ErrConflict : will throw if the current action already exists

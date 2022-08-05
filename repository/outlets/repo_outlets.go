@@ -26,10 +26,11 @@ func (db *repoOutlets) GetDataBy(ctx context.Context, key, value string) (result
 		logger   = logging.Logger{}
 		mOutlets = &models.Outlets{}
 	)
-	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mOutlets)
-	logger.Query(fmt.Sprintf("%v", query))
+	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).First(mOutlets) //(mOutlets)
+	logger.Query(fmt.Sprintf("%#v", query.Statement.Quote("")))
 	err = query.Error
 	if err != nil {
+		logger.Error("repo outlet GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
@@ -79,12 +80,11 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		query = db.Conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
 	err = query.Error
-
 	if err != nil {
+		logger.Error("repo outlet getlist ", err)
 		if err == gorm.ErrRecordNotFound {
-			return nil, err
+			return nil, models.ErrNotFound
 		}
 		return nil, err
 	}
@@ -97,10 +97,11 @@ func (db *repoOutlets) Create(ctx context.Context, data *models.Outlets) error {
 		err    error
 	)
 	query := db.Conn.Create(data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Create ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -110,10 +111,11 @@ func (db *repoOutlets) Update(ctx context.Context, ID uuid.UUID, data interface{
 		err    error
 	)
 	query := db.Conn.Model(models.Outlets{}).Where("outlets_id = ?", ID).Updates(data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -124,10 +126,11 @@ func (db *repoOutlets) Delete(ctx context.Context, ID uuid.UUID) error {
 		err    error
 	)
 	query := db.Conn.Where("outlets_id = ?", ID).Delete(&models.Outlets{})
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Delete ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -157,10 +160,10 @@ func (db *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (
 	}
 	// end where
 
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
 	err = query.Error
 	if err != nil {
-		return 0, err
+		logger.Error("repo outlet Count ", err)
+		return 0, models.ErrInternalServerError
 	}
 
 	return rest, nil

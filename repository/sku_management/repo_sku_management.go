@@ -2,7 +2,6 @@ package reposkumanagement
 
 import (
 	"context"
-	"fmt"
 
 	iskumanagement "app/interface/sku_management"
 	"app/models"
@@ -22,14 +21,18 @@ func NewRepoSkuManagement(Conn *gorm.DB) iskumanagement.Repository {
 }
 
 func (db *reposkumanagement) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.SkuManagement, err error) {
-	var sysSkuManagement = &models.SkuManagement{}
-	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysSkuManagement)
+	var (
+		sysSkuManagement = &models.SkuManagement{}
+		logger           = logging.Logger{}
+	)
+	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).First(sysSkuManagement)
 	err = query.Error
 	if err != nil {
+		logger.Error("repo sku management GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
-		return nil, err
+		return nil, models.ErrInternalServerError
 	}
 	return sysSkuManagement, nil
 }
@@ -40,8 +43,8 @@ func (db *reposkumanagement) GetList(ctx context.Context, queryparam models.Para
 		pageNum  = 0
 		pageSize = setting.AppSetting.PageSize
 		sWhere   = ""
-		// logger   = logging.Logger{}
-		orderBy = queryparam.SortField
+		logger   = logging.Logger{}
+		orderBy  = queryparam.SortField
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -81,36 +84,42 @@ func (db *reposkumanagement) GetList(ctx context.Context, queryparam models.Para
 	}
 
 	if err != nil {
+		logger.Error("repo sku management GetList ", err)
+
 		if err == gorm.ErrRecordNotFound {
-			return nil, err
+			return nil, models.ErrNotFound
 		}
-		return nil, err
+		return nil, models.ErrInternalServerError
 	}
 	return result, nil
 }
 func (db *reposkumanagement) Create(ctx context.Context, data *models.SkuManagement) (err error) {
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Create(data)
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo sku management Create ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
 func (db *reposkumanagement) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
-
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Model(models.SkuManagement{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo sku management Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
 func (db *reposkumanagement) Delete(ctx context.Context, ID uuid.UUID) (err error) {
-
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.SkuManagement{})
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo sku management Delete ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -134,10 +143,11 @@ func (db *reposkumanagement) Count(ctx context.Context, queryparam models.ParamL
 	// end where
 
 	query := db.Conn.WithContext(ctx).Model(&models.SkuManagement{}).Where(sWhere).Count(&result)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return 0, err
+		logger.Error("repo sku management Count ", err)
+		return 0, models.ErrInternalServerError
 	}
 
 	return result, nil

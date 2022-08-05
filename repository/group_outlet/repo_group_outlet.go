@@ -2,7 +2,6 @@ package repogroupoutlet
 
 import (
 	"context"
-	"fmt"
 
 	igroupoutlet "app/interface/group_outlet"
 	"app/models"
@@ -27,9 +26,10 @@ func (db *repoRoleOutlet) GetDataBy(ctx context.Context, ID uuid.UUID) (result *
 		mRoleOutlet = &models.RoleOutlet{}
 	)
 	query := db.Conn.Where("group_outlet_id = ? ", ID).WithContext(ctx).Find(mRoleOutlet)
-	logger.Query(fmt.Sprintf("%v", query))
+
 	err = query.Error
 	if err != nil {
+		logger.Error("", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
@@ -79,10 +79,10 @@ func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamLi
 		query = db.Conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
 	err = query.Error
 
 	if err != nil {
+		logger.Error("repo outlet GetList ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, err
 		}
@@ -97,10 +97,11 @@ func (db *repoRoleOutlet) Create(ctx context.Context, data *models.RoleOutlet) e
 		err    error
 	)
 	query := db.Conn.Create(data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Create ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -110,10 +111,11 @@ func (db *repoRoleOutlet) Update(ctx context.Context, ID uuid.UUID, data interfa
 		err    error
 	)
 	query := db.Conn.Model(models.RoleOutlet{}).Where("groupoutlet_id = ?", ID).Updates(data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -124,10 +126,11 @@ func (db *repoRoleOutlet) Delete(ctx context.Context, ID uuid.UUID) error {
 		err    error
 	)
 	query := db.Conn.Where("group_outlet_id = ?", ID).Delete(&models.RoleOutlet{})
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -157,10 +160,10 @@ func (db *repoRoleOutlet) Count(ctx context.Context, queryparam models.ParamList
 	}
 	// end where
 
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
 	err = query.Error
 	if err != nil {
-		return 0, err
+		logger.Error("repo outlet Count ", err)
+		return 0, models.ErrInternalServerError
 	}
 
 	return rest, nil

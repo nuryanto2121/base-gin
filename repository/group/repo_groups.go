@@ -2,7 +2,6 @@ package repogroups
 
 import (
 	"context"
-	"fmt"
 
 	igroup "app/interface/group"
 	"app/models"
@@ -22,10 +21,14 @@ func NewRepoRoles(Conn *gorm.DB) igroup.Repository {
 }
 
 func (db *repoRoles) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Roles, err error) {
-	var sysRoles = &models.Roles{}
-	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysRoles)
+	var (
+		sysRoles = &models.Roles{}
+		logger   = logging.Logger{}
+	)
+	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).First(sysRoles)
 	err = query.Error
 	if err != nil {
+		logger.Error("repo role GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
@@ -40,8 +43,8 @@ func (db *repoRoles) GetList(ctx context.Context, queryparam models.ParamList) (
 		pageNum  = 0
 		pageSize = setting.AppSetting.PageSize
 		sWhere   = ""
-		// logger   = logging.Logger{}
-		orderBy = queryparam.SortField
+		logger   = logging.Logger{}
+		orderBy  = queryparam.SortField
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -81,6 +84,7 @@ func (db *repoRoles) GetList(ctx context.Context, queryparam models.ParamList) (
 	}
 
 	if err != nil {
+		logger.Error("repo role getlist ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, err
 		}
@@ -89,28 +93,32 @@ func (db *repoRoles) GetList(ctx context.Context, queryparam models.ParamList) (
 	return result, nil
 }
 func (db *repoRoles) Create(ctx context.Context, data *models.Roles) (err error) {
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Create(data)
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo role Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
 func (db *repoRoles) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
-
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Model(models.Roles{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo role Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
 func (db *repoRoles) Delete(ctx context.Context, ID uuid.UUID) (err error) {
-
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Holidays{})
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo role Delete ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -134,10 +142,11 @@ func (db *repoRoles) Count(ctx context.Context, queryparam models.ParamList) (re
 	// end where
 
 	query := db.Conn.WithContext(ctx).Model(&models.Holidays{}).Where(sWhere).Count(&result)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return 0, err
+		logger.Error("repo role count ", err)
+		return 0, models.ErrInternalServerError
 	}
 
 	return result, nil
