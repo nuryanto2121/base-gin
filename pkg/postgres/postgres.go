@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
+	
 )
 
 var Conn *gorm.DB
@@ -112,6 +113,7 @@ func autoMigrate() {
 		models.Holidays{},
 		models.Outlets{},
 		models.OutletDetail{},
+		models.TermAndConditional{},
 	)
 	if err != nil {
 		log.Printf("\nAutoMigrate : %#v", err)

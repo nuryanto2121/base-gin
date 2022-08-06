@@ -47,6 +47,10 @@ import (
 	_useOutlets "app/usecase/outlets"
 
 	_repoOutletDetail "app/repository/outlet_detail"
+
+	_contTermAndConditional "app/controllers/term_and_conditional"
+	_repoTermAndConditional "app/repository/term_and_conditional"
+	_useTermAndConditional "app/usecase/term_and_conditional"
 )
 
 type GinRoutes struct {
@@ -94,4 +98,8 @@ func (g *GinRoutes) Init() {
 	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(postgres.Conn)
 	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, timeoutContext)
 	_contOutlets.NewContOutlets(g.G, useOutlet)
+
+	repoTermAndConditional := _repoTermAndConditional.NewRepoTermAndConditioinal(postgres.Conn)
+	useTermAndConditional := _useTermAndConditional.NewTermAndConditional(repoTermAndConditional, timeoutContext)
+	_contTermAndConditional.NewContTermAndConditional(g.G, useTermAndConditional)
 }
