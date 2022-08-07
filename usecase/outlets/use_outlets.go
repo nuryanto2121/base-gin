@@ -31,7 +31,14 @@ func NewUseOutlets(a ioutlets.Repository, b ioutletDetail.Repository, timeout ti
 	}
 }
 
-func (u *useOutlets) GetDataByRole(ctx context.Context, Claims util.Claims, role string) (result *models.Outlets, err error) {
+func (u *useOutlets) GetDataByRole(ctx context.Context, Claims util.Claims, role string) (result []*models.Outlets, err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	result, err = u.repoOutlets.GetDataByRole(ctx, Claims.UserID, role) //GetDataBy(ctx, "id", ID.String())
+	if err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 

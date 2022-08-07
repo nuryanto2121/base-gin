@@ -21,13 +21,32 @@ func NewRepoOutlets(Conn *gorm.DB) ioutlets.Repository {
 	return &repoOutlets{Conn}
 }
 
+func (db *repoOutlets) GetDataByRole(ctx context.Context, ID, role string) (result []*models.Outlets, err error) {
+	var (
+		logger = logging.Logger{}
+		// mOutlets = &models.Outlets{}
+	)
+	query := db.Conn.WithContext(ctx).Table(`outlets as outlets`).Select(`outlets.*`).Joins(`
+	INNER JOIN role_outlet ro on outlets.id =ro.outlet_id
+	`).Where(`ro.user_id = ? and ro.role = ?`, ID, role).Order(`outlets.outlet_name`).Find(&result)
+
+	if err := query.Error; err != nil {
+		logger.Error("repo outlet GetDataByRole ", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return result, nil
+}
+
 func (db *repoOutlets) GetDataBy(ctx context.Context, key, value string) (result *models.Outlets, err error) {
 	var (
 		logger   = logging.Logger{}
 		mOutlets = &models.Outlets{}
 	)
 	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).First(mOutlets) //(mOutlets)
-	logger.Query(fmt.Sprintf("%#v", query.Statement.Quote("")))
+	// logger.Query(fmt.Sprintf("%#v", query.Statement.Quote("")))
 	err = query.Error
 	if err != nil {
 		logger.Error("repo outlet GetDataBy ", err)

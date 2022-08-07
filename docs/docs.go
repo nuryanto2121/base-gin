@@ -803,8 +803,8 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "ID",
-                        "name": "id",
+                        "description": "Role",
+                        "name": "role",
                         "in": "path",
                         "required": true
                     }

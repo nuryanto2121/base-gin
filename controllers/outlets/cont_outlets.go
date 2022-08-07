@@ -46,7 +46,7 @@ func NewContOutlets(e *gin.Engine, a ioutlets.Usecase) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param id path string true "ID"
+// @Param role path string true "Role"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/outlets/role/{role} [get]
 func (c *contOutlets) GetDataByRole(e *gin.Context) {
@@ -57,21 +57,18 @@ func (c *contOutlets) GetDataByRole(e *gin.Context) {
 
 	var (
 		logger = logging.Logger{}
-		appE   = app.Gin{C: e} // wajib
-		id     = e.Param("id") //kalo bukan int => 0
+		appE   = app.Gin{C: e}   // wajib
+		role   = e.Param("role") //kalo bukan int => 0
 	)
-	ID, err := uuid.FromString(id)
-	logger.Info(ID)
-	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
-		return
-	}
+
+	logger.Info(role)
+
 	claims, err := app.GetClaims(e)
 	if err != nil {
 		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
 		return
 	}
-	data, err := c.useOutlets.GetDataBy(ctx, claims, ID)
+	data, err := c.useOutlets.GetDataByRole(ctx, claims, role)
 	if err != nil {
 		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
 		return

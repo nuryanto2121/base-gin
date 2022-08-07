@@ -787,9 +787,9 @@ paths:
         name: Language
         required: true
         type: string
-      - description: ID
+      - description: Role
         in: path
-        name: id
+        name: role
         required: true
         type: string
       produces:
