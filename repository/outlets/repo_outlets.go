@@ -58,7 +58,7 @@ func (db *repoOutlets) GetDataBy(ctx context.Context, key, value string) (result
 	return mOutlets, nil
 }
 
-func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Outlets, err error) {
+func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OutletList, err error) {
 
 	var (
 		pageNum  = 0
@@ -94,9 +94,59 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		} else {
 			sWhere += "(lower(outlet_name) LIKE ?)"
 		}
-		query = db.Conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+
+		query = db.Conn.Table(`outlets o`).Select(`
+		 o.id as outlet_id
+		 ,sm.id as product_id 
+		 ,i.id as inventory_id
+		 ,o.outlet_name 
+		 ,o.outlet_city 
+		 ,sm.sku_name 
+		 ,coalesce(i.qty,0) as qty
+		 ,sm.price_week_day 
+		 ,sm.price_week_end 
+		 ,od.outlet_price_weekday 
+		 ,od.outlet_price_weekend 
+		 ,ro.user_id 
+		 ,ro.role 
+		`).Joins(`cross join sku_management sm`).Joins(`
+		inner join role_outlet ro
+		 	on o.id = ro.outlet_id
+		`).Joins(`
+		left join outlet_detail od 
+		 	on od.outlet_id = o.id 
+		 	and od.product_id =sm.id
+		`).Joins(`
+		left join inventory i
+		 	on i.outlet_id = o.id
+		`).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	} else {
-		query = db.Conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+
+		query = db.Conn.Table(`outlets o`).Select(`
+		 o.id as outlet_id
+		 ,sm.id as product_id 
+		 ,i.id as inventory_id
+		 ,o.outlet_name 
+		 ,o.outlet_city 
+		 ,sm.sku_name 
+		 ,coalesce(i.qty,0) as qty
+		 ,sm.price_week_day 
+		 ,sm.price_week_end 
+		 ,od.outlet_price_weekday 
+		 ,od.outlet_price_weekend 
+		 ,ro.user_id 
+		 ,ro.role 
+		`).Joins(`cross join sku_management sm`).Joins(`
+		inner join role_outlet ro
+		 	on o.id = ro.outlet_id
+		`).Joins(`
+		left join outlet_detail od 
+		 	on od.outlet_id = o.id 
+		 	and od.product_id =sm.id
+		`).Joins(`
+		left join inventory i
+		 	on i.outlet_id = o.id
+		`).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
 	err = query.Error
@@ -167,15 +217,45 @@ func (db *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (
 		sWhere = queryparam.InitSearch
 	}
 
+	sQuery := `
+	select count(*) from 
+	 (
+		 select  o.id as outlet_id
+		 ,sm.id as product_id 
+		 ,i.id as inventory_id
+		 ,o.outlet_name 
+		 ,o.outlet_city 
+		 ,sm.sku_name 
+		 ,coalesce(i.qty,0) as qty
+		 ,sm.price_week_day 
+		 ,sm.price_week_end 
+		 ,od.outlet_price_weekday 
+		 ,od.outlet_price_weekend 
+		 ,ro.user_id 
+		 ,ro.role 
+		 from outlets o 
+		 cross join sku_management sm
+		 inner join role_outlet ro
+		 	on o.id = ro.outlet_id
+		 left join outlet_detail od 
+		 	on od.outlet_id = o.id 
+		 	and od.product_id =sm.id 
+		 left join inventory i
+		 	on i.outlet_id = o.id
+	 ) outlet_list
+	`
+
 	if queryparam.Search != "" {
 		if sWhere != "" {
 			sWhere += " and (lower(outlet_name) LIKE ? )" //+ queryparam.Search
 		} else {
 			sWhere += "(lower(outlet_name) LIKE ? )" //queryparam.Search
 		}
-		query = db.Conn.Model(&models.Outlets{}).Where(sWhere, queryparam.Search).Count(&rest)
+		sQuery += fmt.Sprintf(" WHERE %s", sWhere)
+		query = db.Conn.Raw(sQuery, queryparam.Search).Count(&rest)
 	} else {
-		query = db.Conn.Model(&models.Outlets{}).Where(sWhere).Count(&rest)
+		sQuery += fmt.Sprintf(" WHERE %s", sWhere)
+		query = db.Conn.Raw(sQuery).Count(&rest)
 	}
 	// end where
 

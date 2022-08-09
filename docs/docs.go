@@ -1405,7 +1405,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SkuManagement"
+                            "$ref": "#/definitions/models.AddSkuManagement"
                         }
                     }
                 ],
@@ -1513,7 +1513,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SkuManagement"
+                            "$ref": "#/definitions/models.AddSkuManagement"
                         }
                     },
                     {
@@ -2053,6 +2053,23 @@ var doc = `{
                 }
             }
         },
+        "models.AddSkuManagement": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "integer"
+                },
+                "price_weekday": {
+                    "type": "number"
+                },
+                "price_weekend": {
+                    "type": "number"
+                },
+                "sku_name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AddUserCms": {
             "type": "object",
             "properties": {
@@ -2194,38 +2211,6 @@ var doc = `{
                     "type": "string"
                 },
                 "role_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.SkuManagement": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "created_by": {
-                    "type": "string"
-                },
-                "duration": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "price_weekday": {
-                    "type": "number"
-                },
-                "price_weekend": {
-                    "type": "number"
-                },
-                "sku_name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "updated_by": {
                     "type": "string"
                 }
             }

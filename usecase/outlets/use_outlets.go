@@ -62,8 +62,11 @@ func (u *useOutlets) GetList(ctx context.Context, Claims util.Claims, queryparam
 	}
 
 	if queryparam.InitSearch != "" {
-
+		queryparam.InitSearch += fmt.Sprintf(" AND user_id = '%s' ", Claims.UserID)
+	} else {
+		queryparam.InitSearch = fmt.Sprintf(" user_id = '%s' ", Claims.UserID)
 	}
+
 	result.Data, err = u.repoOutlets.GetList(ctx, queryparam)
 	if err != nil {
 		return result, err

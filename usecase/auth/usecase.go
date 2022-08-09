@@ -5,10 +5,10 @@ import (
 	"fmt"
 )
 
-func genRole(userRole []*models.UserRoleDesc) ([]string, []*models.OutletList) {
+func genRole(userRole []*models.UserRoleDesc) ([]string, []*models.OutletLookUp) {
 	var (
 		roles   = make([]string, len(userRole))
-		outlets = []*models.OutletList{}
+		outlets = []*models.OutletLookUp{}
 	)
 
 	for i, val := range userRole {

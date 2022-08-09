@@ -27,12 +27,12 @@ type ResponseListUserCms struct {
 }
 
 type RoleCodes struct {
-	RoleId   uuid.UUID     `json:"group_id"`
-	RoleCode string        `json:"group_code"`
-	Outlet   []*OutletList `json:"outlets"`
+	RoleId   uuid.UUID       `json:"group_id"`
+	RoleCode string          `json:"group_code"`
+	Outlet   []*OutletLookUp `json:"outlets"`
 }
 
-type OutletList struct {
+type OutletLookUp struct {
 	OutletId   uuid.UUID `json:"outlet_id"`
 	OutletName string    `json:"outlet_name"`
 }
