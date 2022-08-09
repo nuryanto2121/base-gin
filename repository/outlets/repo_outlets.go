@@ -88,44 +88,13 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		sWhere = queryparam.InitSearch
 	}
 
-	// sQuery := `
-	// select * from
-	//  (
-	// 	 select  o.id as outlet_id
-	// 	 ,sm.id as product_id
-	// 	 ,i.id as inventory_id
-	// 	 ,o.outlet_name
-	// 	 ,o.outlet_city
-	// 	 ,sm.sku_name
-	// 	 ,coalesce(i.qty,0) as qty
-	// 	 ,sm.price_week_day
-	// 	 ,sm.price_week_end
-	// 	 ,od.outlet_price_weekday
-	// 	 ,od.outlet_price_weekend
-	// 	 ,ro.user_id
-	// 	 ,ro.role
-	// 	 from outlets o
-	// 	 cross join sku_management sm
-	// 	 inner join role_outlet ro
-	// 	 	on o.id = ro.outlet_id
-	// 	 left join outlet_detail od
-	// 	 	on od.outlet_id = o.id
-	// 	 	and od.product_id =sm.id
-	// 	 left join inventory i
-	// 	 	on i.outlet_id = o.id
-	//  ) outlet_list
-
-	//`
-
 	if queryparam.Search != "" {
 		if sWhere != "" {
 			sWhere += " and (lower(outlet_name) LIKE ?)"
 		} else {
 			sWhere += "(lower(outlet_name) LIKE ?)"
 		}
-		// sQuery += fmt.Sprintf(" WHERE %s", sWhere)
-		// query = db.Conn.Raw(sQuery, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
-		//query = db.Conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+
 		query = db.Conn.Table(`outlets o`).Select(`
 		 o.id as outlet_id
 		 ,sm.id as product_id 
@@ -152,9 +121,7 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		 	on i.outlet_id = o.id
 		`).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	} else {
-		// sQuery += fmt.Sprintf(" WHERE %s", sWhere)
-		// query = db.Conn.Raw(sQuery).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
-		//query = db.Conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+
 		query = db.Conn.Table(`outlets o`).Select(`
 		 o.id as outlet_id
 		 ,sm.id as product_id 

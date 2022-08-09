@@ -45,6 +45,7 @@ func (db *repoHolidays) GetList(ctx context.Context, queryparam models.ParamList
 		sWhere   = ""
 		logger   = logging.Logger{}
 		orderBy  = queryparam.SortField
+		query    *gorm.DB
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -68,21 +69,16 @@ func (db *repoHolidays) GetList(ctx context.Context, queryparam models.ParamList
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and " + queryparam.Search
+			sWhere += " and (lower(description) LIKE ?) "
 		} else {
-			sWhere += queryparam.Search
+			sWhere += "(lower(description) LIKE ?)"
 		}
-	}
-
-	// end where
-	if pageNum >= 0 && pageSize > 0 {
-		query := db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
-		err = query.Error
+		query = db.Conn.WithContext(ctx).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	} else {
-		query := db.Conn.WithContext(ctx).Where(sWhere).Order(orderBy).Find(&result)
-		err = query.Error
+		query = db.Conn.WithContext(ctx).Where(sWhere).Order(orderBy).Find(&result)
 	}
 
+	err = query.Error
 	if err != nil {
 		logger.Error("repo holiday GetList ", err)
 		if err == gorm.ErrRecordNotFound {
@@ -126,6 +122,7 @@ func (db *repoHolidays) Count(ctx context.Context, queryparam models.ParamList) 
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
+		query  *gorm.DB
 	)
 	result = 0
 
@@ -136,12 +133,15 @@ func (db *repoHolidays) Count(ctx context.Context, queryparam models.ParamList) 
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and " + queryparam.Search
+			sWhere += " and (lower(description) LIKE ?) "
+		} else {
+			sWhere += "(lower(description) LIKE ?)"
 		}
+		query = db.Conn.WithContext(ctx).Model(&models.Holidays{}).Where(sWhere, queryparam.Search).Count(&result)
+	} else {
+		query = db.Conn.WithContext(ctx).Model(&models.Holidays{}).Where(sWhere).Count(&result)
 	}
 	// end where
-
-	query := db.Conn.WithContext(ctx).Model(&models.Holidays{}).Where(sWhere).Count(&result)
 
 	err = query.Error
 	if err != nil {
