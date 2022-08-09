@@ -293,7 +293,7 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "InitSearch",
-                        "name": "init_search",
+                        "name": "initsearch",
                         "in": "query"
                     },
                     {
@@ -1045,7 +1045,7 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "InitSearch",
-                        "name": "init_search",
+                        "name": "initsearch",
                         "in": "query"
                     },
                     {
@@ -1345,7 +1345,7 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "InitSearch",
-                        "name": "init_search",
+                        "name": "initsearch",
                         "in": "query"
                     },
                     {
@@ -1645,7 +1645,7 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "InitSearch",
-                        "name": "init_search",
+                        "name": "initsearch",
                         "in": "query"
                     },
                     {

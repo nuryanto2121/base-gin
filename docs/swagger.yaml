@@ -334,7 +334,7 @@ paths:
         type: string
       - description: InitSearch
         in: query
-        name: init_search
+        name: initsearch
         type: string
       - description: SortField
         in: query
@@ -828,7 +828,7 @@ paths:
         type: string
       - description: InitSearch
         in: query
-        name: init_search
+        name: initsearch
         type: string
       - description: SortField
         in: query
@@ -1024,7 +1024,7 @@ paths:
         type: string
       - description: InitSearch
         in: query
-        name: init_search
+        name: initsearch
         type: string
       - description: SortField
         in: query
@@ -1220,7 +1220,7 @@ paths:
         type: string
       - description: InitSearch
         in: query
-        name: init_search
+        name: initsearch
         type: string
       - description: SortField
         in: query

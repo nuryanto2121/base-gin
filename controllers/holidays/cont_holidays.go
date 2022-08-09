@@ -160,7 +160,7 @@ func (c *ContHolidays) GetById(e *gin.Context) {
 // @Param page query int true "Page"
 // @Param perpage query int true "PerPage"
 // @Param search query string false "Search"
-// @Param init_search query string false "InitSearch"
+// @Param initsearch query string false "InitSearch"
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
 // @Router /v1/cms/holidays [get]
