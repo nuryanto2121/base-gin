@@ -40,6 +40,17 @@ definitions:
       role:
         type: string
     type: object
+  models.AddSkuManagement:
+    properties:
+      duration:
+        type: integer
+      price_weekday:
+        type: number
+      price_weekend:
+        type: number
+      sku_name:
+        type: string
+    type: object
   models.AddUserCms:
     properties:
       confirm_password:
@@ -132,27 +143,6 @@ definitions:
       role:
         type: string
       role_name:
-        type: string
-    type: object
-  models.SkuManagement:
-    properties:
-      created_at:
-        type: string
-      created_by:
-        type: string
-      duration:
-        type: integer
-      id:
-        type: string
-      price_weekday:
-        type: number
-      price_weekend:
-        type: number
-      sku_name:
-        type: string
-      updated_at:
-        type: string
-      updated_by:
         type: string
     type: object
   models.SosmedForm:
@@ -344,7 +334,7 @@ paths:
         type: string
       - description: InitSearch
         in: query
-        name: initsearch
+        name: init_search
         type: string
       - description: SortField
         in: query
@@ -838,7 +828,7 @@ paths:
         type: string
       - description: InitSearch
         in: query
-        name: initsearch
+        name: init_search
         type: string
       - description: SortField
         in: query
@@ -1034,7 +1024,7 @@ paths:
         type: string
       - description: InitSearch
         in: query
-        name: initsearch
+        name: init_search
         type: string
       - description: SortField
         in: query
@@ -1074,7 +1064,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.SkuManagement'
+          $ref: '#/definitions/models.AddSkuManagement'
       produces:
       - application/json
       responses:
@@ -1178,7 +1168,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.SkuManagement'
+          $ref: '#/definitions/models.AddSkuManagement'
       - description: ID
         in: path
         name: id
@@ -1230,7 +1220,7 @@ paths:
         type: string
       - description: InitSearch
         in: query
-        name: initsearch
+        name: init_search
         type: string
       - description: SortField
         in: query

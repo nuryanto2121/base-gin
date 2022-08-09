@@ -45,7 +45,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 		logger   = logging.Logger{}
 		dataUser = &models.Users{}
 		role     []string
-		outlets  = []*models.OutletList{}
+		outlets  = []*models.OutletLookUp{}
 	)
 
 	dataUser, err = u.repoAuth.GetByAccount(ctx, dataLogin.Account)

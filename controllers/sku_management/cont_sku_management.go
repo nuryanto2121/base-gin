@@ -39,7 +39,7 @@ func NewContSkuManagement(e *gin.Engine, useskumanagement iskumanagement.Usecase
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.SkuManagement true "this model set from firebase"
+// @Param req body models.AddSkuManagement true "this model set from firebase"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/sku-management [post]
 func (c *contskumanagement) Create(e *gin.Context) {
@@ -51,7 +51,7 @@ func (c *contskumanagement) Create(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.SkuManagement{}
+		form   = models.AddSkuManagement{}
 	)
 
 	// validasi and bind to struct
@@ -79,7 +79,7 @@ func (c *contskumanagement) Create(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.SkuManagement true "this model set from firebase"
+// @Param req body models.AddSkuManagement true "this model set from firebase"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/sku-management/{id} [put]
@@ -92,7 +92,7 @@ func (c *contskumanagement) Update(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.SkuManagement{}
+		form   = models.AddSkuManagement{}
 		id     = e.Param("id")
 	)
 
@@ -160,7 +160,7 @@ func (c *contskumanagement) GetById(e *gin.Context) {
 // @Param page query int true "Page"
 // @Param perpage query int true "PerPage"
 // @Param search query string false "Search"
-// @Param initsearch query string false "InitSearch"
+// @Param init_search query string false "InitSearch"
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
 // @Router /v1/cms/sku-management [get]
