@@ -1532,6 +1532,179 @@ var doc = `{
                 }
             }
         },
+        "/v1/cms/termandconditional": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TermAndConditional"
+                ],
+                "summary": "Create TermAndConditional",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "this model set from firebase",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TermAndConditional"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/cms/termandconditional/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TermAndConditional"
+                ],
+                "summary": "Update TermAndConditional",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "this model set from firebase",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TermAndConditional"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/cms/termandconditionalt/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TermAndConditional"
+                ],
+                "summary": "GetById TermAndConditional",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/cms/users": {
             "get": {
                 "security": [
@@ -2160,10 +2333,10 @@ var doc = `{
                     "type": "string"
                 },
                 "price_weekday": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "price_weekend": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "sku_name": {
                     "type": "string"
@@ -2186,6 +2359,32 @@ var doc = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TermAndConditional": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
                     "type": "string"
                 }
             }

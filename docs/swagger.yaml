@@ -145,9 +145,9 @@ definitions:
       id:
         type: string
       price_weekday:
-        type: integer
+        type: number
       price_weekend:
-        type: integer
+        type: number
       sku_name:
         type: string
       updated_at:
@@ -162,6 +162,23 @@ definitions:
       email:
         type: string
       name:
+        type: string
+    type: object
+  models.TermAndConditional:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
         type: string
     type: object
 info:
@@ -1161,6 +1178,118 @@ paths:
       summary: Update SkuManagement
       tags:
       - SkuManagement
+  /v1/cms/termandconditional:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.TermAndConditional'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Create TermAndConditional
+      tags:
+      - TermAndConditional
+  /v1/cms/termandconditional/{id}:
+    put:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.TermAndConditional'
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Update TermAndConditional
+      tags:
+      - TermAndConditional
+  /v1/cms/termandconditionalt/{id}:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: GetById TermAndConditional
+      tags:
+      - TermAndConditional
   /v1/cms/users:
     get:
       parameters:
