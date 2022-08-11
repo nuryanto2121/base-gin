@@ -13,7 +13,6 @@ import (
 	"app/models"
 
 	"app/pkg/logging"
-	"app/pkg/redisdb"
 	"app/pkg/setting"
 	util "app/pkg/utils"
 )
@@ -397,32 +396,11 @@ func (u *useAuht) Logout(ctx context.Context, Claims util.Claims, Token string) 
 	)
 
 	token := strings.Split(Token, "Bearer ")[1]
-	err = redisdb.TurncateList(token)
+
+	u.repoUserSession.Delete(ctx, token)
 	if err != nil {
 		return err
 	}
-
-	// conditions = append(conditions, &firebase.FirestoreConditions{
-	// 	Field:    "device_token",
-	// 	Operator: "==",
-	// 	Value:    token,
-	// })
-
-	// conditions = append(conditions, &firebase.FirestoreConditions{
-	// 	Field:    "user_id",
-	// 	Operator: "==",
-	// 	Value:    Claims.UserID,
-	// })
-
-	// _, err = fb.ReadByMultiKey(ctx, util.NameStruct(models.UserFcm{}), conditions).Next()
-	// if err != nil {
-	// 	return err
-	// }
-
-	// _, err = fb.Delete(ctx, util.NameStruct(models.UserFcm{}), docs.Ref.ID)
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }

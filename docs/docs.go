@@ -534,6 +534,69 @@ var doc = `{
                 }
             }
         },
+        "/v1/cms/inventory/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Rubah atau simpan Inventory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddInventory"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/cms/login": {
             "post": {
                 "produces": [
@@ -2000,6 +2063,26 @@ var doc = `{
                 "errors": {},
                 "msg": {
                     "type": "string"
+                }
+            }
+        },
+        "models.AddInventory": {
+            "type": "object",
+            "properties": {
+                "outlet_id": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "qty": {
+                    "type": "integer"
+                },
+                "qty_change": {
+                    "type": "integer"
+                },
+                "qty_delta": {
+                    "type": "integer"
                 }
             }
         },

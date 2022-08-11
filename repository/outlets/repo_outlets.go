@@ -119,6 +119,7 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		`).Joins(`
 		left join inventory i
 		 	on i.outlet_id = o.id
+			and i.product_id = sm.id
 		`).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	} else {
 
@@ -146,6 +147,7 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		`).Joins(`
 		left join inventory i
 		 	on i.outlet_id = o.id
+			and i.product_id = sm.id
 		`).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
@@ -242,6 +244,7 @@ func (db *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (
 		 	and od.product_id =sm.id 
 		 left join inventory i
 		 	on i.outlet_id = o.id
+			and i.product_id = sm.id
 	 ) outlet_list
 	`
 

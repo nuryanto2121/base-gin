@@ -22,6 +22,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/text v0.3.7
 	google.golang.org/api v0.87.0
+	gorm.io/datatypes v1.0.7
 	gorm.io/driver/postgres v1.3.8
 	gorm.io/gorm v1.23.8
 )
@@ -29,7 +30,6 @@ require (
 require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
-	gorm.io/datatypes v1.0.7 // indirect
 	gorm.io/driver/mysql v1.3.2 // indirect
 )
 

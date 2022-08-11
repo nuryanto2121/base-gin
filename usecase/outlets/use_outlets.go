@@ -141,7 +141,7 @@ func (u *useOutlets) Update(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	defer cancel()
 
 	myMap := structs.Map(data)
-	myMap["user_edit"] = Claims.UserID
+	myMap["updated_by"] = Claims.UserID
 	fmt.Println(myMap)
 	err = u.repoOutlets.Update(ctx, ID, myMap)
 	if err != nil {
