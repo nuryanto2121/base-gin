@@ -47,6 +47,10 @@ import (
 	_repoOutlets "app/repository/outlets"
 	_useOutlets "app/usecase/outlets"
 
+	_contInventory "app/controllers/inventory"
+	_repoInventory "app/repository/inventory"
+	_useInventory "app/usecase/inventory"
+
 	_repoOutletDetail "app/repository/outlet_detail"
 )
 
@@ -95,4 +99,8 @@ func (g *GinRoutes) Init() {
 	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(postgres.Conn)
 	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, timeoutContext)
 	_contOutlets.NewContOutlets(g.G, useOutlet)
+
+	repoInventory := _repoInventory.NewRepoInventory(postgres.Conn)
+	useInventory := _useInventory.NewUseInventory(repoInventory, timeoutContext)
+	_contInventory.NewContInventory(g.G, useInventory)
 }

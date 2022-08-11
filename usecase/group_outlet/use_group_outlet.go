@@ -92,7 +92,7 @@ func (u *useRoleOutlet) Update(ctx context.Context, Claims util.Claims, ID uuid.
 	defer cancel()
 
 	myMap := structs.Map(data)
-	myMap["user_edit"] = Claims.UserID
+	myMap["updated_by"] = Claims.UserID
 	fmt.Println(myMap)
 	err = u.repoRoleOutlet.Update(ctx, ID, myMap)
 	if err != nil {
