@@ -5,6 +5,7 @@ import (
 	"app/models"
 	"app/pkg/app"
 	"app/pkg/logging"
+	"app/pkg/middleware"
 	tool "app/pkg/tools"
 	util "app/pkg/utils"
 	"context"
@@ -23,11 +24,12 @@ func NewContTermAndConditional(e *gin.Engine, useTermAndConditional itermandcond
 		useTermAndConditional: useTermAndConditional,
 	}
 
-	r := e.Group("/v1/cms/termandconditional")
+	r := e.Group("/v1/cms/term-and-conditional")
 	r.POST("", cont.Create)
-	r.PUT("/:id", cont.Update)
+	r.Use(middleware.Authorize())
+	// r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)
-	r.GET("", cont.GetList)
+	// r.GET("", cont.GetList)
 	// r.DELETE("/:id", cont.Delete)
 }
 
@@ -41,7 +43,7 @@ func NewContTermAndConditional(e *gin.Engine, useTermAndConditional itermandcond
 // @Param Language header string true "Language Apps"
 // @Param req body models.TermAndConditionalForm true "this model set from firebase"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/termandconditional [post]
+// @Router /v1/cms/term-and-conditional [post]
 func (c *contTermAndConditional) Create(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -62,7 +64,13 @@ func (c *contTermAndConditional) Create(e *gin.Context) {
 		return
 	}
 
-	err := c.useTermAndConditional.Create(ctx, &form)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	err = c.useTermAndConditional.Create(ctx, claims, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -82,7 +90,7 @@ func (c *contTermAndConditional) Create(e *gin.Context) {
 // @Param req body models.TermAndConditionalForm true "this model set from firebase"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/termandconditional/{id} [put]
+// @Router /v1/cms/term-and-conditional/{id} [put]
 func (c *contTermAndConditional) Update(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -105,12 +113,17 @@ func (c *contTermAndConditional) Update(e *gin.Context) {
 		return
 	}
 
-	err := c.useTermAndConditional.Update(ctx, Id, &form)
+	claims, err := app.GetClaims(e)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
+	err = c.useTermAndConditional.Update(ctx, claims, Id, form)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
 	appE.Response(http.StatusOK, "Ok", nil)
 }
 
@@ -124,7 +137,7 @@ func (c *contTermAndConditional) Update(e *gin.Context) {
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/termandconditionalt/{id} [get]
+// @Router /v1/cms/term-and-conditionalt/{id} [get]
 func (c *contTermAndConditional) GetById(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -140,12 +153,17 @@ func (c *contTermAndConditional) GetById(e *gin.Context) {
 	Id := uuid.FromStringOrNil(id)
 	logger.Info(id)
 
-	data, err := c.useTermAndConditional.GetDataBy(ctx, Id)
+	claims, err := app.GetClaims(e)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
+	data, err := c.useTermAndConditional.GetDataBy(ctx, claims, Id)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
 	appE.Response(http.StatusOK, "Ok", data)
 }
 
@@ -164,31 +182,31 @@ func (c *contTermAndConditional) GetById(e *gin.Context) {
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
 // @Router /v1/cms/sku-management [get]
-func (c *contTermAndConditional) GetList(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
+// func (c *contTermAndConditional) GetList(e *gin.Context) {
+// 	ctx := e.Request.Context()
+// 	if ctx == nil {
+// 		ctx = context.Background()
+// 	}
 
-	var (
-		logger     = logging.Logger{}
-		appE       = app.Gin{C: e}
-		paramquery = models.ParamList{} // ini untuk list
-		// responseList = models.ResponseModelList{}
-	)
+// 	var (
+// 		logger     = logging.Logger{}
+// 		appE       = app.Gin{C: e}
+// 		paramquery = models.ParamList{} // ini untuk list
+// 		// responseList = models.ResponseModelList{}
+// 	)
 
-	logger.Info(util.Stringify(paramquery))
-	httpCode, errMsg := app.BindAndValid(e, &paramquery)
-	if httpCode != 200 {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg) // ResponseErrorList(http.StatusBadRequest, errMsg, responseList)
-		return
-	}
+// 	logger.Info(util.Stringify(paramquery))
+// 	httpCode, errMsg := app.BindAndValid(e, &paramquery)
+// 	if httpCode != 200 {
+// 		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg) // ResponseErrorList(http.StatusBadRequest, errMsg, responseList)
+// 		return
+// 	}
 
-	responseList, err := c.useTermAndConditional.GetList(ctx, paramquery)
-	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
-		return
-	}
+// 	responseList, err := c.useTermAndConditional.GetList(ctx, paramquery)
+// 	if err != nil {
+// 		appE.ResponseError(tool.GetStatusCode(err), err)
+// 		return
+// 	}
 
-	appE.Response(http.StatusOK, "Ok", responseList)
-}
+// 	appE.Response(http.StatusOK, "Ok", responseList)
+// }
