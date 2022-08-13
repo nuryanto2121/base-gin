@@ -54,8 +54,6 @@ definitions:
         type: number
       price_weekend:
         type: number
-      qty:
-        type: integer
       sku_name:
         type: string
     type: object
@@ -151,6 +149,17 @@ definitions:
       role:
         type: string
       role_name:
+        type: string
+    type: object
+  models.SkuMgmForm:
+    properties:
+      duration:
+        type: integer
+      price_weekday:
+        type: number
+      price_weekend:
+        type: number
+      sku_name:
         type: string
     type: object
   models.SosmedForm:
@@ -1218,7 +1227,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.AddSkuManagement'
+          $ref: '#/definitions/models.SkuMgmForm'
       - description: ID
         in: path
         name: id

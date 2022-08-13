@@ -9,7 +9,9 @@ import (
 
 	iskumanagement "app/interface/sku_management"
 	"app/models"
+	util "app/pkg/utils"
 
+	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
 	uuid "github.com/satori/go.uuid"
 )
@@ -23,7 +25,7 @@ func NewSkuManagement(a iskumanagement.Repository, timeout time.Duration) iskuma
 	return &useskumanagement{reposkumanagement: a, contextTimeOut: timeout}
 }
 
-func (u *useskumanagement) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.SkuManagement, err error) {
+func (u *useskumanagement) GetDataBy(ctx context.Context, claims util.Claims, ID uuid.UUID) (result *models.SkuManagement, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -33,7 +35,7 @@ func (u *useskumanagement) GetDataBy(ctx context.Context, ID uuid.UUID) (result 
 	}
 	return result, nil
 }
-func (u *useskumanagement) GetList(ctx context.Context, queryparam models.ParamList) (result models.ResponseModelList, err error) {
+func (u *useskumanagement) GetList(ctx context.Context, claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -55,7 +57,7 @@ func (u *useskumanagement) GetList(ctx context.Context, queryparam models.ParamL
 
 	return result, nil
 }
-func (u *useskumanagement) Create(ctx context.Context, data *models.AddSkuManagement) (err error) {
+func (u *useskumanagement) Create(ctx context.Context, claims util.Claims, data *models.AddSkuManagement) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -65,6 +67,8 @@ func (u *useskumanagement) Create(ctx context.Context, data *models.AddSkuManage
 		return err
 	}
 
+	form.CreatedBy = uuid.FromStringOrNil(claims.UserID)
+	form.UpdatedBy = uuid.FromStringOrNil(claims.UserID)
 	err = u.reposkumanagement.Create(ctx, form)
 	if err != nil {
 		return err
@@ -72,11 +76,10 @@ func (u *useskumanagement) Create(ctx context.Context, data *models.AddSkuManage
 	return nil
 
 }
-func (u *useskumanagement) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
+func (u *useskumanagement) Update(ctx context.Context, claims util.Claims, ID uuid.UUID, data *models.SkuMgmForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var form = models.SkuManagement{}
 	dataOld, err := u.reposkumanagement.GetDataBy(ctx, ID)
 	if err != nil {
 		return err
@@ -86,18 +89,20 @@ func (u *useskumanagement) Update(ctx context.Context, ID uuid.UUID, data interf
 		return models.ErrNotFound
 	}
 
-	err = mapstructure.Decode(data, &form)
-	if err != nil {
-		return err
-	}
+	// err = mapstructure.Decode(data, &dataOld.AddSkuManagement)
+	// if err != nil {
+	// 	return err
+	// }
+	myMap := structs.Map(data)
+	myMap["updated_by"] = claims.UserID
 
-	err = u.reposkumanagement.Update(ctx, ID, form)
+	err = u.reposkumanagement.Update(ctx, ID, myMap)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (u *useskumanagement) Delete(ctx context.Context, ID uuid.UUID) (err error) {
+func (u *useskumanagement) Delete(ctx context.Context, claims util.Claims, ID uuid.UUID) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 

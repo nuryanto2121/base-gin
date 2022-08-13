@@ -64,7 +64,13 @@ func (c *contskumanagement) Create(e *gin.Context) {
 		return
 	}
 
-	err := c.useskumanagement.Create(ctx, &form)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	err = c.useskumanagement.Create(ctx, claims, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -81,7 +87,7 @@ func (c *contskumanagement) Create(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.AddSkuManagement true "this model set from firebase"
+// @Param req body models.SkuMgmForm true "this model set from firebase"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/sku-management/{id} [put]
@@ -94,7 +100,7 @@ func (c *contskumanagement) Update(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.AddSkuManagement{}
+		form   = models.SkuMgmForm{}
 		id     = e.Param("id")
 	)
 
@@ -107,7 +113,13 @@ func (c *contskumanagement) Update(e *gin.Context) {
 		return
 	}
 
-	err := c.useskumanagement.Update(ctx, Id, &form)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	err = c.useskumanagement.Update(ctx, claims, Id, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -142,7 +154,13 @@ func (c *contskumanagement) GetById(e *gin.Context) {
 	Id := uuid.FromStringOrNil(id)
 	logger.Info(id)
 
-	data, err := c.useskumanagement.GetDataBy(ctx, Id)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	data, err := c.useskumanagement.GetDataBy(ctx, claims, Id)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -186,7 +204,13 @@ func (c *contskumanagement) GetList(e *gin.Context) {
 		return
 	}
 
-	responseList, err := c.useskumanagement.GetList(ctx, paramquery)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	responseList, err := c.useskumanagement.GetList(ctx, claims, paramquery)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -221,7 +245,13 @@ func (c *contskumanagement) Delete(e *gin.Context) {
 	Id := uuid.FromStringOrNil(id)
 	logger.Info(id)
 
-	err := c.useskumanagement.Delete(ctx, Id)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	err = c.useskumanagement.Delete(ctx, claims, Id)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return

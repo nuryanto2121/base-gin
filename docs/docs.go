@@ -1576,7 +1576,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddSkuManagement"
+                            "$ref": "#/definitions/models.SkuMgmForm"
                         }
                     },
                     {
@@ -2137,9 +2137,6 @@ var doc = `{
                 "price_weekend": {
                     "type": "number"
                 },
-                "qty": {
-                    "type": "integer"
-                },
                 "sku_name": {
                     "type": "string"
                 }
@@ -2286,6 +2283,23 @@ var doc = `{
                     "type": "string"
                 },
                 "role_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SkuMgmForm": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "integer"
+                },
+                "price_weekday": {
+                    "type": "number"
+                },
+                "price_weekend": {
+                    "type": "number"
+                },
+                "sku_name": {
                     "type": "string"
                 }
             }
