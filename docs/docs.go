@@ -983,7 +983,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddOutlets"
+                            "$ref": "#/definitions/models.OutletForm"
                         }
                     }
                 ],
@@ -2111,17 +2111,6 @@ var doc = `{
                 }
             }
         },
-        "models.AddOutlets": {
-            "type": "object",
-            "properties": {
-                "outlet_city": {
-                    "type": "string"
-                },
-                "outlet_name": {
-                    "type": "string"
-                }
-            }
-        },
         "models.AddRoles": {
             "type": "object",
             "properties": {
@@ -2142,11 +2131,14 @@ var doc = `{
                 "duration": {
                     "type": "integer"
                 },
-                "price_week_day": {
+                "price_weekday": {
                     "type": "number"
                 },
-                "price_week_end": {
+                "price_weekend": {
                     "type": "number"
+                },
+                "qty": {
+                    "type": "integer"
                 },
                 "sku_name": {
                     "type": "string"

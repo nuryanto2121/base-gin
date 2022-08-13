@@ -48,15 +48,40 @@ func (u *useOutlets) GetDataByRole(ctx context.Context, Claims util.Claims, role
 	return result, nil
 }
 
-func (u *useOutlets) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Outlets, err error) {
+func (u *useOutlets) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (interface{}, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoOutlets.GetDataBy(ctx, "id", ID.String())
+	var (
+		dataHeader = &models.Outlets{}
+		result     = &models.OutletForm{}
+		queryparam models.ParamList
+	)
+
+	dataHeader, err := u.repoOutlets.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	err = mapstructure.Decode(dataHeader.AddOutlets, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	queryparam.InitSearch = fmt.Sprintf("user_id = '%s' and o.id = '%s'", Claims.UserID, ID)
+	queryparam.Page = 1
+	queryparam.PerPage = 10000
+
+	detail, err := u.repoOutlets.GetList(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	rest := map[string]interface{}{
+		"dataHeader": result,
+		"dataDetail": detail,
+	}
+
+	return rest, nil
 }
 
 func (u *useOutlets) GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error) {
@@ -141,21 +166,20 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 	}
 	go func() {
 		//for root insert to role_outlet
-		if strings.ToLower(Claims.UserName) == "root" {
-			logger := logging.Logger{}
-			cxts := context.Background()
-			roleOutlet := &models.RoleOutlet{
-				AddRoleOutlet: models.AddRoleOutlet{
-					Role:     "root",
-					OutletId: mOutlets.Id,
-					UserId:   userID,
-				},
-			}
-			err := u.repoRoleOutlet.Create(cxts, roleOutlet)
-			if err != nil {
-				logger.Error("error create role outlet ", err)
-			}
+		logger := logging.Logger{}
+		cxts := context.Background()
+		roleOutlet := &models.RoleOutlet{
+			AddRoleOutlet: models.AddRoleOutlet{
+				Role:     "root",
+				OutletId: mOutlets.Id,
+				UserId:   userID,
+			},
 		}
+		err := u.repoRoleOutlet.Create(cxts, roleOutlet)
+		if err != nil {
+			logger.Error("error create role outlet ", err)
+		}
+
 	}()
 	return nil
 

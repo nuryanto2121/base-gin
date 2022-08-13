@@ -65,12 +65,12 @@ func (c *contOutlets) GetDataByRole(e *gin.Context) {
 
 	claims, err := app.GetClaims(e)
 	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 	data, err := c.useOutlets.GetDataByRole(ctx, claims, role)
 	if err != nil {
-		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
@@ -107,12 +107,12 @@ func (c *contOutlets) GetDataBy(e *gin.Context) {
 	}
 	claims, err := app.GetClaims(e)
 	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 	data, err := c.useOutlets.GetDataBy(ctx, claims, ID)
 	if err != nil {
-		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
@@ -306,7 +306,7 @@ func (c *contOutlets) Delete(e *gin.Context) {
 	}
 	err = c.useOutlets.Delete(ctx, claims, ID)
 	if err != nil {
-		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 

@@ -37,6 +37,23 @@ func (db *repoOutletDetail) GetDataBy(ctx context.Context, ID uuid.UUID) (result
 	}
 	return mOutletDetail, nil
 }
+func (db *repoOutletDetail) GetListBy(ctx context.Context, ID uuid.UUID) (result []*models.OutletDetail, err error) {
+	var (
+		logger        = logging.Logger{}
+		mOutletDetail = []*models.OutletDetail{}
+	)
+	query := db.Conn.Where("outlet_id = ? ", ID).WithContext(ctx).Find(mOutletDetail)
+
+	err = query.Error
+	if err != nil {
+		logger.Error("repo outlet detail GetDataBy ", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return mOutletDetail, nil
+}
 
 func (db *repoOutletDetail) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OutletDetail, err error) {
 

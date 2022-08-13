@@ -18,8 +18,8 @@ type OutletList struct {
 	OutletCity         string    `json:"outlet_city"`
 	SkuName            string    `json:"sku_name"`
 	Qty                int64     `json:"qty"`
-	PriceWeekDay       float64   `json:"price_weekday"`
-	PriceWeekEnd       float64   `json:"price_weekend"`
+	PriceWeekday       float64   `json:"price_weekday"`
+	PriceWeekend       float64   `json:"price_weekend"`
 	OutletPriceWeekDay float64   `json:"outlet_price_weekday"`
 	OutletPriceWeekEnd float64   `json:"outlet_price_weekend"`
 }

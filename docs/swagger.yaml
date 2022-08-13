@@ -37,13 +37,6 @@ definitions:
       outlet_id:
         type: string
     type: object
-  models.AddOutlets:
-    properties:
-      outlet_city:
-        type: string
-      outlet_name:
-        type: string
-    type: object
   models.AddRoles:
     properties:
       outlets:
@@ -57,10 +50,12 @@ definitions:
     properties:
       duration:
         type: integer
-      price_week_day:
+      price_weekday:
         type: number
-      price_week_end:
+      price_weekend:
         type: number
+      qty:
+        type: integer
       sku_name:
         type: string
     type: object
@@ -801,7 +796,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.AddOutlets'
+          $ref: '#/definitions/models.OutletForm'
       produces:
       - application/json
       responses:

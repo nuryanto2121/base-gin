@@ -103,8 +103,8 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		 ,o.outlet_city 
 		 ,sm.sku_name 
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_week_day 
-		 ,sm.price_week_end 
+		 ,sm.price_weekday 
+		 ,sm.price_weekend 
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		 ,ro.user_id 
@@ -131,8 +131,8 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		 ,o.outlet_city 
 		 ,sm.sku_name 
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_week_day 
-		 ,sm.price_week_end 
+		 ,sm.price_weekday 
+		 ,sm.price_weekend 
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		 ,ro.user_id 
@@ -229,8 +229,8 @@ func (db *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (
 		 ,o.outlet_city 
 		 ,sm.sku_name 
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_week_day 
-		 ,sm.price_week_end 
+		 ,sm.price_weekday 
+		 ,sm.price_weekend 
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		 ,ro.user_id 

@@ -19,7 +19,7 @@ type Repository interface {
 }
 
 type Usecase interface {
-	GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Outlets, err error)
+	GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (interface{}, error)
 	GetDataByRole(ctx context.Context, Claims util.Claims, role string) (result []*models.Outlets, err error)
 	GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
 	Create(ctx context.Context, Claims util.Claims, data *models.OutletForm) (err error)
