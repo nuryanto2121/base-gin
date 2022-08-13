@@ -2500,9 +2500,6 @@ var doc = `{
                 "id": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "updated_at": {
                     "type": "string"
                 },
