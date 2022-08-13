@@ -5,6 +5,7 @@ import (
 	"app/models"
 	"app/pkg/app"
 	"app/pkg/logging"
+	"app/pkg/middleware"
 	tool "app/pkg/tools"
 	util "app/pkg/utils"
 	"context"
@@ -24,6 +25,7 @@ func NewContHolidays(e *gin.Engine, useHolidays iholidays.Usecase) {
 	}
 
 	r := e.Group("/v1/cms/holidays")
+	r.Use(middleware.Authorize())
 	r.POST("", cont.Create)
 	r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)
@@ -62,7 +64,13 @@ func (c *ContHolidays) Create(e *gin.Context) {
 		return
 	}
 
-	err := c.useHolidays.Create(ctx, &form)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	err = c.useHolidays.Create(ctx, claims, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -79,8 +87,8 @@ func (c *ContHolidays) Create(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.HolidayForm true "this model set from firebase"
 // @Param id path string true "ID"
+// @Param req body models.HolidayForm true "this model set from firebase"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/holidays/{id} [put]
 func (c *ContHolidays) Update(e *gin.Context) {
@@ -92,20 +100,26 @@ func (c *ContHolidays) Update(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.HolidayForm{}
+		form   = &models.HolidayForm{}
 		id     = e.Param("id")
 	)
 
 	Id := uuid.FromStringOrNil(id)
 	// validasi and bind to struct
-	httpCode, errMsg := app.BindAndValidMulti(e, &form)
+	httpCode, errMsg := app.BindAndValidMulti(e, form)
 	logger.Info(util.Stringify(form))
 	if httpCode != 200 {
 		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
 		return
 	}
 
-	err := c.useHolidays.Update(ctx, Id, &form)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	err = c.useHolidays.Update(ctx, claims, Id, form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -140,7 +154,13 @@ func (c *ContHolidays) GetById(e *gin.Context) {
 	Id := uuid.FromStringOrNil(id)
 	logger.Info(id)
 
-	data, err := c.useHolidays.GetDataBy(ctx, Id)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	data, err := c.useHolidays.GetDataBy(ctx, claims, Id)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -184,7 +204,13 @@ func (c *ContHolidays) GetList(e *gin.Context) {
 		return
 	}
 
-	responseList, err := c.useHolidays.GetList(ctx, paramquery)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	responseList, err := c.useHolidays.GetList(ctx, claims, paramquery)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -219,7 +245,13 @@ func (c *ContHolidays) Delete(e *gin.Context) {
 	Id := uuid.FromStringOrNil(id)
 	logger.Info(id)
 
-	err := c.useHolidays.Delete(ctx, Id)
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	err = c.useHolidays.Delete(ctx, claims, Id)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return

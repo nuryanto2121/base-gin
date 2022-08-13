@@ -5,6 +5,7 @@ import (
 	"app/models"
 	"app/pkg/app"
 	"app/pkg/logging"
+	"app/pkg/middleware"
 	tool "app/pkg/tools"
 	util "app/pkg/utils"
 	"context"
@@ -24,6 +25,7 @@ func NewContSkuManagement(e *gin.Engine, useskumanagement iskumanagement.Usecase
 	}
 
 	r := e.Group("/v1/cms/sku-management")
+	r.Use(middleware.Authorize())
 	r.POST("", cont.Create)
 	r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)

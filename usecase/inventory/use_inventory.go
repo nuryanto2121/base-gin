@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/fatih/structs"
-	"github.com/mitchellh/mapstructure"
+	"github.com/jinzhu/copier"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -71,7 +71,7 @@ func (u *useInventory) Create(ctx context.Context, Claims util.Claims, data *mod
 	)
 
 	// mapping to struct model saRole
-	err = mapstructure.Decode(data, &mInventory.AddInventory)
+	err = copier.Copy(&mInventory.AddInventory, data)
 	if err != nil {
 		return err
 	}

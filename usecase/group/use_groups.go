@@ -10,7 +10,7 @@ import (
 	igroup "app/interface/group"
 	"app/models"
 
-	"github.com/mitchellh/mapstructure"
+	"github.com/jinzhu/copier"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -60,7 +60,7 @@ func (u *useRoles) Create(ctx context.Context, data *models.RoleForm) (err error
 	defer cancel()
 
 	var form = &models.Roles{}
-	err = mapstructure.Decode(data, &form)
+	err = copier.Copy(&form, data)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (u *useRoles) Update(ctx context.Context, ID uuid.UUID, data interface{}) (
 		return models.ErrNotFound
 	}
 
-	err = mapstructure.Decode(data, &form)
+	err = copier.Copy(&form, data)
 	if err != nil {
 		return err
 	}

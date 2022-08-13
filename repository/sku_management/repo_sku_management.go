@@ -45,6 +45,7 @@ func (db *reposkumanagement) GetList(ctx context.Context, queryparam models.Para
 		sWhere   = ""
 		logger   = logging.Logger{}
 		orderBy  = queryparam.SortField
+		query    *gorm.DB
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -68,20 +69,16 @@ func (db *reposkumanagement) GetList(ctx context.Context, queryparam models.Para
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and " + queryparam.Search
+			sWhere += " and (lower(sku_name) LIKE ?)"
 		} else {
-			sWhere += queryparam.Search
+			sWhere += "(lower(sku_name) LIKE ?)"
 		}
+		query = db.Conn.WithContext(ctx).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+	} else {
+		query = db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
-	// end where
-	if pageNum >= 0 && pageSize > 0 {
-		query := db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
-		err = query.Error
-	} else {
-		query := db.Conn.WithContext(ctx).Where(sWhere).Order(orderBy).Find(&result)
-		err = query.Error
-	}
+	err = query.Error
 
 	if err != nil {
 		logger.Error("repo sku management GetList ", err)
@@ -127,6 +124,7 @@ func (db *reposkumanagement) Count(ctx context.Context, queryparam models.ParamL
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
+		query  *gorm.DB
 	)
 	result = 0
 
@@ -137,12 +135,15 @@ func (db *reposkumanagement) Count(ctx context.Context, queryparam models.ParamL
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and " + queryparam.Search
+			sWhere += " and (lower(sku_name) LIKE ?)"
+		} else {
+			sWhere += "(lower(sku_name) LIKE ?)"
 		}
+		query = db.Conn.WithContext(ctx).Model(models.SkuManagement{}).Where(sWhere, queryparam.Search).Count(&result)
+	} else {
+		query = db.Conn.WithContext(ctx).Model(models.SkuManagement{}).Where(sWhere).Count(&result)
 	}
 	// end where
-
-	query := db.Conn.WithContext(ctx).Model(&models.SkuManagement{}).Where(sWhere).Count(&result)
 
 	err = query.Error
 	if err != nil {

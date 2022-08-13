@@ -2,6 +2,7 @@ package repoholidays
 
 import (
 	"context"
+	"fmt"
 
 	iholidays "app/interface/holidays"
 	"app/models"
@@ -20,12 +21,12 @@ func NewRepoHolidays(Conn *gorm.DB) iholidays.Repository {
 	return &repoHolidays{Conn}
 }
 
-func (db *repoHolidays) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Holidays, err error) {
+func (db *repoHolidays) GetDataBy(ctx context.Context, key, value string) (result *models.Holidays, err error) {
 	var (
 		sysHoliday = &models.Holidays{}
 		logger     = logging.Logger{}
 	)
-	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).First(sysHoliday)
+	query := db.Conn.WithContext(ctx).Where(fmt.Sprintf("%s = ?", key), value).First(sysHoliday)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo holiday GetDataBy ", err)
@@ -75,7 +76,7 @@ func (db *repoHolidays) GetList(ctx context.Context, queryparam models.ParamList
 		}
 		query = db.Conn.WithContext(ctx).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	} else {
-		query = db.Conn.WithContext(ctx).Where(sWhere).Order(orderBy).Find(&result)
+		query = db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
 	err = query.Error

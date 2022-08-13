@@ -9,8 +9,10 @@ import (
 
 	iholidays "app/interface/holidays"
 	"app/models"
+	util "app/pkg/utils"
 
-	"github.com/mitchellh/mapstructure"
+	"github.com/fatih/structs"
+	"github.com/jinzhu/copier"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -23,17 +25,17 @@ func NewHolidaysHolidays(a iholidays.Repository, timeout time.Duration) iholiday
 	return &useHolidays{repoHolidays: a, contextTimeOut: timeout}
 }
 
-func (u *useHolidays) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Holidays, err error) {
+func (u *useHolidays) GetDataBy(ctx context.Context, claims util.Claims, ID uuid.UUID) (result *models.Holidays, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoHolidays.GetDataBy(ctx, ID)
+	result, err = u.repoHolidays.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return result, err
 	}
 	return result, nil
 }
-func (u *useHolidays) GetList(ctx context.Context, queryparam models.ParamList) (result models.ResponseModelList, err error) {
+func (u *useHolidays) GetList(ctx context.Context, claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -55,16 +57,27 @@ func (u *useHolidays) GetList(ctx context.Context, queryparam models.ParamList) 
 
 	return result, nil
 }
-func (u *useHolidays) Create(ctx context.Context, data *models.HolidayForm) (err error) {
+func (u *useHolidays) Create(ctx context.Context, claims util.Claims, data *models.HolidayForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	//check is exist date
+	dataOld, err := u.repoHolidays.GetDataBy(ctx, "DATE(holiday_date)", data.HolidayDate.Format("2006-01-02"))
+	if err != nil {
+		return err
+	}
+	if dataOld.Id != uuid.Nil {
+		return models.ErrDataAlreadyExist
+	}
+
 	var form = &models.Holidays{}
-	err = mapstructure.Decode(data, &form)
+	err = copier.Copy(&form, data)
 	if err != nil {
 		return err
 	}
 
+	form.CreatedBy = uuid.FromStringOrNil(claims.UserID)
+	form.UpdatedBy = uuid.FromStringOrNil(claims.UserID)
 	err = u.repoHolidays.Create(ctx, form)
 	if err != nil {
 		return err
@@ -72,12 +85,12 @@ func (u *useHolidays) Create(ctx context.Context, data *models.HolidayForm) (err
 	return nil
 
 }
-func (u *useHolidays) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
+func (u *useHolidays) Update(ctx context.Context, claims util.Claims, ID uuid.UUID, data *models.HolidayForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var form = models.Holidays{}
-	dataOld, err := u.repoHolidays.GetDataBy(ctx, ID)
+	// var form = &models.Holidays{}
+	dataOld, err := u.repoHolidays.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return err
 	}
@@ -86,18 +99,16 @@ func (u *useHolidays) Update(ctx context.Context, ID uuid.UUID, data interface{}
 		return models.ErrNotFound
 	}
 
-	err = mapstructure.Decode(data, &form)
-	if err != nil {
-		return err
-	}
+	myMap := structs.Map(data)
+	myMap["updated_by"] = claims.UserID
 
-	err = u.repoHolidays.Update(ctx, ID, form)
+	err = u.repoHolidays.Update(ctx, ID, myMap)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (u *useHolidays) Delete(ctx context.Context, ID uuid.UUID) (err error) {
+func (u *useHolidays) Delete(ctx context.Context, claims util.Claims, ID uuid.UUID) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 

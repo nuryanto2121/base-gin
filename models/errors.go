@@ -19,6 +19,7 @@ var (
 	ErrAccountNotFound           = errors.New("account_not_found")
 	ErrAccountNotActive          = errors.New("account_not_active")
 	ErrAccountAlreadyExist       = errors.New("account_already_exist")
+	ErrDataAlreadyExist          = errors.New("data_already_exist")
 	ErrVersioningNotFound        = errors.New("versioning_not_found")
 	ErrVersioningHeaderNotFound  = errors.New("versioning_header_not_found")
 	ErrUpdateYourApp             = errors.New("update_your_app")

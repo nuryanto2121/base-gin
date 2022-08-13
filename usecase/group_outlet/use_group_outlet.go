@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/fatih/structs"
-	"github.com/mitchellh/mapstructure"
+	"github.com/jinzhu/copier"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -71,7 +71,7 @@ func (u *useRoleOutlet) Create(ctx context.Context, Claims util.Claims, data *mo
 	)
 
 	// mapping to struct model saRole
-	err = mapstructure.Decode(data, &mRoleOutlet.AddRoleOutlet)
+	err = copier.Copy(&mRoleOutlet.AddRoleOutlet, data)
 	if err != nil {
 		return err
 	}

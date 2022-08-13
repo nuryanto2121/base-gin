@@ -12,6 +12,7 @@ require (
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-ini/ini v1.66.6
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/jinzhu/copier v0.3.5
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nicksnyder/go-i18n/v2 v2.2.0
 	github.com/olivere/elastic/v7 v7.0.32

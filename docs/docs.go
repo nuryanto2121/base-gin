@@ -456,6 +456,13 @@ var doc = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "description": "this model set from firebase",
                         "name": "req",
                         "in": "body",
@@ -463,13 +470,6 @@ var doc = `{
                         "schema": {
                             "$ref": "#/definitions/models.HolidayForm"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "description": "ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -2142,10 +2142,10 @@ var doc = `{
                 "duration": {
                     "type": "integer"
                 },
-                "price_weekday": {
+                "price_week_day": {
                     "type": "number"
                 },
-                "price_weekend": {
+                "price_week_end": {
                     "type": "number"
                 },
                 "sku_name": {
