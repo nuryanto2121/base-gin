@@ -1,4 +1,4 @@
-package igroup
+package irole
 
 import (
 	"app/models"

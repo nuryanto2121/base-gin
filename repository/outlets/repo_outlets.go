@@ -51,7 +51,7 @@ func (db *repoOutlets) GetDataBy(ctx context.Context, key, value string) (result
 	if err != nil {
 		logger.Error("repo outlet GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
-			return nil, models.ErrNotFound
+			return mOutlets, models.ErrNotFound
 		}
 		return nil, err
 	}

@@ -87,8 +87,8 @@ func (u *useUserRole) Create(ctx context.Context, Claims util.Claims, data *mode
 		return err
 	}
 
-	mUserRole.CreatedBy = uuid.FromStringOrNil(Claims.Id)
-	mUserRole.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+	mUserRole.CreatedBy = uuid.FromStringOrNil(Claims.UserID)
+	mUserRole.UpdatedBy = uuid.FromStringOrNil(Claims.UserID)
 
 	err = u.repoUserRole.Create(ctx, &mUserRole)
 	if err != nil {

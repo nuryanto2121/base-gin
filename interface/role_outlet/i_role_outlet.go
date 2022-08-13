@@ -1,4 +1,4 @@
-package igroupoutlet
+package iroleoutlet
 
 import (
 	"app/models"

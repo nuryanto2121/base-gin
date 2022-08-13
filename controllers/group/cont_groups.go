@@ -1,7 +1,7 @@
 package contgroup
 
 import (
-	igroup "app/interface/group"
+	irole "app/interface/role"
 	"app/models"
 	"app/pkg/app"
 	"app/pkg/logging"
@@ -16,10 +16,10 @@ import (
 )
 
 type ContRoles struct {
-	useRoles igroup.Usecase
+	useRoles irole.Usecase
 }
 
-func NewContRole(e *gin.Engine, useRoles igroup.Usecase) {
+func NewContRole(e *gin.Engine, useRoles irole.Usecase) {
 	cont := ContRoles{
 		useRoles: useRoles,
 	}

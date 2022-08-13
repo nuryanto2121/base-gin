@@ -97,7 +97,7 @@ func (g *GinRoutes) Init() {
 	_contSkumanagement.NewContSkuManagement(g.G, useskumanagement)
 	repoOutlet := _repoOutlets.NewRepoOutlets(postgres.Conn)
 	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(postgres.Conn)
-	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, timeoutContext)
+	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, repoRoleOutlet, timeoutContext)
 	_contOutlets.NewContOutlets(g.G, useOutlet)
 
 	repoInventory := _repoInventory.NewRepoInventory(postgres.Conn)

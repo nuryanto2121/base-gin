@@ -3,7 +3,7 @@ package repogroups
 import (
 	"context"
 
-	igroup "app/interface/group"
+	irole "app/interface/role"
 	"app/models"
 	"app/pkg/logging"
 	"app/pkg/setting"
@@ -16,7 +16,7 @@ type repoRoles struct {
 	Conn *gorm.DB
 }
 
-func NewRepoRoles(Conn *gorm.DB) igroup.Repository {
+func NewRepoRoles(Conn *gorm.DB) irole.Repository {
 	return &repoRoles{Conn}
 }
 

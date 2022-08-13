@@ -3,7 +3,9 @@ package useoutlets
 import (
 	ioutletDetail "app/interface/outlet_detail"
 	ioutlets "app/interface/outlets"
+	iroleoutlet "app/interface/role_outlet"
 	"app/models"
+	"app/pkg/logging"
 	util "app/pkg/utils"
 	"context"
 	"fmt"
@@ -11,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
 
 	uuid "github.com/satori/go.uuid"
@@ -20,13 +21,18 @@ import (
 type useOutlets struct {
 	repoOutlets      ioutlets.Repository
 	repoOutletDetail ioutletDetail.Repository
+	repoRoleOutlet   iroleoutlet.Repository
 	contextTimeOut   time.Duration
 }
 
-func NewUseOutlets(a ioutlets.Repository, b ioutletDetail.Repository, timeout time.Duration) ioutlets.Usecase {
+func NewUseOutlets(a ioutlets.Repository,
+	b ioutletDetail.Repository,
+	c iroleoutlet.Repository,
+	timeout time.Duration) ioutlets.Usecase {
 	return &useOutlets{
 		repoOutlets:      a,
 		repoOutletDetail: b,
+		repoRoleOutlet:   c,
 		contextTimeOut:   timeout,
 	}
 }
@@ -88,6 +94,7 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 	defer cancel()
 	var (
 		mOutlets = models.Outlets{}
+		userID   = uuid.FromStringOrNil(Claims.UserID)
 	)
 
 	// mapping to struct model saRole
@@ -97,16 +104,16 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 	}
 	//check outlet by name
 	isExist, err := u.repoOutlets.GetDataBy(ctx, "outlet_name", data.OutletName)
-	if err != nil {
-		return err
+	if err != nil && err != models.ErrNotFound {
+		return models.ErrDataAlreadyExist
 	}
 
 	if isExist != nil && isExist.Id != uuid.Nil {
 		return models.ErrConflict
 	}
 
-	mOutlets.CreatedBy = uuid.FromStringOrNil(Claims.Id)
-	mOutlets.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+	mOutlets.CreatedBy = userID
+	mOutlets.UpdatedBy = userID
 
 	err = u.repoOutlets.Create(ctx, &mOutlets)
 	if err != nil {
@@ -123,8 +130,8 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 			return err
 		}
 
-		mOutletDetail.CreatedBy = uuid.FromStringOrNil(Claims.Id)
-		mOutletDetail.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+		mOutletDetail.CreatedBy = userID
+		mOutletDetail.UpdatedBy = userID
 
 		err = u.repoOutletDetail.Create(ctx, &mOutletDetail)
 		if err != nil {
@@ -132,21 +139,80 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 		}
 
 	}
+	go func() {
+		//for root insert to role_outlet
+		if strings.ToLower(Claims.UserName) == "root" {
+			logger := logging.Logger{}
+			cxts := context.Background()
+			roleOutlet := &models.RoleOutlet{
+				AddRoleOutlet: models.AddRoleOutlet{
+					Role:     "root",
+					OutletId: mOutlets.Id,
+					UserId:   userID,
+				},
+			}
+			err := u.repoRoleOutlet.Create(cxts, roleOutlet)
+			if err != nil {
+				logger.Error("error create role outlet ", err)
+			}
+		}
+	}()
 	return nil
 
 }
 
-func (u *useOutlets) Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.AddOutlets) (err error) {
+func (u *useOutlets) Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.OutletForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	myMap := structs.Map(data)
-	myMap["updated_by"] = Claims.UserID
-	fmt.Println(myMap)
-	err = u.repoOutlets.Update(ctx, ID, myMap)
+	var (
+		mOutlets = models.Outlets{}
+		userID   = uuid.FromStringOrNil(Claims.UserID)
+	)
+
+	//check Id is exist
+	dataUpdateHeader, err := u.repoOutlets.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return err
 	}
+
+	err = mapstructure.Decode(data, &dataUpdateHeader.AddOutlets)
+	if err != nil {
+		return err
+	}
+
+	//update header
+	dataUpdateHeader.UpdatedBy = userID
+	err = u.repoOutlets.Update(ctx, ID, dataUpdateHeader)
+	if err != nil {
+		return err
+	}
+
+	//delete then insert detail
+	err = u.repoOutletDetail.Delete(ctx, ID)
+	if err != nil {
+		return err
+	}
+	//insert detail
+	for _, val := range data.OutletDetail {
+		var mOutletDetail = models.OutletDetail{}
+		val.OutletId = mOutlets.Id
+
+		err = mapstructure.Decode(val, &mOutletDetail.AddOutletDetail)
+		if err != nil {
+			return err
+		}
+
+		mOutletDetail.CreatedBy = userID
+		mOutletDetail.UpdatedBy = userID
+
+		err = u.repoOutletDetail.Create(ctx, &mOutletDetail)
+		if err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }
 

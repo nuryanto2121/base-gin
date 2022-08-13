@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	igroup "app/interface/group"
+	irole "app/interface/role"
 	"app/models"
 
 	"github.com/jinzhu/copier"
@@ -15,11 +15,11 @@ import (
 )
 
 type useRoles struct {
-	repoRoles      igroup.Repository
+	repoRoles      irole.Repository
 	contextTimeOut time.Duration
 }
 
-func NewRoles(a igroup.Repository, timeout time.Duration) igroup.Usecase {
+func NewRoles(a irole.Repository, timeout time.Duration) irole.Usecase {
 	return &useRoles{repoRoles: a, contextTimeOut: timeout}
 }
 

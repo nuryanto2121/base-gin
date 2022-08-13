@@ -125,7 +125,7 @@ func (db *repoOutletDetail) Delete(ctx context.Context, ID uuid.UUID) error {
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where("outlet_detail_id = ?", ID).Delete(&models.OutletDetail{})
+	query := db.Conn.Where("outlet_id = ?", ID).Delete(&models.OutletDetail{})
 
 	err = query.Error
 	if err != nil {

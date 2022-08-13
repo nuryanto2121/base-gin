@@ -76,8 +76,8 @@ func (u *useInventory) Create(ctx context.Context, Claims util.Claims, data *mod
 		return err
 	}
 
-	mInventory.CreatedBy = uuid.FromStringOrNil(Claims.Id)
-	mInventory.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+	mInventory.CreatedBy = uuid.FromStringOrNil(Claims.UserID)
+	mInventory.UpdatedBy = uuid.FromStringOrNil(Claims.UserID)
 
 	err = u.repoInventory.Create(ctx, &mInventory)
 	if err != nil {

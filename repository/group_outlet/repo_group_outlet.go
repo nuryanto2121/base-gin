@@ -3,7 +3,7 @@ package repogroupoutlet
 import (
 	"context"
 
-	igroupoutlet "app/interface/group_outlet"
+	iroleoutlet "app/interface/role_outlet"
 	"app/models"
 	"app/pkg/logging"
 	"app/pkg/setting"
@@ -16,7 +16,7 @@ type repoRoleOutlet struct {
 	Conn *gorm.DB
 }
 
-func NewRepoRoleOutlet(Conn *gorm.DB) igroupoutlet.Repository {
+func NewRepoRoleOutlet(Conn *gorm.DB) iroleoutlet.Repository {
 	return &repoRoleOutlet{Conn}
 }
 

@@ -1,7 +1,7 @@
 package usegroupoutlet
 
 import (
-	igroupoutlet "app/interface/group_outlet"
+	iroleoutlet "app/interface/role_outlet"
 	"app/models"
 	util "app/pkg/utils"
 	"context"
@@ -17,11 +17,11 @@ import (
 )
 
 type useRoleOutlet struct {
-	repoRoleOutlet igroupoutlet.Repository
+	repoRoleOutlet iroleoutlet.Repository
 	contextTimeOut time.Duration
 }
 
-func NewUseRoleOutlet(a igroupoutlet.Repository, timeout time.Duration) igroupoutlet.Usecase {
+func NewUseRoleOutlet(a iroleoutlet.Repository, timeout time.Duration) iroleoutlet.Usecase {
 	return &useRoleOutlet{repoRoleOutlet: a, contextTimeOut: timeout}
 }
 
@@ -76,8 +76,8 @@ func (u *useRoleOutlet) Create(ctx context.Context, Claims util.Claims, data *mo
 		return err
 	}
 
-	mRoleOutlet.CreatedBy = uuid.FromStringOrNil(Claims.Id)
-	mRoleOutlet.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+	mRoleOutlet.CreatedBy = uuid.FromStringOrNil(Claims.UserID)
+	mRoleOutlet.UpdatedBy = uuid.FromStringOrNil(Claims.UserID)
 
 	err = u.repoRoleOutlet.Create(ctx, &mRoleOutlet)
 	if err != nil {

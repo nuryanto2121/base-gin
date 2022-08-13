@@ -63,7 +63,7 @@ func (u *useHolidays) Create(ctx context.Context, claims util.Claims, data *mode
 
 	//check is exist date
 	dataOld, err := u.repoHolidays.GetDataBy(ctx, "DATE(holiday_date)", data.HolidayDate.Format("2006-01-02"))
-	if err != nil {
+	if err != nil && err != models.ErrNotFound {
 		return err
 	}
 	if dataOld.Id != uuid.Nil {

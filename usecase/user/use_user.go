@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	igroupoutlet "app/interface/group_outlet"
+	iroleoutlet "app/interface/role_outlet"
 	iusers "app/interface/user"
 	iusergroup "app/interface/user_group"
 	"app/models"
@@ -20,11 +20,11 @@ import (
 type useSysUser struct {
 	repoUser       iusers.Repository
 	repoUserRole   iusergroup.Repository
-	useRoleOutlet  igroupoutlet.Usecase
+	useRoleOutlet  iroleoutlet.Usecase
 	contextTimeOut time.Duration
 }
 
-func NewUserSysUser(a iusers.Repository, b iusergroup.Repository, c igroupoutlet.Usecase, timeout time.Duration) iusers.Usecase {
+func NewUserSysUser(a iusers.Repository, b iusergroup.Repository, c iroleoutlet.Usecase, timeout time.Duration) iusers.Usecase {
 	return &useSysUser{
 		repoUser:       a,
 		repoUserRole:   b,

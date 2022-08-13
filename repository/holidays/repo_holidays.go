@@ -31,7 +31,7 @@ func (db *repoHolidays) GetDataBy(ctx context.Context, key, value string) (resul
 	if err != nil {
 		logger.Error("repo holiday GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
-			return nil, models.ErrNotFound
+			return sysHoliday, models.ErrNotFound
 		}
 		return nil, err
 	}
