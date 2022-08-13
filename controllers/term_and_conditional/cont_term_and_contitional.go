@@ -27,7 +27,7 @@ func NewContTermAndConditional(e *gin.Engine, useTermAndConditional itermandcond
 	r.POST("", cont.Create)
 	r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)
-	// r.GET("", cont.GetList)
+	r.GET("", cont.GetList)
 	// r.DELETE("/:id", cont.Delete)
 }
 
@@ -39,7 +39,7 @@ func NewContTermAndConditional(e *gin.Engine, useTermAndConditional itermandcond
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.TermAndConditional true "this model set from firebase"
+// @Param req body models.TermAndConditionalForm true "this model set from firebase"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/termandconditional [post]
 func (c *contTermAndConditional) Create(e *gin.Context) {
@@ -51,7 +51,7 @@ func (c *contTermAndConditional) Create(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.TermAndConditional{}
+		form   = models.TermAndConditionalForm{}
 	)
 
 	// validasi and bind to struct
@@ -79,7 +79,7 @@ func (c *contTermAndConditional) Create(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.TermAndConditional true "this model set from firebase"
+// @Param req body models.TermAndConditionalForm true "this model set from firebase"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/termandconditional/{id} [put]
@@ -92,7 +92,7 @@ func (c *contTermAndConditional) Update(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.TermAndConditional{}
+		form   = models.TermAndConditionalForm{}
 		id     = e.Param("id")
 	)
 
@@ -147,4 +147,48 @@ func (c *contTermAndConditional) GetById(e *gin.Context) {
 	}
 
 	appE.Response(http.StatusOK, "Ok", data)
+}
+
+// GetList :
+// @Summary GetList SkuManagement
+// @Security ApiKeyAuth
+// @Tags SkuManagement
+// @Produce  json
+// @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
+// @Param Language header string true "Language Apps"
+// @Param page query int true "Page"
+// @Param perpage query int true "PerPage"
+// @Param search query string false "Search"
+// @Param initsearch query string false "InitSearch"
+// @Param sortfield query string false "SortField"
+// @Success 200 {object} models.ResponseModelList
+// @Router /v1/cms/sku-management [get]
+func (c *contTermAndConditional) GetList(e *gin.Context) {
+	ctx := e.Request.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	var (
+		logger     = logging.Logger{}
+		appE       = app.Gin{C: e}
+		paramquery = models.ParamList{} // ini untuk list
+		// responseList = models.ResponseModelList{}
+	)
+
+	logger.Info(util.Stringify(paramquery))
+	httpCode, errMsg := app.BindAndValid(e, &paramquery)
+	if httpCode != 200 {
+		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg) // ResponseErrorList(http.StatusBadRequest, errMsg, responseList)
+		return
+	}
+
+	responseList, err := c.useTermAndConditional.GetList(ctx, paramquery)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	appE.Response(http.StatusOK, "Ok", responseList)
 }

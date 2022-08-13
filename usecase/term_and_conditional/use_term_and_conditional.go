@@ -2,9 +2,9 @@ package usetermandconditional
 
 import (
 	"context"
-	// "fmt"
-	// "math"
-	// "strings"
+	"fmt"
+	"math"
+	"strings"
 	"time"
 
 	itermandconditional "app/interface/term_and_conditional"
@@ -23,7 +23,7 @@ func NewTermAndConditional(a itermandconditional.Repository, timeout time.Durati
 	return &useTermAndConditional{repoTermAndConditional: a, contextTimeOut: timeout}
 }
 
-func (u *useTermAndConditional) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.TermAndConditional, err error) {
+func (u *useTermAndConditional) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.TermAndConditionalForm, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -34,33 +34,33 @@ func (u *useTermAndConditional) GetDataBy(ctx context.Context, ID uuid.UUID) (re
 	return result, nil
 }
 
-// func (u *useHolidays) GetList(ctx context.Context, queryparam models.ParamList) (result models.ResponseModelList, err error) {
-// 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
-// 	defer cancel()
-
-// 	if queryparam.Search != "" {
-// 		queryparam.Search = strings.ToLower(fmt.Sprintf("%%%s%%", queryparam.Search))
-// 	}
-// 	result.Data, err = u.repoHolidays.GetList(ctx, queryparam)
-// 	if err != nil {
-// 		return result, err
-// 	}
-
-// 	result.Total, err = u.repoHolidays.Count(ctx, queryparam)
-// 	if err != nil {
-// 		return result, err
-// 	}
-
-// 	result.LastPage = int64(math.Ceil(float64(result.Total) / float64(queryparam.PerPage)))
-// 	result.Page = queryparam.Page
-
-// 	return result, nil
-// }
-func (u *useTermAndConditional) Create(ctx context.Context, data *models.TermAndConditional) (err error) {
+func (u *useTermAndConditional) GetList(ctx context.Context, queryparam models.ParamList) (result models.ResponseModelList, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var form = &models.TermAndConditional{}
+	if queryparam.Search != "" {
+		queryparam.Search = strings.ToLower(fmt.Sprintf("%%%s%%", queryparam.Search))
+	}
+	result.Data, err = u.repoTermAndConditional.GetList(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	result.Total, err = u.repoTermAndConditional.Count(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	result.LastPage = int64(math.Ceil(float64(result.Total) / float64(queryparam.PerPage)))
+	result.Page = queryparam.Page
+
+	return result, nil
+}
+func (u *useTermAndConditional) Create(ctx context.Context, data *models.TermAndConditionalForm) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	var form = &models.TermAndConditionalForm{}
 	err = mapstructure.Decode(data, &form)
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (u *useTermAndConditional) Update(ctx context.Context, ID uuid.UUID, data i
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var form = models.TermAndConditional{}
+	var form = models.TermAndConditionalForm{}
 	dataOld, err := u.repoTermAndConditional.GetDataBy(ctx, ID)
 	if err != nil {
 		return err
