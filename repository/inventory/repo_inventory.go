@@ -1,9 +1,9 @@
-package repooutletdetail
+package repoinventory
 
 import (
 	"context"
 
-	ioutletdetail "app/interface/outlet_detail"
+	iinventory "app/interface/inventory"
 	"app/models"
 	"app/pkg/logging"
 	"app/pkg/setting"
@@ -12,33 +12,33 @@ import (
 	"gorm.io/gorm"
 )
 
-type repoOutletDetail struct {
+type repoInventory struct {
 	Conn *gorm.DB
 }
 
-func NewRepoOutletDetail(Conn *gorm.DB) ioutletdetail.Repository {
-	return &repoOutletDetail{Conn}
+func NewRepoInventory(Conn *gorm.DB) iinventory.Repository {
+	return &repoInventory{Conn}
 }
 
-func (db *repoOutletDetail) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.OutletDetail, err error) {
+func (db *repoInventory) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Inventory, err error) {
 	var (
-		logger        = logging.Logger{}
-		mOutletDetail = &models.OutletDetail{}
+		logger     = logging.Logger{}
+		mInventory = &models.Inventory{}
 	)
-	query := db.Conn.Where("outlet_detail_id = ? ", ID).WithContext(ctx).Find(mOutletDetail)
+	query := db.Conn.Where("id = ? ", ID).WithContext(ctx).Find(mInventory)
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo outlet detail GetDataBy ", err)
+		logger.Error("repo inventory GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
 		return nil, err
 	}
-	return mOutletDetail, nil
+	return mInventory, nil
 }
 
-func (db *repoOutletDetail) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OutletDetail, err error) {
+func (db *repoInventory) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Inventory, err error) {
 
 	var (
 		pageNum  = 0
@@ -80,9 +80,8 @@ func (db *repoOutletDetail) GetList(ctx context.Context, queryparam models.Param
 	}
 
 	err = query.Error
-
 	if err != nil {
-		logger.Error("repo outlet detail GetList ", err)
+		logger.Error("repo inventory GetList ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, err
 		}
@@ -91,7 +90,7 @@ func (db *repoOutletDetail) GetList(ctx context.Context, queryparam models.Param
 	return result, nil
 }
 
-func (db *repoOutletDetail) Create(ctx context.Context, data *models.OutletDetail) error {
+func (db *repoInventory) Create(ctx context.Context, data *models.Inventory) error {
 	var (
 		logger = logging.Logger{}
 		err    error
@@ -100,42 +99,42 @@ func (db *repoOutletDetail) Create(ctx context.Context, data *models.OutletDetai
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo outlet detail Create ", err)
-		return models.ErrInternalServerError
+		logger.Error("repo inventory Create ", err)
+		return err
 	}
 	return nil
 }
-func (db *repoOutletDetail) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
+func (db *repoInventory) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Model(models.OutletDetail{}).Where("outletdetail_id = ?", ID).Updates(data)
+	query := db.Conn.Model(models.Inventory{}).Where("id = ?", ID).Updates(data)
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo outlet detail Update ", err)
-		return models.ErrInternalServerError
+		logger.Error("repo inventory Update ", err)
+		return err
 	}
 	return nil
 }
 
-func (db *repoOutletDetail) Delete(ctx context.Context, ID uuid.UUID) error {
+func (db *repoInventory) Delete(ctx context.Context, ID uuid.UUID) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where("outlet_detail_id = ?", ID).Delete(&models.OutletDetail{})
+	query := db.Conn.Where("id = ?", ID).Delete(&models.Inventory{})
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo outlet detail Delete ", err)
-		return models.ErrInternalServerError
+		logger.Error("repo inventory Delete ", err)
+		return err
 	}
 	return nil
 }
 
-func (db *repoOutletDetail) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (db *repoInventory) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
@@ -154,16 +153,16 @@ func (db *repoOutletDetail) Count(ctx context.Context, queryparam models.ParamLi
 		} else {
 			sWhere += "(lower() LIKE ? )" //queryparam.Search
 		}
-		query = db.Conn.Model(&models.OutletDetail{}).Where(sWhere, queryparam.Search).Count(&rest)
+		query = db.Conn.Model(&models.Inventory{}).Where(sWhere, queryparam.Search).Count(&rest)
 	} else {
-		query = db.Conn.Model(&models.OutletDetail{}).Where(sWhere).Count(&rest)
+		query = db.Conn.Model(&models.Inventory{}).Where(sWhere).Count(&rest)
 	}
 	// end where
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo outlet detail Count ", err)
-		return 0, models.ErrInternalServerError
+		logger.Error("repo inventory Count ", err)
+		return 0, err
 	}
 
 	return rest, nil

@@ -22,11 +22,12 @@ func NewRepoFileUpload(Conn *gorm.DB) ifileupload.Repository {
 func (m *repoAuth) CreateFileUpload(ctx context.Context, data *models.FileUpload) (err error) {
 	var logger = logging.Logger{}
 	query := m.Conn.Create(&data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	// err = db.Conn.Create(userData).Error
 	if err != nil {
-		return err
+		logger.Error("repo fileupload CreateFileUpload ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -42,7 +43,7 @@ func (m *repoAuth) GetBySaFileUpload(ctx context.Context, fileID int) (models.Fi
 	err = query.Error
 
 	if err != nil {
-		//
+		logger.Error("repo fileupload GetBySaFileUpload ", err)
 		if err == gorm.ErrRecordNotFound {
 			return dataFileUpload, models.ErrNotFound
 		}
@@ -60,11 +61,12 @@ func (m *repoAuth) DeleteSaFileUpload(ctx context.Context, fileID int) error {
 	userData.ID = fileID
 
 	query := m.Conn.Delete(&userData)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 
 	if err != nil {
-		return err
+		logger.Error("repo fileupload DeleteSaFileUpload ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }

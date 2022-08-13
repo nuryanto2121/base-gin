@@ -2,7 +2,6 @@ package repogroups
 
 import (
 	"context"
-	"fmt"
 
 	igroup "app/interface/group"
 	"app/models"
@@ -13,35 +12,39 @@ import (
 	"gorm.io/gorm"
 )
 
-type repoGroups struct {
+type repoRoles struct {
 	Conn *gorm.DB
 }
 
-func NewRepoGroups(Conn *gorm.DB) igroup.Repository {
-	return &repoGroups{Conn}
+func NewRepoRoles(Conn *gorm.DB) igroup.Repository {
+	return &repoRoles{Conn}
 }
 
-func (db *repoGroups) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Groups, err error) {
-	var sysGroups = &models.Groups{}
-	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysGroups)
+func (db *repoRoles) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Roles, err error) {
+	var (
+		sysRoles = &models.Roles{}
+		logger   = logging.Logger{}
+	)
+	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).First(sysRoles)
 	err = query.Error
 	if err != nil {
+		logger.Error("repo role GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
 		return nil, err
 	}
-	return sysGroups, nil
+	return sysRoles, nil
 }
 
-func (db *repoGroups) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Groups, err error) {
+func (db *repoRoles) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Roles, err error) {
 
 	var (
 		pageNum  = 0
 		pageSize = setting.AppSetting.PageSize
 		sWhere   = ""
-		// logger   = logging.Logger{}
-		orderBy = queryparam.SortField
+		logger   = logging.Logger{}
+		orderBy  = queryparam.SortField
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -81,6 +84,7 @@ func (db *repoGroups) GetList(ctx context.Context, queryparam models.ParamList) 
 	}
 
 	if err != nil {
+		logger.Error("repo role getlist ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, err
 		}
@@ -88,33 +92,37 @@ func (db *repoGroups) GetList(ctx context.Context, queryparam models.ParamList) 
 	}
 	return result, nil
 }
-func (db *repoGroups) Create(ctx context.Context, data *models.Groups) (err error) {
+func (db *repoRoles) Create(ctx context.Context, data *models.Roles) (err error) {
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Create(data)
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo role Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
-func (db *repoGroups) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
-
-	query := db.Conn.WithContext(ctx).Model(models.Groups{}).Where("id = ?", ID).Updates(data)
+func (db *repoRoles) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
+	var logger = logging.Logger{}
+	query := db.Conn.WithContext(ctx).Model(models.Roles{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo role Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
-func (db *repoGroups) Delete(ctx context.Context, ID uuid.UUID) (err error) {
-
+func (db *repoRoles) Delete(ctx context.Context, ID uuid.UUID) (err error) {
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Holidays{})
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo role Delete ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
-func (db *repoGroups) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (db *repoRoles) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
@@ -134,10 +142,11 @@ func (db *repoGroups) Count(ctx context.Context, queryparam models.ParamList) (r
 	// end where
 
 	query := db.Conn.WithContext(ctx).Model(&models.Holidays{}).Where(sWhere).Count(&result)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return 0, err
+		logger.Error("repo role count ", err)
+		return 0, models.ErrInternalServerError
 	}
 
 	return result, nil

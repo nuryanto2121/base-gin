@@ -4,9 +4,9 @@ package models
 type ParamList struct {
 	Page       int    `json:"page" form:"page"  valid:"Required"`
 	PerPage    int    `json:"perpage" form:"perpage"  valid:"Required"`
-	Search     string `json:"search,omitempty"`
-	InitSearch string `json:"init_search,omitempty"`
-	SortField  string `json:"sort_field,omitempty"`
+	Search     string `json:"search" form:"search"`
+	InitSearch string `json:"initsearch,omitempty" form:"initsearch"`
+	SortField  string `json:"sortfield,omitempty" form:"sortfield"`
 }
 
 type ParamDynamicList struct {

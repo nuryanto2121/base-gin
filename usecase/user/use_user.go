@@ -19,16 +19,16 @@ import (
 
 type useSysUser struct {
 	repoUser       iusers.Repository
-	repoUserGroup  iusergroup.Repository
-	useGroupOutlet igroupoutlet.Usecase
+	repoUserRole   iusergroup.Repository
+	useRoleOutlet  igroupoutlet.Usecase
 	contextTimeOut time.Duration
 }
 
 func NewUserSysUser(a iusers.Repository, b iusergroup.Repository, c igroupoutlet.Usecase, timeout time.Duration) iusers.Usecase {
 	return &useSysUser{
 		repoUser:       a,
-		repoUserGroup:  b,
-		useGroupOutlet: c,
+		repoUserRole:   b,
+		useRoleOutlet:  c,
 		contextTimeOut: timeout}
 }
 
@@ -132,11 +132,11 @@ func (u *useSysUser) CreateCms(ctx context.Context, req *models.AddUserCms) (err
 	dtCl := util.Claims{
 		UserID: dataUser.Id.String(),
 	}
-	for _, val := range req.Groups {
-		var dataGroupUser = models.UserGroup{
-			AddUserGroup: models.AddUserGroup{
-				UserId:  dataUser.Id,
-				GroupId: val.GroupId,
+	for _, val := range req.Roles {
+		var dataRoleUser = models.UserRole{
+			AddUserRole: models.AddUserRole{
+				UserId: dataUser.Id,
+				Role:   val.Role,
 			},
 			Model: models.Model{
 				CreatedBy: dataUser.Id,
@@ -144,15 +144,15 @@ func (u *useSysUser) CreateCms(ctx context.Context, req *models.AddUserCms) (err
 			},
 		}
 		//
-		err := u.repoUserGroup.Create(ctx, &dataGroupUser)
+		err := u.repoUserRole.Create(ctx, &dataRoleUser)
 		if err != nil {
-			logger.Error("service save user group ", err)
+			logger.Error("service save user role ", err)
 			return models.ErrInternalServerError
 		}
 
 		for _, valOutlet := range val.OutletIds {
-			err := u.useGroupOutlet.Create(ctx, dtCl, &models.AddGroupOutlet{
-				GroupId:  val.GroupId,
+			err := u.useRoleOutlet.Create(ctx, dtCl, &models.AddRoleOutlet{
+				Role:     val.Role,
 				UserId:   dataUser.Id,
 				OutletId: valOutlet.OutletId,
 			})
@@ -205,11 +205,11 @@ func genResponseList(u *useSysUser, ctx context.Context, userList []*models.List
 			}
 		)
 		//get user group/role
-		userGroupList, err := u.repoUserGroup.GetListByUser(ctx, "user_id", val.UserId.String())
+		userRoleList, err := u.repoUserRole.GetListByUser(ctx, "user_id", val.UserId.String())
 		if err != nil {
 			return nil, err
 		}
-		userCms.GroupCode = userGroupList
+		userCms.RoleCode = userRoleList
 
 		result = append(result, userCms)
 	}

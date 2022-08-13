@@ -1,45 +1,44 @@
-
 package repogroupoutlet
 
 import (
 	"context"
-	"fmt"
 
 	igroupoutlet "app/interface/group_outlet"
 	"app/models"
 	"app/pkg/logging"
 	"app/pkg/setting"
-	
-	"gorm.io/gorm"
+
 	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
-	
-type repoGroupOutlet struct {
+
+type repoRoleOutlet struct {
 	Conn *gorm.DB
 }
-	
-func NewRepoGroupOutlet(Conn *gorm.DB) igroupoutlet.Repository {
-	return &repoGroupOutlet{Conn}
+
+func NewRepoRoleOutlet(Conn *gorm.DB) igroupoutlet.Repository {
+	return &repoRoleOutlet{Conn}
 }
-	
-func (db *repoGroupOutlet) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.GroupOutlet, err error) {
+
+func (db *repoRoleOutlet) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.RoleOutlet, err error) {
 	var (
-		logger          = logging.Logger{}
-		mGroupOutlet = &models.GroupOutlet{}
+		logger      = logging.Logger{}
+		mRoleOutlet = &models.RoleOutlet{}
 	)
-	query := db.Conn.Where("group_outlet_id = ? ", ID).WithContext(ctx).Find(mGroupOutlet)
-	logger.Query(fmt.Sprintf("%v", query))
+	query := db.Conn.Where("group_outlet_id = ? ", ID).WithContext(ctx).Find(mRoleOutlet)
+
 	err = query.Error
 	if err != nil {
+		logger.Error("", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
 		return nil, err
 	}
-	return mGroupOutlet, nil
+	return mRoleOutlet, nil
 }
-	
-func (db *repoGroupOutlet) GetList(ctx context.Context,queryparam models.ParamList) (result []*models.GroupOutlet, err error) {
+
+func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.RoleOutlet, err error) {
 
 	var (
 		pageNum  = 0
@@ -71,20 +70,19 @@ func (db *repoGroupOutlet) GetList(ctx context.Context,queryparam models.ParamLi
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and (lower() LIKE ?)" 
+			sWhere += " and (lower() LIKE ?)"
 		} else {
-			sWhere += "(lower() LIKE ?)" 
+			sWhere += "(lower() LIKE ?)"
 		}
 		query = db.Conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	} else {
 		query = db.Conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
-	
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
 	err = query.Error
-	
+
 	if err != nil {
+		logger.Error("repo outlet GetList ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, err
 		}
@@ -93,80 +91,80 @@ func (db *repoGroupOutlet) GetList(ctx context.Context,queryparam models.ParamLi
 	return result, nil
 }
 
-func (db *repoGroupOutlet) Create(ctx context.Context,data *models.GroupOutlet) error {
+func (db *repoRoleOutlet) Create(ctx context.Context, data *models.RoleOutlet) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
 	query := db.Conn.Create(data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Create ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
-func (db *repoGroupOutlet) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
+func (db *repoRoleOutlet) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Model(models.GroupOutlet{}).Where("groupoutlet_id = ?", ID).Updates(data)
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+	query := db.Conn.Model(models.RoleOutlet{}).Where("groupoutlet_id = ?", ID).Updates(data)
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
 
-func (db *repoGroupOutlet) Delete(ctx context.Context, ID uuid.UUID) error {
+func (db *repoRoleOutlet) Delete(ctx context.Context, ID uuid.UUID) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where("group_outlet_id = ?", ID).Delete(&models.GroupOutlet{})
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+	query := db.Conn.Where("group_outlet_id = ?", ID).Delete(&models.RoleOutlet{})
+
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo outlet Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
 
-func (db *repoGroupOutlet) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (db *repoRoleOutlet) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
 		query  *gorm.DB
 		rest   (int64) = 0
 	)
-	
 
 	// WHERE
 	if queryparam.InitSearch != "" {
 		sWhere = queryparam.InitSearch
 	}
-	
+
 	if queryparam.Search != "" {
 		if sWhere != "" {
 			sWhere += " and (lower() LIKE ? )" //+ queryparam.Search
 		} else {
 			sWhere += "(lower() LIKE ? )" //queryparam.Search
 		}
-		query = db.Conn.Model(&models.GroupOutlet{}).Where(sWhere, queryparam.Search).Count(&rest)
+		query = db.Conn.Model(&models.RoleOutlet{}).Where(sWhere, queryparam.Search).Count(&rest)
 	} else {
-		query = db.Conn.Model(&models.GroupOutlet{}).Where(sWhere).Count(&rest)
+		query = db.Conn.Model(&models.RoleOutlet{}).Where(sWhere).Count(&rest)
 	}
 	// end where
-	
-	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
+
 	err = query.Error
 	if err != nil {
-		return 0, err
+		logger.Error("repo outlet Count ", err)
+		return 0, models.ErrInternalServerError
 	}
-	
+
 	return rest, nil
 }
-		
-	

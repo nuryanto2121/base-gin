@@ -122,7 +122,7 @@ func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList)
 	query := db.Conn.WithContext(ctx).Table("users u").Select(`
 		u.id as user_id,u.username
 	`).Joins(`
-	inner join user_group ug
+	inner join user_role ug
 	on u.id = ug.user_id
 	`).Group(`u.id, u.username`).
 		Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
@@ -184,7 +184,7 @@ func (db *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (
 	query := db.Conn.WithContext(ctx).Table("users u").Select(`
 		u.id as user_id,u.username
 	`).Joins(`
-	inner join user_group ug
+	inner join user_role ug
 	on u.id = ug.user_id
 	`).Group(`u.id, u.username`).
 		Where(sWhere).Count(&result)

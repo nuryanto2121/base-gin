@@ -35,6 +35,46 @@ func NewContOutlets(e *gin.Engine, a ioutlets.Usecase) {
 	r.POST("", controller.Create)
 	r.PUT("/:id", controller.Update)
 	r.DELETE("/:id", controller.Delete)
+	r.GET("/role/:role", controller.GetDataByRole)
+}
+
+// GetDataByRole :
+// @Summary GetById
+// @Security ApiKeyAuth
+// @Tags Outlets
+// @Produce  json
+// @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
+// @Param Language header string true "Language Apps"
+// @Param role path string true "Role"
+// @Success 200 {object} app.Response
+// @Router /v1/cms/outlets/role/{role} [get]
+func (c *contOutlets) GetDataByRole(e *gin.Context) {
+	ctx := e.Request.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	var (
+		logger = logging.Logger{}
+		appE   = app.Gin{C: e}   // wajib
+		role   = e.Param("role") //kalo bukan int => 0
+	)
+
+	logger.Info(role)
+
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
+		return
+	}
+	data, err := c.useOutlets.GetDataByRole(ctx, claims, role)
+	if err != nil {
+		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
+		return
+	}
+
+	appE.Response(http.StatusOK, "Ok", data)
 }
 
 // GetDataByID :

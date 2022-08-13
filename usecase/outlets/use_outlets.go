@@ -31,13 +31,24 @@ func NewUseOutlets(a ioutlets.Repository, b ioutletDetail.Repository, timeout ti
 	}
 }
 
+func (u *useOutlets) GetDataByRole(ctx context.Context, Claims util.Claims, role string) (result []*models.Outlets, err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	result, err = u.repoOutlets.GetDataByRole(ctx, Claims.UserID, role) //GetDataBy(ctx, "id", ID.String())
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (u *useOutlets) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Outlets, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
 	result, err = u.repoOutlets.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	return result, nil
 }
@@ -51,8 +62,11 @@ func (u *useOutlets) GetList(ctx context.Context, Claims util.Claims, queryparam
 	}
 
 	if queryparam.InitSearch != "" {
-
+		queryparam.InitSearch += fmt.Sprintf(" AND user_id = '%s' ", Claims.UserID)
+	} else {
+		queryparam.InitSearch = fmt.Sprintf(" user_id = '%s' ", Claims.UserID)
 	}
+
 	result.Data, err = u.repoOutlets.GetList(ctx, queryparam)
 	if err != nil {
 		return result, err
@@ -127,7 +141,7 @@ func (u *useOutlets) Update(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	defer cancel()
 
 	myMap := structs.Map(data)
-	myMap["user_edit"] = Claims.UserID
+	myMap["updated_by"] = Claims.UserID
 	fmt.Println(myMap)
 	err = u.repoOutlets.Update(ctx, ID, myMap)
 	if err != nil {

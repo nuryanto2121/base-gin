@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"app/models"
@@ -15,7 +16,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	
 )
 
 var Conn *gorm.DB
@@ -33,14 +33,14 @@ func Setup() {
 		setting.DatabaseSetting.Port)
 	fmt.Printf("%s", connectionstring)
 
-	// newLogger := logger.New(
-	// 	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-	// 	logger.Config{
-	// 		SlowThreshold: time.Second,   // Slow SQL threshold
-	// 		LogLevel:      logger.Silent, // Log level
-	// 		Colorful:      false,         // Disable color
-	// 	},
-	// )
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold: time.Second, // Slow SQL threshold
+			LogLevel:      logger.Info, // Log level
+			Colorful:      true,        // Disable color
+		},
+	)
 
 	// dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Jakarta"
 	Conn, err = gorm.Open(postgres.Open(connectionstring), &gorm.Config{
@@ -49,8 +49,8 @@ func Setup() {
 			SingularTable: true,
 		},
 		PrepareStmt: true,
-		// Logger:      newLogger,
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger:      newLogger,
+		// Logger: logger.Default.LogMode(logger.Info),
 		// DryRun: true,
 	})
 
@@ -103,16 +103,16 @@ func autoMigrate() {
 		// models.Users{},
 		models.Users{},
 		models.UserSession{},
-		models.UserGroup{},
+		models.UserRole{},
 		models.UserOutlets{},
-		models.Groups{},
-		models.UserGroup{},
 		models.SkuManagement{},
-		models.GroupOutlet{},
+		models.Roles{},
+		models.RoleOutlet{},
 		authorize.AppVersion{},
 		models.Holidays{},
 		models.Outlets{},
 		models.OutletDetail{},
+		models.Inventory{},
 		models.TermAndConditional{},
 	)
 	if err != nil {

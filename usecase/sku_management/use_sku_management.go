@@ -55,12 +55,12 @@ func (u *useskumanagement) GetList(ctx context.Context, queryparam models.ParamL
 
 	return result, nil
 }
-func (u *useskumanagement) Create(ctx context.Context, data *models.SkuManagement) (err error) {
+func (u *useskumanagement) Create(ctx context.Context, data *models.AddSkuManagement) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
 	var form = &models.SkuManagement{}
-	err = mapstructure.Decode(data, &form)
+	err = mapstructure.Decode(data, &form.AddSkuManagement)
 	if err != nil {
 		return err
 	}

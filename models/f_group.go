@@ -5,14 +5,14 @@ import (
 	"gorm.io/datatypes"
 )
 
-type GroupForm struct {
-	GroupCode   string `json:"GroupCode"  valid:"Required"`
-	Description string `json:"description"  valid:"Required"`
+type RoleForm struct {
+	Role     string `json:"role"  valid:"Required"`
+	RoleName string `json:"role_name"  valid:"Required"`
 }
 
-type UserGroupDesc struct {
-	GroupId     uuid.UUID      `json:"group_id" gorm:"type:uuid;not null"`
-	GroupCode   string         `json:"GroupCode"`
-	Description string         `json:"description"`
-	Outlets     datatypes.JSON `json:"outlets"`
+type UserRoleDesc struct {
+	UserId   uuid.UUID      `json:"user_id" gorm:"type:uuid;not null"`
+	Role     string         `json:"role"`
+	RoleName string         `json:"role_name"`
+	Outlets  datatypes.JSON `json:"outlets"`
 }

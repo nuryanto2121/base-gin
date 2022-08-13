@@ -11,6 +11,7 @@
     "account_not_found": "Akun tidak ditemukan",
     "account_not_active": "Akun tidak aktif",
     "account_already_exist": "Akun sudah terdaftar",
+    "data_already_exist": "Data sudah data",
     "versioning_not_found": "Versi tidak ditemukan",
     "versioning_header_not_found": "Versi header tidak ditemukan",
     "update_your_app": "Perbarui aplikasi anda",

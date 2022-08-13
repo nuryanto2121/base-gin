@@ -11,6 +11,7 @@
     "account_not_found": "Account not found",
     "account_not_active": "Account not active",
     "account_already_exist": "Account already exist",
+    "data_already_exist": "Data already exist",
     "versioning_not_found": "Versioning not found",
     "versioning_header_not_found": "Versioning header not found",
     "update_your_app": "Update your app",
