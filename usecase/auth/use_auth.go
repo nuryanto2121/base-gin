@@ -8,7 +8,7 @@ import (
 	iauth "app/interface/auth"
 	ifileupload "app/interface/fileupload"
 	iusers "app/interface/user"
-	iusergroup "app/interface/user_group"
+	iuserrole "app/interface/user_role"
 	iusersession "app/interface/user_session"
 	"app/models"
 
@@ -21,11 +21,11 @@ type useAuht struct {
 	repoAuth        iusers.Repository
 	repoFile        ifileupload.Repository
 	repoUserSession iusersession.Repository
-	repoUserRole    iusergroup.Repository
+	repoUserRole    iuserrole.Repository
 	contextTimeOut  time.Duration
 }
 
-func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository, repoUserSession iusersession.Repository, repoUserRole iusergroup.Repository, timeout time.Duration) iauth.Usecase {
+func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository, repoUserSession iusersession.Repository, repoUserRole iuserrole.Repository, timeout time.Duration) iauth.Usecase {
 	return &useAuht{
 		repoAuth:        repoAuth,
 		repoFile:        repoFile,

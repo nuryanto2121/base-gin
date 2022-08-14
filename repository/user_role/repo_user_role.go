@@ -1,10 +1,10 @@
-package repousergroup
+package repouserrole
 
 import (
 	"context"
 	"fmt"
 
-	iusergroup "app/interface/user_group"
+	iuserrole "app/interface/user_role"
 	"app/models"
 	"app/pkg/logging"
 	"app/pkg/setting"
@@ -17,7 +17,7 @@ type repoUserRole struct {
 	Conn *gorm.DB
 }
 
-func NewRepoUserRole(Conn *gorm.DB) iusergroup.Repository {
+func NewRepoUserRole(Conn *gorm.DB) iuserrole.Repository {
 	return &repoUserRole{Conn}
 }
 
@@ -26,7 +26,7 @@ func (db *repoUserRole) GetById(ctx context.Context, ID uuid.UUID) (result *mode
 		logger    = logging.Logger{}
 		mUserRole = &models.UserRole{}
 	)
-	query := db.Conn.Where("user_group_id = ? ", ID).WithContext(ctx).Find(mUserRole)
+	query := db.Conn.Where("user_role_id = ? ", ID).WithContext(ctx).Find(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {

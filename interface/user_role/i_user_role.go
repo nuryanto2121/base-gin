@@ -1,4 +1,4 @@
-package iusergroup
+package iuserrole
 
 import (
 	"app/models"

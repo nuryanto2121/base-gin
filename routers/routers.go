@@ -29,9 +29,9 @@ import (
 	_repoHolidays "app/repository/holidays"
 	_useHolidays "app/usecase/holidays"
 
-	_contRoles "app/controllers/group"
-	_repoRoles "app/repository/group"
-	_useRoles "app/usecase/group"
+	_contRoles "app/controllers/roles"
+	_repoRoles "app/repository/roles"
+	_useRoles "app/usecase/roles"
 
 	_contSkumanagement "app/controllers/sku_management"
 	_repoSkumanagement "app/repository/sku_management"
@@ -40,8 +40,8 @@ import (
 	_repoRoleOutlet "app/repository/group_outlet"
 	_useRoleOutlet "app/usecase/group_outlet"
 
-	_repoUserRoles "app/repository/user_group"
-	_useUserRoles "app/usecase/user_group"
+	_repoUserRoles "app/repository/user_role"
+	_useUserRoles "app/usecase/user_role"
 
 	_contOutlets "app/controllers/outlets"
 	_repoOutlets "app/repository/outlets"
@@ -83,7 +83,7 @@ func (g *GinRoutes) Init() {
 	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, timeoutContext)
 	useUser := _useUser.NewUserSysUser(repoUser, repoUserRole, useRoleOutlet, timeoutContext)
 
-	_contUser.NewContRole(g.G, useUser)
+	_contUser.NewContUsers(g.G, useUser)
 	_contAuth.NewContAuth(g.G, useAuth)
 
 	_contFileUpload.NewContFileUpload(g.G, useFileUpload)

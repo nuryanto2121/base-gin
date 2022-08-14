@@ -1,7 +1,7 @@
-package useusergroup
+package useuserrole
 
 import (
-	iusergroup "app/interface/user_group"
+	iuserrole "app/interface/user_role"
 	"app/models"
 	util "app/pkg/utils"
 	"context"
@@ -17,11 +17,11 @@ import (
 )
 
 type useUserRole struct {
-	repoUserRole   iusergroup.Repository
+	repoUserRole   iuserrole.Repository
 	contextTimeOut time.Duration
 }
 
-func NewUseUserRole(a iusergroup.Repository, timeout time.Duration) iusergroup.Usecase {
+func NewUseUserRole(a iuserrole.Repository, timeout time.Duration) iuserrole.Usecase {
 	return &useUserRole{repoUserRole: a, contextTimeOut: timeout}
 }
 
