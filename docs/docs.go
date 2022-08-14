@@ -1649,7 +1649,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/cms/termandconditional": {
+        "/v1/cms/term-and-conditional": {
             "post": {
                 "security": [
                     {
@@ -1691,7 +1691,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.TermAndConditional"
+                            "$ref": "#/definitions/models.TermAndConditionalForm"
                         }
                     }
                 ],
@@ -1705,7 +1705,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/cms/termandconditional/{id}": {
+        "/v1/cms/term-and-conditional/{id}": {
             "put": {
                 "security": [
                     {
@@ -1747,7 +1747,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.TermAndConditional"
+                            "$ref": "#/definitions/models.TermAndConditionalForm"
                         }
                     },
                     {
@@ -1768,7 +1768,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/cms/termandconditionalt/{id}": {
+        "/v1/cms/term-and-conditionalt/{id}": {
             "get": {
                 "security": [
                     {
@@ -2485,25 +2485,13 @@ var doc = `{
                 }
             }
         },
-        "models.TermAndConditional": {
+        "models.TermAndConditionalForm": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "created_by": {
-                    "type": "string"
-                },
                 "description": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "updated_by": {
+                "term_and_conditional_id": {
                     "type": "string"
                 }
             }

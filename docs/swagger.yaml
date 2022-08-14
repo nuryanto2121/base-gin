@@ -167,19 +167,11 @@ definitions:
       name:
         type: string
     type: object
-  models.TermAndConditional:
+  models.TermAndConditionalForm:
     properties:
-      created_at:
-        type: string
-      created_by:
-        type: string
       description:
         type: string
-      id:
-        type: string
-      updated_at:
-        type: string
-      updated_by:
+      term_and_conditional_id:
         type: string
     type: object
 info:
@@ -1256,7 +1248,7 @@ paths:
       summary: Update SkuManagement
       tags:
       - SkuManagement
-  /v1/cms/termandconditional:
+  /v1/cms/term-and-conditional:
     post:
       parameters:
       - description: Device Type
@@ -1279,7 +1271,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.TermAndConditional'
+          $ref: '#/definitions/models.TermAndConditionalForm'
       produces:
       - application/json
       responses:
@@ -1292,7 +1284,7 @@ paths:
       summary: Create TermAndConditional
       tags:
       - TermAndConditional
-  /v1/cms/termandconditional/{id}:
+  /v1/cms/term-and-conditional/{id}:
     put:
       parameters:
       - description: Device Type
@@ -1315,7 +1307,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.TermAndConditional'
+          $ref: '#/definitions/models.TermAndConditionalForm'
       - description: ID
         in: path
         name: id
@@ -1333,7 +1325,7 @@ paths:
       summary: Update TermAndConditional
       tags:
       - TermAndConditional
-  /v1/cms/termandconditionalt/{id}:
+  /v1/cms/term-and-conditionalt/{id}:
     get:
       parameters:
       - description: Device Type
