@@ -57,7 +57,7 @@ func (u *useTermAndConditional) GetDataBy(ctx context.Context, claims util.Claim
 
 // 	return result, nil
 // }
-func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, data *models.TermAndConditional) (err error) {
+func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, data *models.TermAndConditionalForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
