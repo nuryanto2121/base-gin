@@ -244,9 +244,23 @@ func (u *useOutlets) Delete(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	//detele outlet header
 	err = u.repoOutlets.Delete(ctx, ID)
 	if err != nil {
 		return err
 	}
+
+	//detele outlet details
+	err = u.repoOutletDetail.Delete(ctx, ID)
+	if err != nil {
+		return err
+	}
+
+	//detele outlet role outlet
+	u.repoRoleOutlet.Delete(ctx, ID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
