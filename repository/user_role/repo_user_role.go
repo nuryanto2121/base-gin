@@ -43,7 +43,7 @@ func (db *repoUserRole) GetDataBy(ctx context.Context, key, value string) (resul
 		logger    = logging.Logger{}
 		mUserRole = &models.UserRoleDesc{}
 	)
-	query := db.Conn.Where(fmt.Sprintf("%s = ?", key)).WithContext(ctx).Find(mUserRole)
+	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {

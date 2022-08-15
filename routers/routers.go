@@ -37,8 +37,8 @@ import (
 	_repoSkumanagement "app/repository/sku_management"
 	_useSkumanagement "app/usecase/sku_management"
 
-	_repoRoleOutlet "app/repository/group_outlet"
-	_useRoleOutlet "app/usecase/group_outlet"
+	_repoRoleOutlet "app/repository/role_outlet"
+	_useRoleOutlet "app/usecase/role_outlet"
 
 	_repoUserRoles "app/repository/user_role"
 	_useUserRoles "app/usecase/user_role"
@@ -80,7 +80,7 @@ func (g *GinRoutes) Init() {
 	useRoleOutlet := _useRoleOutlet.NewUseRoleOutlet(repoRoleOutlet, timeoutContext)
 
 	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
-	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, timeoutContext)
+	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, repoRoleOutlet, timeoutContext)
 	useUser := _useUser.NewUserSysUser(repoUser, repoUserRole, useRoleOutlet, timeoutContext)
 
 	_contUser.NewContUsers(g.G, useUser)

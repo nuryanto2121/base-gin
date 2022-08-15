@@ -2,6 +2,7 @@ package repogroupoutlet
 
 import (
 	"context"
+	"fmt"
 
 	iroleoutlet "app/interface/role_outlet"
 	"app/models"
@@ -20,12 +21,12 @@ func NewRepoRoleOutlet(Conn *gorm.DB) iroleoutlet.Repository {
 	return &repoRoleOutlet{Conn}
 }
 
-func (db *repoRoleOutlet) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.RoleOutlet, err error) {
+func (db *repoRoleOutlet) GetDataBy(ctx context.Context, key, value string) (result *models.RoleOutlet, err error) {
 	var (
 		logger      = logging.Logger{}
 		mRoleOutlet = &models.RoleOutlet{}
 	)
-	query := db.Conn.Where("group_outlet_id = ? ", ID).WithContext(ctx).Find(mRoleOutlet)
+	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mRoleOutlet)
 
 	err = query.Error
 	if err != nil {
@@ -125,7 +126,7 @@ func (db *repoRoleOutlet) Delete(ctx context.Context, ID uuid.UUID) error {
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where("group_outlet_id = ?", ID).Delete(&models.RoleOutlet{})
+	query := db.Conn.Where("outlet_id = ?", ID).Delete(&models.RoleOutlet{})
 
 	err = query.Error
 	if err != nil {

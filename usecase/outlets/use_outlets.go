@@ -71,6 +71,7 @@ func (u *useOutlets) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.
 	queryparam.InitSearch = fmt.Sprintf("user_id = '%s' and o.id = '%s'", Claims.UserID, ID)
 	queryparam.Page = 1
 	queryparam.PerPage = 10000
+	queryparam.SortField = "sku_name"
 
 	detail, err := u.repoOutlets.GetList(ctx, queryparam)
 	if err != nil {
@@ -169,16 +170,42 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 		//for root insert to role_outlet
 		logger := logging.Logger{}
 		cxts := context.Background()
-		roleOutlet := &models.RoleOutlet{
-			AddRoleOutlet: models.AddRoleOutlet{
-				Role:     "root",
-				OutletId: mOutlets.Id,
-				UserId:   userID,
-			},
-		}
-		err := u.repoRoleOutlet.Create(cxts, roleOutlet)
-		if err != nil {
-			logger.Error("error create role outlet ", err)
+		if Claims.Role != "root" {
+			roleOutlet := &models.RoleOutlet{
+				AddRoleOutlet: models.AddRoleOutlet{
+					Role:     "root",
+					OutletId: mOutlets.Id,
+					UserId:   userID,
+				},
+			}
+			err := u.repoRoleOutlet.Create(cxts, roleOutlet)
+			if err != nil {
+				logger.Error("error create role outlet ", err)
+			}
+
+			roleOutlet = &models.RoleOutlet{
+				AddRoleOutlet: models.AddRoleOutlet{
+					Role:     Claims.Role,
+					OutletId: mOutlets.Id,
+					UserId:   userID,
+				},
+			}
+			err = u.repoRoleOutlet.Create(cxts, roleOutlet)
+			if err != nil {
+				logger.Error("error create role outlet ", err)
+			}
+		} else {
+			roleOutlet := &models.RoleOutlet{
+				AddRoleOutlet: models.AddRoleOutlet{
+					Role:     Claims.Role,
+					OutletId: mOutlets.Id,
+					UserId:   userID,
+				},
+			}
+			err := u.repoRoleOutlet.Create(cxts, roleOutlet)
+			if err != nil {
+				logger.Error("error create role outlet ", err)
+			}
 		}
 
 	}()

@@ -1,4 +1,4 @@
-package usegroupoutlet
+package useroleoutlet
 
 import (
 	iroleoutlet "app/interface/role_outlet"
@@ -29,7 +29,7 @@ func (u *useRoleOutlet) GetDataBy(ctx context.Context, Claims util.Claims, ID uu
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoRoleOutlet.GetDataBy(ctx, ID)
+	result, err = u.repoRoleOutlet.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return result, err
 	}

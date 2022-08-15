@@ -2,11 +2,13 @@ package useauth
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
 	iauth "app/interface/auth"
 	ifileupload "app/interface/fileupload"
+	iroleoutlet "app/interface/role_outlet"
 	iusers "app/interface/user"
 	iuserrole "app/interface/user_role"
 	iusersession "app/interface/user_session"
@@ -22,15 +24,19 @@ type useAuht struct {
 	repoFile        ifileupload.Repository
 	repoUserSession iusersession.Repository
 	repoUserRole    iuserrole.Repository
+	repoRoleOutlet  iroleoutlet.Repository
 	contextTimeOut  time.Duration
 }
 
-func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository, repoUserSession iusersession.Repository, repoUserRole iuserrole.Repository, timeout time.Duration) iauth.Usecase {
+func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository,
+	repoUserSession iusersession.Repository, repoUserRole iuserrole.Repository,
+	repoRoleOutlet iroleoutlet.Repository, timeout time.Duration) iauth.Usecase {
 	return &useAuht{
 		repoAuth:        repoAuth,
 		repoFile:        repoFile,
 		repoUserSession: repoUserSession,
 		repoUserRole:    repoUserRole,
+		repoRoleOutlet:  repoRoleOutlet,
 		contextTimeOut:  timeout,
 	}
 }
@@ -44,7 +50,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 		logger   = logging.Logger{}
 		dataUser = &models.Users{}
 		role     string
-		outlets  = []*models.OutletLookUp{}
+		outlets  string
 	)
 
 	dataUser, err = u.repoAuth.GetByAccount(ctx, dataLogin.Account)
@@ -62,19 +68,26 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 		return nil, models.ErrAccountNotActive
 	}
 
-	//get user group
 	if dataLogin.Account == "root" {
 		role = "root"
+		roleOutlet, err := u.repoRoleOutlet.GetDataBy(ctx, "user_id", dataUser.Id.String())
+		if err != nil {
+			return nil, err
+		}
+		outlets = roleOutlet.OutletId.String()
+		// u.repo
+		// _, outlets = genRole(userRole)
 	} else {
+		//get user group
 		userRole, err := u.repoUserRole.GetListByUser(ctx, "user_id", dataUser.Id.String())
 		if err != nil {
 			logger.Error("error useauth.LoginCms() user role GetListByUser", err)
 			return nil, models.ErrInternalServerError
 		}
-		// role, outlets = genRole(userRole)
-		role = userRole[0].Role
+		role, outlets = genRole(userRole)
+		// role = userRole[0].Role
 
-		// fmt.Printf("\n%#v", userRole)
+		fmt.Printf("\n%s |  %s", role, outlets)
 	}
 
 	//get outlet
