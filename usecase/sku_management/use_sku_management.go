@@ -29,7 +29,7 @@ func (u *useskumanagement) GetDataBy(ctx context.Context, claims util.Claims, ID
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.reposkumanagement.GetDataBy(ctx, ID)
+	result, err = u.reposkumanagement.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return result, err
 	}
@@ -61,6 +61,15 @@ func (u *useskumanagement) Create(ctx context.Context, claims util.Claims, data 
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	//check sku is exist
+	dataExist, err := u.reposkumanagement.GetDataBy(ctx, "sku_name", data.SkuName)
+	if err != nil && err != models.ErrNotFound {
+		return err
+	}
+	if dataExist.Id != uuid.Nil {
+		return models.ErrDataAlreadyExist
+	}
+
 	var form = &models.SkuManagement{}
 	err = mapstructure.Decode(data, &form.AddSkuManagement)
 	if err != nil {
@@ -80,7 +89,7 @@ func (u *useskumanagement) Update(ctx context.Context, claims util.Claims, ID uu
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	dataOld, err := u.reposkumanagement.GetDataBy(ctx, ID)
+	dataOld, err := u.reposkumanagement.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return err
 	}

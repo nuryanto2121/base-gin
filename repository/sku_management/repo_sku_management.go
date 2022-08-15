@@ -2,6 +2,7 @@ package reposkumanagement
 
 import (
 	"context"
+	"fmt"
 
 	iskumanagement "app/interface/sku_management"
 	"app/models"
@@ -20,12 +21,12 @@ func NewRepoSkuManagement(Conn *gorm.DB) iskumanagement.Repository {
 	return &reposkumanagement{Conn}
 }
 
-func (db *reposkumanagement) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.SkuManagement, err error) {
+func (db *reposkumanagement) GetDataBy(ctx context.Context, key, value string) (result *models.SkuManagement, err error) {
 	var (
 		sysSkuManagement = &models.SkuManagement{}
 		logger           = logging.Logger{}
 	)
-	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).First(sysSkuManagement)
+	query := db.Conn.WithContext(ctx).Where(fmt.Sprintf("%s = ?", key), value).First(sysSkuManagement)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo sku management GetDataBy ", err)
