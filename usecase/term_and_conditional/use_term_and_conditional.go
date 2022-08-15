@@ -61,16 +61,40 @@ func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, 
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var form = &models.TermAndConditional{}
-	err = mapstructure.Decode(data, &form)
-	if err != nil {
-		return err
+	if data.Id == uuid.Nil {
+		var form = &models.TermAndConditional{}
+		err = mapstructure.Decode(data, &form)
+
+		if err != nil {
+			return err
+		}
+
+		err = u.repoTermAndConditional.Create(ctx, form)
+		if err != nil {
+			return err
+		}
+	} else {
+		var form = models.TermAndConditional{}
+		dataOld, err := u.repoTermAndConditional.GetDataBy(ctx, data.Id)
+		if err != nil {
+			return err
+		}
+
+		if dataOld.Id == uuid.Nil {
+			return models.ErrNotFound
+		}
+
+		err = mapstructure.Decode(data, &form)
+		if err != nil {
+			return err
+		}
+
+		err = u.repoTermAndConditional.Update(ctx, data.Id, form)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = u.repoTermAndConditional.Create(ctx, form)
-	if err != nil {
-		return err
-	}
 	return nil
 
 }
