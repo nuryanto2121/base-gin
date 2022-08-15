@@ -43,7 +43,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	var (
 		logger   = logging.Logger{}
 		dataUser = &models.Users{}
-		role     []string
+		role     string
 		outlets  = []*models.OutletLookUp{}
 	)
 
@@ -64,21 +64,22 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 
 	//get user group
 	if dataLogin.Account == "root" {
-		role = []string{"root"}
+		role = "root"
 	} else {
 		userRole, err := u.repoUserRole.GetListByUser(ctx, "user_id", dataUser.Id.String())
 		if err != nil {
-			logger.Error("error useauth.LoginCms().GetListByUser ", err)
+			logger.Error("error useauth.LoginCms() user role GetListByUser", err)
 			return nil, models.ErrInternalServerError
 		}
-		role, outlets = genRole(userRole)
+		// role, outlets = genRole(userRole)
+		role = userRole[0].Role
 
 		// fmt.Printf("\n%#v", userRole)
 	}
 
 	//get outlet
 
-	token, err := util.GenerateToken(dataUser.Id.String(), dataUser.Username, "")
+	token, err := util.GenerateToken(dataUser.Id.String(), dataUser.Username, role)
 	if err != nil {
 		return nil, err
 	}

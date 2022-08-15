@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
 
 	uuid "github.com/satori/go.uuid"
@@ -206,8 +207,10 @@ func (u *useOutlets) Update(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	}
 
 	//update header
-	dataUpdateHeader.UpdatedBy = userID
-	err = u.repoOutlets.Update(ctx, ID, dataUpdateHeader)
+	dataUpdate := structs.Map(dataUpdateHeader.AddOutlets)
+
+	dataUpdate["updated_by"] = Claims.UserID
+	err = u.repoOutlets.Update(ctx, ID, dataUpdate)
 	if err != nil {
 		return err
 	}

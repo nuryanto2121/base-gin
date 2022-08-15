@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"app/pkg/setting"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -12,13 +13,13 @@ import (
 type Claims struct {
 	UserID   string `json:"id,omitempty"`
 	UserName string `json:"user_name,omitempty"`
-	UserType string `json:"user_type,omitempty"`
+	Role     string `json:"role,omitempty"`
 
 	jwt.StandardClaims
 }
 
 // GenerateToken :
-func GenerateToken(id string, user_name string, user_type string) (string, error) {
+func GenerateToken(id string, user_name string, role string) (string, error) {
 
 	screet := setting.AppSetting.JwtSecret
 	expired_time := setting.AppSetting.ExpiredJwt
@@ -29,7 +30,7 @@ func GenerateToken(id string, user_name string, user_type string) (string, error
 	claims := &Claims{
 		UserID:   id,
 		UserName: user_name,
-		UserType: user_type,
+		Role:     role,
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    issuer,
 			ExpiresAt: time.Now().Add(time.Hour * time.Duration(expired_time)).Unix(),
