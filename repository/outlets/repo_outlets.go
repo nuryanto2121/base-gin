@@ -181,7 +181,7 @@ func (db *repoOutlets) Update(ctx context.Context, ID uuid.UUID, data interface{
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Model(models.Outlets{}).Where("outlets_id = ?", ID).Updates(data)
+	query := db.Conn.Model(models.Outlets{}).Where("id = ?", ID).Updates(data)
 
 	err = query.Error
 	if err != nil {
@@ -196,7 +196,7 @@ func (db *repoOutlets) Delete(ctx context.Context, ID uuid.UUID) error {
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where("outlets_id = ?", ID).Delete(&models.Outlets{})
+	query := db.Conn.Where("id = ?", ID).Delete(&models.Outlets{})
 
 	err = query.Error
 	if err != nil {

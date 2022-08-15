@@ -25,7 +25,7 @@ func (db *repoOutletDetail) GetDataBy(ctx context.Context, ID uuid.UUID) (result
 		logger        = logging.Logger{}
 		mOutletDetail = &models.OutletDetail{}
 	)
-	query := db.Conn.Where("outlet_detail_id = ? ", ID).WithContext(ctx).Find(mOutletDetail)
+	query := db.Conn.Where("id = ? ", ID).WithContext(ctx).Find(mOutletDetail)
 
 	err = query.Error
 	if err != nil {
