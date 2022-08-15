@@ -79,53 +79,53 @@ func (c *contTermAndConditional) Create(e *gin.Context) {
 	appE.Response(http.StatusOK, "Ok", nil)
 }
 
-// Update :
-// @Summary Update TermAndConditional
-// @Security ApiKeyAuth
-// @Tags TermAndConditional
-// @Produce json
-// @Param Device-Type header string true "Device Type"
-// @Param Version header string true "Version Apps"
-// @Param Language header string true "Language Apps"
-// @Param req body models.TermAndConditionalForm true "this model set from firebase"
-// @Param id path string true "ID"
-// @Success 200 {object} app.Response
-// @Router /v1/cms/term-and-conditional/{id} [put]
-func (c *contTermAndConditional) Update(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
+// // Update :
+// // @Summary Update TermAndConditional
+// // @Security ApiKeyAuth
+// // @Tags TermAndConditional
+// // @Produce json
+// // @Param Device-Type header string true "Device Type"
+// // @Param Version header string true "Version Apps"
+// // @Param Language header string true "Language Apps"
+// // @Param req body models.TermAndConditionalForm true "this model set from firebase"
+// // @Param id path string true "ID"
+// // @Success 200 {object} app.Response
+// // @Router /v1/cms/term-and-conditional/{id} [put]
+// func (c *contTermAndConditional) Update(e *gin.Context) {
+// 	ctx := e.Request.Context()
+// 	if ctx == nil {
+// 		ctx = context.Background()
+// 	}
 
-	var (
-		logger = logging.Logger{}
-		appE   = app.Gin{C: e}
-		form   = models.TermAndConditionalForm{}
-		id     = e.Param("id")
-	)
+// 	var (
+// 		logger = logging.Logger{}
+// 		appE   = app.Gin{C: e}
+// 		form   = models.TermAndConditionalForm{}
+// 		id     = e.Param("id")
+// 	)
 
-	Id := uuid.FromStringOrNil(id)
-	// validasi and bind to struct
-	httpCode, errMsg := app.BindAndValidMulti(e, &form)
-	logger.Info(util.Stringify(form))
-	if httpCode != 200 {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
-		return
-	}
+// 	Id := uuid.FromStringOrNil(id)
+// 	// validasi and bind to struct
+// 	httpCode, errMsg := app.BindAndValidMulti(e, &form)
+// 	logger.Info(util.Stringify(form))
+// 	if httpCode != 200 {
+// 		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
+// 		return
+// 	}
 
-	claims, err := app.GetClaims(e)
-	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
-		return
-	}
+// 	claims, err := app.GetClaims(e)
+// 	if err != nil {
+// 		appE.ResponseError(tool.GetStatusCode(err), err)
+// 		return
+// 	}
 
-	err = c.useTermAndConditional.Update(ctx, claims, Id, form)
-	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
-		return
-	}
-	appE.Response(http.StatusOK, "Ok", nil)
-}
+// 	err = c.useTermAndConditional.Update(ctx, claims, Id, form)
+// 	if err != nil {
+// 		appE.ResponseError(tool.GetStatusCode(err), err)
+// 		return
+// 	}
+// 	appE.Response(http.StatusOK, "Ok", nil)
+// }
 
 // GetById :
 // @Summary GetById TermAndConditional
@@ -135,9 +135,8 @@ func (c *contTermAndConditional) Update(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/term-and-conditionalt/{id} [get]
+// @Router /v1/cms/term-and-conditionalt [get]
 func (c *contTermAndConditional) GetById(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {

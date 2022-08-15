@@ -1705,70 +1705,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/cms/term-and-conditional/{id}": {
-            "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "TermAndConditional"
-                ],
-                "summary": "Update TermAndConditional",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Device Type",
-                        "name": "Device-Type",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version Apps",
-                        "name": "Version",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Language Apps",
-                        "name": "Language",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "this model set from firebase",
-                        "name": "req",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.TermAndConditionalForm"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/app.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/cms/term-and-conditionalt/{id}": {
+        "/v1/cms/term-and-conditionalt": {
             "get": {
                 "security": [
                     {
@@ -1802,13 +1739,6 @@ var doc = `{
                         "description": "Language Apps",
                         "name": "Language",
                         "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "ID",
-                        "name": "id",
-                        "in": "path",
                         "required": true
                     }
                 ],
@@ -2491,7 +2421,7 @@ var doc = `{
                 "description": {
                     "type": "string"
                 },
-                "term_and_conditional_id": {
+                "id": {
                     "type": "string"
                 }
             }
