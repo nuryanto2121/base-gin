@@ -42,7 +42,7 @@ func NewContInventory(e *gin.Engine, a iinventory.Usecase) {
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
-// @Param req body models.AddInventory true "req param #changes are possible to adjust the form of the registration form from frontend"
+// @Param req body models.InventoryForm true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/inventory/{id} [post]
 func (c *contInventory) Update(e *gin.Context) {
@@ -57,7 +57,7 @@ func (c *contInventory) Update(e *gin.Context) {
 		err    error
 
 		id   = e.Param("id") //kalo bukan int => 0
-		form = models.AddInventory{}
+		form = models.InventoryForm{}
 	)
 
 	ID, err := uuid.FromString(id)

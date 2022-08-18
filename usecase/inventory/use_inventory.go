@@ -63,7 +63,7 @@ func (u *useInventory) GetList(ctx context.Context, Claims util.Claims, querypar
 	return result, nil
 }
 
-func (u *useInventory) Create(ctx context.Context, Claims util.Claims, data *models.AddInventory) (err error) {
+func (u *useInventory) Create(ctx context.Context, Claims util.Claims, data *models.InventoryForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
@@ -76,6 +76,7 @@ func (u *useInventory) Create(ctx context.Context, Claims util.Claims, data *mod
 		return err
 	}
 
+	mInventory.Qty = data.QtyChange
 	mInventory.CreatedBy = uuid.FromStringOrNil(Claims.UserID)
 	mInventory.UpdatedBy = uuid.FromStringOrNil(Claims.UserID)
 
@@ -87,7 +88,7 @@ func (u *useInventory) Create(ctx context.Context, Claims util.Claims, data *mod
 
 }
 
-func (u *useInventory) Save(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.AddInventory) (err error) {
+func (u *useInventory) Save(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.InventoryForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -99,9 +100,19 @@ func (u *useInventory) Save(ctx context.Context, Claims util.Claims, ID uuid.UUI
 		}
 
 	} else {
+		//getDataOld
+		invOld, err := u.repoInventory.GetDataBy(ctx, ID)
+		if err != nil {
+			return err
+		}
+		if invOld.Id == uuid.Nil {
+			return models.ErrNotFound
+		}
+		data.Qty = invOld.Qty + data.QtyChange
 		//update data
 		myMap := structs.Map(data)
 		myMap["updated_by"] = Claims.UserID
+		delete(myMap, "QtyChange")
 		fmt.Println(myMap)
 		err = u.repoInventory.Update(ctx, ID, myMap)
 		if err != nil {

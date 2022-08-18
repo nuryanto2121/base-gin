@@ -13,7 +13,7 @@ type Repository interface {
 	GetList(ctx context.Context, queryparam models.ParamList) (result []*models.RoleOutlet, err error)
 	Create(ctx context.Context, data *models.RoleOutlet) (err error)
 	Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error)
-	Delete(ctx context.Context, ID uuid.UUID) (err error)
+	Delete(ctx context.Context, key, value string) (err error)
 	Count(ctx context.Context, queryparam models.ParamList) (result int64, err error)
 }
 

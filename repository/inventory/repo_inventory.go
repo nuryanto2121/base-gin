@@ -31,7 +31,7 @@ func (db *repoInventory) GetDataBy(ctx context.Context, ID uuid.UUID) (result *m
 	if err != nil {
 		logger.Error("repo inventory GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
-			return nil, models.ErrNotFound
+			return mInventory, models.ErrNotFound
 		}
 		return nil, err
 	}

@@ -87,7 +87,7 @@ func (c *contskumanagement) Create(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.SkuMgmForm true "this model set from firebase"
+// @Param req body models.AddSkuManagement true "this model set from firebase"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/sku-management/{id} [put]
@@ -100,7 +100,7 @@ func (c *contskumanagement) Update(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.SkuMgmForm{}
+		form   = models.AddSkuManagement{}
 		id     = e.Param("id")
 	)
 

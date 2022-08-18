@@ -121,12 +121,12 @@ func (db *repoRoleOutlet) Update(ctx context.Context, ID uuid.UUID, data interfa
 	return nil
 }
 
-func (db *repoRoleOutlet) Delete(ctx context.Context, ID uuid.UUID) error {
+func (db *repoRoleOutlet) Delete(ctx context.Context, key, value string) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where("outlet_id = ?", ID).Delete(&models.RoleOutlet{})
+	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).Delete(&models.RoleOutlet{})
 
 	err = query.Error
 	if err != nil {

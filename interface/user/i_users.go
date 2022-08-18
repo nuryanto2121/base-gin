@@ -24,6 +24,6 @@ type Usecase interface {
 	GetByEmailSaUser(ctx context.Context, email string) (result *models.Users, err error)
 	GetList(ctx context.Context, queryparam models.ParamList) (result models.ResponseModelList, err error)
 	CreateCms(ctx context.Context, data *models.AddUserCms) (err error)
-	Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error)
+	Update(ctx context.Context, ID uuid.UUID, data *models.EditUserCms) (err error)
 	Delete(ctx context.Context, ID uuid.UUID) (err error)
 }

@@ -81,7 +81,7 @@ func (c *ContUsers) Create(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.AddUserCms true "this model set from firebase"
+// @Param req body models.EditUserCms true "this model set from firebase"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/users/{id} [put]
@@ -94,7 +94,7 @@ func (c *ContUsers) Update(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.AddUserCms{}
+		form   = models.EditUserCms{}
 		id     = e.Param("id")
 	)
 

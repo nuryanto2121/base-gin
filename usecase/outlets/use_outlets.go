@@ -170,6 +170,19 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 		//for root insert to role_outlet
 		logger := logging.Logger{}
 		cxts := context.Background()
+
+		roleOutlet := &models.RoleOutlet{
+			AddRoleOutlet: models.AddRoleOutlet{
+				Role:     Claims.Role,
+				OutletId: mOutlets.Id,
+				UserId:   userID,
+			},
+		}
+		err = u.repoRoleOutlet.Create(cxts, roleOutlet)
+		if err != nil {
+			logger.Error("error create role outlet ", err)
+		}
+
 		if Claims.Role != "root" {
 			roleOutlet := &models.RoleOutlet{
 				AddRoleOutlet: models.AddRoleOutlet{
@@ -183,29 +196,6 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 				logger.Error("error create role outlet ", err)
 			}
 
-			roleOutlet = &models.RoleOutlet{
-				AddRoleOutlet: models.AddRoleOutlet{
-					Role:     Claims.Role,
-					OutletId: mOutlets.Id,
-					UserId:   userID,
-				},
-			}
-			err = u.repoRoleOutlet.Create(cxts, roleOutlet)
-			if err != nil {
-				logger.Error("error create role outlet ", err)
-			}
-		} else {
-			roleOutlet := &models.RoleOutlet{
-				AddRoleOutlet: models.AddRoleOutlet{
-					Role:     Claims.Role,
-					OutletId: mOutlets.Id,
-					UserId:   userID,
-				},
-			}
-			err := u.repoRoleOutlet.Create(cxts, roleOutlet)
-			if err != nil {
-				logger.Error("error create role outlet ", err)
-			}
 		}
 
 	}()
@@ -218,8 +208,7 @@ func (u *useOutlets) Update(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	defer cancel()
 
 	var (
-		mOutlets = models.Outlets{}
-		userID   = uuid.FromStringOrNil(Claims.UserID)
+		userID = uuid.FromStringOrNil(Claims.UserID)
 	)
 
 	//check Id is exist
@@ -250,7 +239,7 @@ func (u *useOutlets) Update(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	//insert detail
 	for _, val := range data.OutletDetail {
 		var mOutletDetail = models.OutletDetail{}
-		val.OutletId = mOutlets.Id
+		val.OutletId = ID
 
 		err = mapstructure.Decode(val, &mOutletDetail.AddOutletDetail)
 		if err != nil {
@@ -287,7 +276,7 @@ func (u *useOutlets) Delete(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	}
 
 	//detele outlet role outlet
-	u.repoRoleOutlet.Delete(ctx, ID)
+	u.repoRoleOutlet.Delete(ctx, "outlet_id", ID.String())
 	if err != nil {
 		return err
 	}

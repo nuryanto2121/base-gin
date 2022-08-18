@@ -66,7 +66,7 @@ func (u *useskumanagement) Create(ctx context.Context, claims util.Claims, data 
 	if err != nil && err != models.ErrNotFound {
 		return err
 	}
-	if dataExist.Id != uuid.Nil {
+	if dataExist != nil && dataExist.Id != uuid.Nil {
 		return models.ErrDataAlreadyExist
 	}
 
@@ -85,7 +85,7 @@ func (u *useskumanagement) Create(ctx context.Context, claims util.Claims, data 
 	return nil
 
 }
-func (u *useskumanagement) Update(ctx context.Context, claims util.Claims, ID uuid.UUID, data *models.SkuMgmForm) (err error) {
+func (u *useskumanagement) Update(ctx context.Context, claims util.Claims, ID uuid.UUID, data *models.AddSkuManagement) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 

@@ -65,7 +65,7 @@ func (db *repoUserRole) GetListByUser(ctx context.Context, key, value string) (r
 		,to_jsonb(array_agg(otl)) as outlets
 	FROM user_role ug 	inner join roles r
 	 on r."role" = ug."role" 
-	inner join 
+	left join 
 	(select
 			o.id as outlet_id,
 			o.outlet_name,
@@ -164,7 +164,7 @@ func (db *repoUserRole) Update(ctx context.Context, ID uuid.UUID, data interface
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Model(models.UserRole{}).Where("usergroup_id = ?", ID).Updates(data)
+	query := db.Conn.Model(models.UserRole{}).Where("user_id = ?", ID).Updates(data)
 
 	err = query.Error
 	if err != nil {

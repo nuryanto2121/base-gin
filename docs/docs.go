@@ -583,7 +583,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddInventory"
+                            "$ref": "#/definitions/models.InventoryForm"
                         }
                     }
                 ],
@@ -1576,7 +1576,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SkuMgmForm"
+                            "$ref": "#/definitions/models.AddSkuManagement"
                         }
                     },
                     {
@@ -1876,7 +1876,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddUserCms"
+                            "$ref": "#/definitions/models.EditUserCms"
                         }
                     },
                     {
@@ -2066,26 +2066,6 @@ var doc = `{
                 }
             }
         },
-        "models.AddInventory": {
-            "type": "object",
-            "properties": {
-                "outlet_id": {
-                    "type": "string"
-                },
-                "product_id": {
-                    "type": "string"
-                },
-                "qty": {
-                    "type": "integer"
-                },
-                "qty_change": {
-                    "type": "integer"
-                },
-                "qty_delta": {
-                    "type": "integer"
-                }
-            }
-        },
         "models.AddOutletDetail": {
             "type": "object",
             "properties": {
@@ -2111,25 +2091,14 @@ var doc = `{
                 }
             }
         },
-        "models.AddRoles": {
-            "type": "object",
-            "properties": {
-                "outlets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.AddOutletIds"
-                    }
-                },
-                "role": {
-                    "type": "string"
-                }
-            }
-        },
         "models.AddSkuManagement": {
             "type": "object",
             "properties": {
                 "duration": {
                     "type": "integer"
+                },
+                "is_bracelet": {
+                    "type": "boolean"
                 },
                 "price_weekday": {
                     "type": "number"
@@ -2148,14 +2117,58 @@ var doc = `{
                 "confirm_password": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "outlets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AddOutletIds"
+                    }
+                },
                 "password": {
                     "type": "string"
                 },
-                "roles": {
+                "phone_no": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.EditUserCms": {
+            "type": "object",
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "outlets": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.AddRoles"
+                        "$ref": "#/definitions/models.AddOutletIds"
                     }
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone_no": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
@@ -2193,6 +2206,23 @@ var doc = `{
                 },
                 "holiday_date": {
                     "type": "string"
+                }
+            }
+        },
+        "models.InventoryForm": {
+            "type": "object",
+            "properties": {
+                "outlet_id": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "qty": {
+                    "type": "integer"
+                },
+                "qty_change": {
+                    "type": "integer"
                 }
             }
         },
@@ -2283,23 +2313,6 @@ var doc = `{
                     "type": "string"
                 },
                 "role_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.SkuMgmForm": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "type": "integer"
-                },
-                "price_weekday": {
-                    "type": "number"
-                },
-                "price_weekend": {
-                    "type": "number"
-                },
-                "sku_name": {
                     "type": "string"
                 }
             }

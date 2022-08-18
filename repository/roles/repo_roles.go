@@ -45,6 +45,7 @@ func (db *repoRoles) GetList(ctx context.Context, queryparam models.ParamList) (
 		sWhere   = ""
 		logger   = logging.Logger{}
 		orderBy  = queryparam.SortField
+		query    *gorm.DB
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -68,21 +69,15 @@ func (db *repoRoles) GetList(ctx context.Context, queryparam models.ParamList) (
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and " + queryparam.Search
+			sWhere += " and ((lower(role) LIKE ?) OR (lower(role_name) LIKE ?))"
 		} else {
-			sWhere += queryparam.Search
+			sWhere += "((lower(role) LIKE ?) OR (lower(role_name) LIKE ?))"
 		}
-	}
-
-	// end where
-	if pageNum >= 0 && pageSize > 0 {
-		query := db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
-		err = query.Error
+		query = db.Conn.WithContext(ctx).Where(sWhere, queryparam.Search, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	} else {
-		query := db.Conn.WithContext(ctx).Where(sWhere).Order(orderBy).Find(&result)
-		err = query.Error
+		query = db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
-
+	err = query.Error
 	if err != nil {
 		logger.Error("repo role getlist ", err)
 		if err == gorm.ErrRecordNotFound {
@@ -114,7 +109,7 @@ func (db *repoRoles) Update(ctx context.Context, ID uuid.UUID, data interface{})
 }
 func (db *repoRoles) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	var logger = logging.Logger{}
-	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Holidays{})
+	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Roles{})
 	err = query.Error
 	if err != nil {
 		logger.Error("repo role Delete ", err)
@@ -126,6 +121,7 @@ func (db *repoRoles) Count(ctx context.Context, queryparam models.ParamList) (re
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
+		query  *gorm.DB
 	)
 	result = 0
 
@@ -134,14 +130,24 @@ func (db *repoRoles) Count(ctx context.Context, queryparam models.ParamList) (re
 		sWhere = queryparam.InitSearch
 	}
 
+	// if queryparam.Search != "" {
+	// 	if sWhere != "" {
+	// 		sWhere += " and " + queryparam.Search
+	// 	}
+	// }
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and " + queryparam.Search
+			sWhere += " and ((lower(role) LIKE ?) OR (lower(role_name) LIKE ?))"
+		} else {
+			sWhere += "((lower(role) LIKE ?) OR (lower(role_name) LIKE ?))"
 		}
+		query = db.Conn.WithContext(ctx).Model(&models.Roles{}).Where(sWhere, queryparam.Search, queryparam.Search).Count(&result)
+	} else {
+		query = db.Conn.WithContext(ctx).Model(&models.Roles{}).Where(sWhere).Count(&result)
 	}
 	// end where
 
-	query := db.Conn.WithContext(ctx).Model(&models.Holidays{}).Where(sWhere).Count(&result)
+	// query := db.Conn.WithContext(ctx).Model(&models.Roles{}).Where(sWhere).Count(&result)
 
 	err = query.Error
 	if err != nil {

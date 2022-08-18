@@ -31,7 +31,7 @@ func (db *reposkumanagement) GetDataBy(ctx context.Context, key, value string) (
 	if err != nil {
 		logger.Error("repo sku management GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
-			return nil, models.ErrNotFound
+			return sysSkuManagement, models.ErrNotFound
 		}
 		return nil, models.ErrInternalServerError
 	}

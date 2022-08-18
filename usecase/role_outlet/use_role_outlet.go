@@ -101,11 +101,11 @@ func (u *useRoleOutlet) Update(ctx context.Context, Claims util.Claims, ID uuid.
 	return nil
 }
 
-func (u *useRoleOutlet) Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error) {
+func (u *useRoleOutlet) Delete(ctx context.Context, Claims util.Claims, UserId uuid.UUID) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	err = u.repoRoleOutlet.Delete(ctx, ID)
+	err = u.repoRoleOutlet.Delete(ctx, "user_id", UserId.String())
 	if err != nil {
 		return err
 	}

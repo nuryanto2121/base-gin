@@ -21,10 +21,11 @@ func NewRepoSysUser(Conn *gorm.DB) iusers.Repository {
 	return &repoSysUser{Conn}
 }
 func (db *repoSysUser) GetByAccount(ctx context.Context, Account string) (result *models.Users, err error) {
-
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Where("(username like ? OR phone_no = ?)", Account, Account).First(&result)
 	err = query.Error
 	if err != nil {
+		logger.Error("repo users GetByAccount ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
@@ -35,10 +36,14 @@ func (db *repoSysUser) GetByAccount(ctx context.Context, Account string) (result
 }
 
 func (db *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *models.Users, err error) {
-	var sysUser = &models.Users{}
+	var (
+		sysUser = &models.Users{}
+		logger  = logging.Logger{}
+	)
 	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysUser)
 	err = query.Error
 	if err != nil {
+		logger.Error("repo users GetById ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, models.ErrNotFound
 		}
@@ -88,8 +93,9 @@ func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList)
 		pageNum  = 0
 		pageSize = setting.AppSetting.PageSize
 		sWhere   = ""
-		// logger   = logging.Logger{}
-		orderBy = queryparam.SortField
+		logger   = logging.Logger{}
+		query    *gorm.DB
+		orderBy  = queryparam.SortField
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -113,22 +119,33 @@ func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList)
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and " + queryparam.Search
+			sWhere += " and ((lower(u.username) LIKE ?) OR (lower(u.name) LIKE ?))"
 		} else {
-			sWhere += queryparam.Search
+			sWhere += "((lower(u.username) LIKE ?) OR (lower(u.name) LIKE ?))"
 		}
+
+		query = db.Conn.WithContext(ctx).Table("users u").Select(`
+				u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
+			`).Joins(`
+			inner join user_role ur 
+			on u.id = ur.user_id 
+			`).Joins(`inner join roles r 
+				on ur."role" =r."role" `).
+			Where(sWhere, queryparam.Search, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+	} else {
+		query = db.Conn.WithContext(ctx).Table("users u").Select(`
+				u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
+			`).Joins(`
+			inner join user_role ur 
+			on u.id = ur.user_id 
+			`).Joins(`inner join roles r 
+				on ur."role" =r."role" `).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
-	query := db.Conn.WithContext(ctx).Table("users u").Select(`
-		u.id as user_id,u.username
-	`).Joins(`
-	inner join user_role ug
-	on u.id = ug.user_id
-	`).Group(`u.id, u.username`).
-		Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	err = query.Error
 
 	if err != nil {
+		logger.Error("repo users getlist ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, err
 		}
@@ -137,28 +154,32 @@ func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList)
 	return result, nil
 }
 func (db *repoSysUser) Create(ctx context.Context, data *models.Users) (err error) {
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Create(data)
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo user Delete ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
 func (db *repoSysUser) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
-
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Model(models.Users{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo user Update ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
 func (db *repoSysUser) Delete(ctx context.Context, ID uuid.UUID) (err error) {
-
+	var logger = logging.Logger{}
 	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Users{})
 	err = query.Error
 	if err != nil {
-		return err
+		logger.Error("repo user Delete ", err)
+		return models.ErrInternalServerError
 	}
 	return nil
 }
@@ -166,6 +187,7 @@ func (db *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
+		query  *gorm.DB
 	)
 	result = 0
 
@@ -176,18 +198,30 @@ func (db *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and " + queryparam.Search
+			sWhere += " and ((lower(u.username) LIKE ?) OR (lower(u.name) LIKE ?)) "
+		} else {
+			sWhere += "((lower(u.username) LIKE ?) OR (lower(u.name) LIKE ?))"
 		}
+		query = db.Conn.WithContext(ctx).Table("users u").Select(`
+		u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
+	`).Joins(`
+	inner join user_role ur 
+			on u.id = ur.user_id 
+	`).Joins(`inner join roles r 
+				on ur."role" =r."role" `).
+			Where(sWhere, queryparam.Search).Count(&result)
+	} else {
+		query = db.Conn.WithContext(ctx).Table("users u").Select(`
+		u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
+	`).Joins(`
+	inner join user_role ur 
+			on u.id = ur.user_id 
+	`).Joins(`inner join roles r 
+				on ur."role" =r."role" `).
+			Where(sWhere).Count(&result)
 	}
 	// end where
 
-	query := db.Conn.WithContext(ctx).Table("users u").Select(`
-		u.id as user_id,u.username
-	`).Joins(`
-	inner join user_role ug
-	on u.id = ug.user_id
-	`).Group(`u.id, u.username`).
-		Where(sWhere).Count(&result)
 	err = query.Error
 	if err != nil {
 		logger.Error(err)

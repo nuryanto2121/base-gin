@@ -14,6 +14,7 @@ type SkuManagement struct {
 
 type AddSkuManagement struct {
 	SkuName      string  `json:"sku_name" valid:"Required" gorm:"type:varchar(60);Index:idx_skuname,unique;not null"`
+	IsBracelet   bool    `json:"is_bracelet" gorm:"type:boolean"`
 	Duration     int64   `json:"duration" gorm:"type:integer"`
 	Qty          int64   `json:"-" gorm:"-"`
 	PriceWeekday float64 `json:"price_weekday" valid:"Required" gorm:"type:numeric(20,2)"`

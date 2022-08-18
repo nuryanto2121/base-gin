@@ -8,19 +8,6 @@ definitions:
       msg:
         type: string
     type: object
-  models.AddInventory:
-    properties:
-      outlet_id:
-        type: string
-      product_id:
-        type: string
-      qty:
-        type: integer
-      qty_change:
-        type: integer
-      qty_delta:
-        type: integer
-    type: object
   models.AddOutletDetail:
     properties:
       outlet_id:
@@ -37,19 +24,12 @@ definitions:
       outlet_id:
         type: string
     type: object
-  models.AddRoles:
-    properties:
-      outlets:
-        items:
-          $ref: '#/definitions/models.AddOutletIds'
-        type: array
-      role:
-        type: string
-    type: object
   models.AddSkuManagement:
     properties:
       duration:
         type: integer
+      is_bracelet:
+        type: boolean
       price_weekday:
         type: number
       price_weekend:
@@ -61,12 +41,41 @@ definitions:
     properties:
       confirm_password:
         type: string
+      email:
+        type: string
+      name:
+        type: string
+      outlets:
+        items:
+          $ref: '#/definitions/models.AddOutletIds'
+        type: array
       password:
         type: string
-      roles:
+      phone_no:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  models.EditUserCms:
+    properties:
+      confirm_password:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      outlets:
         items:
-          $ref: '#/definitions/models.AddRoles'
+          $ref: '#/definitions/models.AddOutletIds'
         type: array
+      password:
+        type: string
+      phone_no:
+        type: string
+      role:
+        type: string
       username:
         type: string
     type: object
@@ -91,6 +100,17 @@ definitions:
         type: string
       holiday_date:
         type: string
+    type: object
+  models.InventoryForm:
+    properties:
+      outlet_id:
+        type: string
+      product_id:
+        type: string
+      qty:
+        type: integer
+      qty_change:
+        type: integer
     type: object
   models.LoginForm:
     properties:
@@ -149,17 +169,6 @@ definitions:
       role:
         type: string
       role_name:
-        type: string
-    type: object
-  models.SkuMgmForm:
-    properties:
-      duration:
-        type: integer
-      price_weekday:
-        type: number
-      price_weekend:
-        type: number
-      sku_name:
         type: string
     type: object
   models.SosmedForm:
@@ -542,7 +551,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.AddInventory'
+          $ref: '#/definitions/models.InventoryForm'
       produces:
       - application/json
       responses:
@@ -1227,7 +1236,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.SkuMgmForm'
+          $ref: '#/definitions/models.AddSkuManagement'
       - description: ID
         in: path
         name: id
@@ -1423,7 +1432,7 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/models.AddUserCms'
+          $ref: '#/definitions/models.EditUserCms'
       - description: ID
         in: path
         name: id

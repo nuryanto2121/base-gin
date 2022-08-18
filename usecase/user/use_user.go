@@ -14,6 +14,7 @@ import (
 	"app/pkg/logging"
 	util "app/pkg/utils"
 
+	"github.com/fatih/structs"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -72,15 +73,15 @@ func (u *useSysUser) GetList(ctx context.Context, queryparam models.ParamList) (
 	if queryparam.Search != "" {
 		queryparam.Search = strings.ToLower(fmt.Sprintf("%%%s%%", queryparam.Search))
 	}
-	userList, err := u.repoUser.GetList(ctx, queryparam)
+	result.Data, err = u.repoUser.GetList(ctx, queryparam)
 	if err != nil {
 		return result, err
 	}
 
-	result.Data, err = genResponseList(u, ctx, userList)
-	if err != nil {
-		return result, err
-	}
+	// result.Data, err = genResponseList(u, ctx, userList)
+	// if err != nil {
+	// 	return result, err
+	// }
 
 	result.Total, err = u.repoUser.Count(ctx, queryparam)
 	if err != nil {
@@ -107,7 +108,7 @@ func (u *useSysUser) CreateCms(ctx context.Context, req *models.AddUserCms) (err
 	//check username isexit
 	isExist, err := u.repoUser.IsExist(ctx, "username", req.Username)
 	if err != nil {
-		logger.Error("IsExist ", err)
+		logger.Error("error IsExist ", err)
 		return err
 	}
 
@@ -119,6 +120,8 @@ func (u *useSysUser) CreateCms(ctx context.Context, req *models.AddUserCms) (err
 	dataUser := &models.Users{
 		Username: req.Username,
 		Name:     req.Username,
+		PhoneNo:  req.PhoneNo,
+		Email:    req.Email,
 		Password: pass,
 		IsActive: true,
 	}
@@ -132,52 +135,114 @@ func (u *useSysUser) CreateCms(ctx context.Context, req *models.AddUserCms) (err
 	dtCl := util.Claims{
 		UserID: dataUser.Id.String(),
 	}
-	for _, val := range req.Roles {
-		var dataRoleUser = models.UserRole{
-			AddUserRole: models.AddUserRole{
-				UserId: dataUser.Id,
-				Role:   val.Role,
-			},
-			Model: models.Model{
-				CreatedBy: dataUser.Id,
-				UpdatedBy: dataUser.Id,
-			},
-		}
-		//
-		err := u.repoUserRole.Create(ctx, &dataRoleUser)
+	// for _, val := range req.Roles {
+	// add User Role
+	var dataRoleUser = models.UserRole{
+		AddUserRole: models.AddUserRole{
+			UserId: dataUser.Id,
+			Role:   req.Role,
+		},
+		Model: models.Model{
+			CreatedBy: dataUser.Id,
+			UpdatedBy: dataUser.Id,
+		},
+	}
+	//
+	err = u.repoUserRole.Create(ctx, &dataRoleUser)
+	if err != nil {
+		logger.Error("service save user role ", err)
+		return models.ErrInternalServerError
+	}
+
+	for _, valOutlet := range req.Outlets {
+		err := u.useRoleOutlet.Create(ctx, dtCl, &models.AddRoleOutlet{
+			Role:     req.Role,
+			UserId:   dataUser.Id,
+			OutletId: valOutlet.OutletId,
+		})
 		if err != nil {
-			logger.Error("service save user role ", err)
+			logger.Error("service save user group Create", err)
 			return models.ErrInternalServerError
 		}
-
-		for _, valOutlet := range val.OutletIds {
-			err := u.useRoleOutlet.Create(ctx, dtCl, &models.AddRoleOutlet{
-				Role:     val.Role,
-				UserId:   dataUser.Id,
-				OutletId: valOutlet.OutletId,
-			})
-			if err != nil {
-				logger.Error("service save user group Create", err)
-				return models.ErrInternalServerError
-			}
-		}
 	}
+	// }
 
 	return nil
 
 }
-func (u *useSysUser) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
+func (u *useSysUser) Update(ctx context.Context, ID uuid.UUID, req *models.EditUserCms) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	// var form = models.AddUser{}
-	// err = mapstructure.Decode(data, &form)
-	// if err != nil {
-	// 	return err
-	// 	// return appE.ResponseError(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
+	var logger = logging.Logger{}
 
-	// }
-	// err = u.repoUser.Update(ctx, ID, form)
+	//check UserId isExist
+	isExist, err := u.repoUser.IsExist(ctx, "id", ID.String())
+	if err != nil && err != models.ErrNotFound {
+		logger.Error("check is exist user by id ", ID.String(), err)
+		return models.ErrInternalServerError
+	}
+	if !isExist {
+		return models.ErrAccountNotFound
+	}
+
+	userUpdate := make(map[string]interface{}, 1)
+
+	if req.Password != "" {
+		if req.Password != req.ConfirmPassword {
+			logger.Error(models.ErrWrongPasswordConfirm)
+			return models.ErrWrongPasswordConfirm
+		}
+		req.Password, _ = util.Hash(req.Password)
+		userUpdate = structs.Map(req)
+		delete(userUpdate, "ConfirmPassword")
+		delete(userUpdate, "Role")
+		delete(userUpdate, "Outlets")
+	} else {
+		userUpdate = structs.Map(req)
+		delete(userUpdate, "Password")
+		delete(userUpdate, "ConfirmPassword")
+		delete(userUpdate, "Role")
+		delete(userUpdate, "Outlets")
+	}
+
+	err = u.repoUser.Update(ctx, ID, userUpdate)
+	if err != nil {
+		return err
+	}
+
+	//update user role
+	userRole := map[string]interface{}{
+		"role":       req.Role,
+		"updated_by": ID,
+	}
+	err = u.repoUserRole.Update(ctx, ID, userRole)
+	if err != nil {
+		return err
+	}
+
+	dtCl := util.Claims{
+		UserID: ID.String(),
+	}
+	//delete user outlet
+	err = u.useRoleOutlet.Delete(ctx, dtCl, ID)
+	if err != nil {
+		logger.Error("can't delete user outlet ", err)
+		return err
+	}
+	//insert user outlet
+	for _, valOutlet := range req.Outlets {
+		err := u.useRoleOutlet.Create(ctx, dtCl, &models.AddRoleOutlet{
+			Role:     req.Role,
+			UserId:   ID,
+			OutletId: valOutlet.OutletId,
+		})
+		if err != nil {
+			logger.Error("service save user group Create", err)
+			return models.ErrInternalServerError
+		}
+	}
+
 	return nil
 }
 func (u *useSysUser) Delete(ctx context.Context, ID uuid.UUID) (err error) {
