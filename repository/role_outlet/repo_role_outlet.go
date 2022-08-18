@@ -39,7 +39,16 @@ func (db *repoRoleOutlet) GetDataBy(ctx context.Context, key, value string) (res
 	return mRoleOutlet, nil
 }
 
-func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.RoleOutlet, err error) {
+// func (db *repoRoleOutlet) GetListBy(ctx context.Context, key, value string) ([]*models.OutletLookUp, error) {
+// 	var (
+// 		logger      = logging.Logger{}
+// 		mRoleOutlet = []*models.OutletLookUp{}
+// 	)
+// 	query := db.Conn.Table(`from role_outlet a`).Where(fmt.Sprintf("%s = ?", key), value).Order(``).Find(&result)
+// 	return mRoleOutlet, nil
+// }
+
+func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OutletLookUp, err error) {
 
 	var (
 		pageNum  = 0
@@ -71,13 +80,17 @@ func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamLi
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and (lower() LIKE ?)"
+			sWhere += " and (lower(o.outlet_name) LIKE ?)"
 		} else {
-			sWhere += "(lower() LIKE ?)"
+			sWhere += "(lower(o.outlet_name) LIKE ?)"
 		}
-		query = db.Conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+		query = db.Conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
+			Joins(`inner join outlets o on o.id =a.outlet_id`).
+			Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	} else {
-		query = db.Conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+		query = db.Conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
+			Joins(`inner join outlets o on o.id =a.outlet_id`).
+			Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
 	}
 
 	err = query.Error
@@ -151,13 +164,17 @@ func (db *repoRoleOutlet) Count(ctx context.Context, queryparam models.ParamList
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and (lower() LIKE ? )" //+ queryparam.Search
+			sWhere += " and (lower(o.outlet_name) LIKE ?)"
 		} else {
-			sWhere += "(lower() LIKE ? )" //queryparam.Search
+			sWhere += "(lower(o.outlet_name) LIKE ?)"
 		}
-		query = db.Conn.Model(&models.RoleOutlet{}).Where(sWhere, queryparam.Search).Count(&rest)
+		db.Conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
+			Joins(`inner join outlets o on o.id =a.outlet_id`).
+			Where(sWhere, queryparam.Search).Count(&rest)
 	} else {
-		query = db.Conn.Model(&models.RoleOutlet{}).Where(sWhere).Count(&rest)
+		db.Conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
+			Joins(`inner join outlets o on o.id =a.outlet_id`).
+			Where(sWhere).Count(&rest)
 	}
 	// end where
 

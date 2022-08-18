@@ -50,7 +50,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 		logger   = logging.Logger{}
 		dataUser = &models.Users{}
 		role     string
-		outlets  string
+		outlets  = []*models.OutletLookUp{}
 	)
 
 	dataUser, err = u.repoAuth.GetByAccount(ctx, dataLogin.Account)
@@ -68,26 +68,15 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 		return nil, models.ErrAccountNotActive
 	}
 
-	if dataLogin.Account == "root" {
-		role = "root"
-		roleOutlet, err := u.repoRoleOutlet.GetDataBy(ctx, "user_id", dataUser.Id.String())
+	outlets, err = u.genOutletList(ctx, dataUser.Id.String())
+	if dataLogin.Account != "root" {
+		roles, err := u.repoUserRole.GetListByUser(ctx, "user_id", dataUser.Id.String())
 		if err != nil {
 			return nil, err
 		}
-		outlets = roleOutlet.OutletId.String()
-		// u.repo
-		// _, outlets = genRole(userRole)
+		role = roles[0].Role
 	} else {
-		//get user group
-		userRole, err := u.repoUserRole.GetListByUser(ctx, "user_id", dataUser.Id.String())
-		if err != nil {
-			logger.Error("error useauth.LoginCms() user role GetListByUser", err)
-			return nil, models.ErrInternalServerError
-		}
-		role, outlets = genRole(userRole)
-		// role = userRole[0].Role
-
-		fmt.Printf("\n%s |  %s", role, outlets)
+		role = "root"
 	}
 
 	//get outlet
@@ -98,10 +87,12 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	}
 
 	//save to session
+	exDate := util.GetTimeNow().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour)
+	fmt.Println(exDate)
 	dataSession := &models.UserSession{
 		UserId:      dataUser.Id,
 		Token:       token,
-		ExpiredDate: time.Now().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour),
+		ExpiredDate: exDate,
 	}
 	err = u.repoUserSession.Create(ctx, dataSession)
 	if err != nil {

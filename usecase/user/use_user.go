@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"sync"
 	"time"
 
 	iroleoutlet "app/interface/role_outlet"
@@ -21,15 +22,15 @@ import (
 type useSysUser struct {
 	repoUser       iusers.Repository
 	repoUserRole   iuserrole.Repository
-	useRoleOutlet  iroleoutlet.Usecase
+	repoRoleOutlet iroleoutlet.Repository
 	contextTimeOut time.Duration
 }
 
-func NewUserSysUser(a iusers.Repository, b iuserrole.Repository, c iroleoutlet.Usecase, timeout time.Duration) iusers.Usecase {
+func NewUserSysUser(a iusers.Repository, b iuserrole.Repository, c iroleoutlet.Repository, timeout time.Duration) iusers.Usecase {
 	return &useSysUser{
 		repoUser:       a,
 		repoUserRole:   b,
-		useRoleOutlet:  c,
+		repoRoleOutlet: c,
 		contextTimeOut: timeout}
 }
 
@@ -52,11 +53,9 @@ func (u *useSysUser) GetDataBy(ctx context.Context, ID uuid.UUID) (result interf
 	if err != nil {
 		return result, err
 	}
-	userList := []*models.ListUserCms{&models.ListUserCms{
-		UserId:   dataUser.Id,
-		Username: dataUser.Username,
-	}}
-	permission, err := genResponseList(u, ctx, userList)
+
+	userList := []*models.UserCms{dataUser}
+	permission, err := u.GenResponseList(ctx, userList)
 	if err != nil {
 		return result, err
 	}
@@ -73,15 +72,15 @@ func (u *useSysUser) GetList(ctx context.Context, queryparam models.ParamList) (
 	if queryparam.Search != "" {
 		queryparam.Search = strings.ToLower(fmt.Sprintf("%%%s%%", queryparam.Search))
 	}
-	result.Data, err = u.repoUser.GetList(ctx, queryparam)
+	userList, err := u.repoUser.GetList(ctx, queryparam)
 	if err != nil {
 		return result, err
 	}
 
-	// result.Data, err = genResponseList(u, ctx, userList)
-	// if err != nil {
-	// 	return result, err
-	// }
+	result.Data, err = u.GenResponseList(ctx, userList)
+	if err != nil {
+		return result, err
+	}
 
 	result.Total, err = u.repoUser.Count(ctx, queryparam)
 	if err != nil {
@@ -132,9 +131,6 @@ func (u *useSysUser) CreateCms(ctx context.Context, req *models.AddUserCms) (err
 	}
 
 	//save to user group
-	dtCl := util.Claims{
-		UserID: dataUser.Id.String(),
-	}
 	// for _, val := range req.Roles {
 	// add User Role
 	var dataRoleUser = models.UserRole{
@@ -155,11 +151,18 @@ func (u *useSysUser) CreateCms(ctx context.Context, req *models.AddUserCms) (err
 	}
 
 	for _, valOutlet := range req.Outlets {
-		err := u.useRoleOutlet.Create(ctx, dtCl, &models.AddRoleOutlet{
-			Role:     req.Role,
-			UserId:   dataUser.Id,
-			OutletId: valOutlet.OutletId,
-		})
+		roleOutlet := &models.RoleOutlet{
+			AddRoleOutlet: models.AddRoleOutlet{
+				Role:     req.Role,
+				UserId:   dataUser.Id,
+				OutletId: valOutlet.OutletId,
+			}, Model: models.Model{
+				CreatedBy: dataUser.Id,
+				UpdatedBy: dataUser.Id,
+			},
+		}
+
+		err := u.repoRoleOutlet.Create(ctx, roleOutlet)
 		if err != nil {
 			logger.Error("service save user group Create", err)
 			return models.ErrInternalServerError
@@ -170,6 +173,7 @@ func (u *useSysUser) CreateCms(ctx context.Context, req *models.AddUserCms) (err
 	return nil
 
 }
+
 func (u *useSysUser) Update(ctx context.Context, ID uuid.UUID, req *models.EditUserCms) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
@@ -221,22 +225,25 @@ func (u *useSysUser) Update(ctx context.Context, ID uuid.UUID, req *models.EditU
 		return err
 	}
 
-	dtCl := util.Claims{
-		UserID: ID.String(),
-	}
 	//delete user outlet
-	err = u.useRoleOutlet.Delete(ctx, dtCl, ID)
+	err = u.repoRoleOutlet.Delete(ctx, "user_id", ID.String())
 	if err != nil {
 		logger.Error("can't delete user outlet ", err)
 		return err
 	}
 	//insert user outlet
 	for _, valOutlet := range req.Outlets {
-		err := u.useRoleOutlet.Create(ctx, dtCl, &models.AddRoleOutlet{
-			Role:     req.Role,
-			UserId:   ID,
-			OutletId: valOutlet.OutletId,
-		})
+		roleOutlet := &models.RoleOutlet{
+			AddRoleOutlet: models.AddRoleOutlet{
+				Role:     req.Role,
+				UserId:   ID,
+				OutletId: valOutlet.OutletId,
+			}, Model: models.Model{
+				CreatedBy: ID,
+				UpdatedBy: ID,
+			},
+		}
+		err := u.repoRoleOutlet.Create(ctx, roleOutlet)
 		if err != nil {
 			logger.Error("service save user group Create", err)
 			return models.ErrInternalServerError
@@ -245,9 +252,22 @@ func (u *useSysUser) Update(ctx context.Context, ID uuid.UUID, req *models.EditU
 
 	return nil
 }
+
 func (u *useSysUser) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
+
+	//delete User Role
+	err = u.repoUserRole.Delete(ctx, ID)
+	if err != nil {
+		return err
+	}
+
+	//delete user outlet
+	err = u.repoRoleOutlet.Delete(ctx, "user_id", ID.String())
+	if err != nil {
+		return err
+	}
 
 	err = u.repoUser.Delete(ctx, ID)
 	if err != nil {
@@ -256,28 +276,33 @@ func (u *useSysUser) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	return nil
 }
 
-func genResponseList(u *useSysUser, ctx context.Context, userList []*models.ListUserCms) ([]*models.ResponseListUserCms, error) {
+func (u *useSysUser) GenResponseList(ctx context.Context, userList []*models.UserCms) ([]*models.UserCms, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var result = []*models.ResponseListUserCms{}
-
+	var (
+		wg     sync.WaitGroup
+		logger = logging.Logger{}
+	)
 	for _, val := range userList {
-		var (
-			userCms = &models.ResponseListUserCms{
-				UserId:   val.UserId,
-				Username: val.Username,
+		wg.Add(1)
+		go func(val *models.UserCms, wg *sync.WaitGroup) {
+			defer wg.Done()
+			query := models.ParamList{
+				Page:       1,
+				PerPage:    1000,
+				SortField:  "outlet_name",
+				InitSearch: fmt.Sprintf("a.user_id='%s' and a.role = '%s'", val.UserId, val.Role),
 			}
-		)
-		//get user group/role
-		userRoleList, err := u.repoUserRole.GetListByUser(ctx, "user_id", val.UserId.String())
-		if err != nil {
-			return nil, err
-		}
-		userCms.RoleCode = userRoleList
+			data, err := u.repoRoleOutlet.GetList(ctx, query)
+			if err != nil {
+				logger.Error("error get role outlet list ", err)
+			}
+			val.Outlest = data
+		}(val, &wg)
 
-		result = append(result, userCms)
 	}
+	wg.Wait()
 
-	return result, nil
+	return userList, nil
 }

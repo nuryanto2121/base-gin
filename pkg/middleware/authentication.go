@@ -155,6 +155,13 @@ func Authorize() gin.HandlerFunc {
 				default:
 					msg = "Token Failed"
 				}
+				resp := app.Response{
+					Msg:   msg,
+					Data:  data,
+					Error: msg,
+				}
+				e.AbortWithStatusJSON(http.StatusUnauthorized, resp)
+				return
 			} else {
 				var issuer = setting.AppSetting.Issuer
 				valid := claims.VerifyIssuer(issuer, true)

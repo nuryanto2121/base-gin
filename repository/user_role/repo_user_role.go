@@ -26,7 +26,7 @@ func (db *repoUserRole) GetById(ctx context.Context, ID uuid.UUID) (result *mode
 		logger    = logging.Logger{}
 		mUserRole = &models.UserRole{}
 	)
-	query := db.Conn.Where("user_role_id = ? ", ID).WithContext(ctx).Find(mUserRole)
+	query := db.Conn.Where("id = ? ", ID).WithContext(ctx).Find(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {
@@ -43,7 +43,7 @@ func (db *repoUserRole) GetDataBy(ctx context.Context, key, value string) (resul
 		logger    = logging.Logger{}
 		mUserRole = &models.UserRoleDesc{}
 	)
-	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mUserRole)
+	query := db.Conn.Table(`user_role`).Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {
@@ -62,22 +62,8 @@ func (db *repoUserRole) GetListByUser(ctx context.Context, key, value string) (r
 
 	query := db.Conn.Raw(`
 	SELECT ug.user_id,ug.role ,r.role_name 
-		,to_jsonb(array_agg(otl)) as outlets
 	FROM user_role ug 	inner join roles r
-	 on r."role" = ug."role" 
-	left join 
-	(select
-			o.id as outlet_id,
-			o.outlet_name,
-			go2.role,
-			go2.user_id
-		from
-			outlets o
-		inner join role_outlet go2
-			on	o.id = go2.outlet_id 		
-	)as otl on
-		otl.role = ug.role
-		and otl.user_id = ug.user_id	
+	 on r."role" = ug."role" 	
 	 WHERE ug.user_id = ? GROUP BY ug.user_id,ug.role,r.role_name  ORDER BY ug.role asc
 	`, value).Find(&mUserRole)
 

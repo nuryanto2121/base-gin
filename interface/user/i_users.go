@@ -9,11 +9,11 @@ import (
 )
 
 type Repository interface {
-	GetById(ctx context.Context, ID uuid.UUID) (result *models.Users, err error)
+	GetById(ctx context.Context, ID uuid.UUID) (result *models.UserCms, err error)
 	GetDataBy(ctx context.Context, key, value string) (result *models.Users, err error)
 	IsExist(ctx context.Context, key, value string) (bool, error)
 	GetByAccount(ctx context.Context, Account string) (result *models.Users, err error)
-	GetList(ctx context.Context, queryparam models.ParamList) (result []*models.ListUserCms, err error)
+	GetList(ctx context.Context, queryparam models.ParamList) (result []*models.UserCms, err error)
 	Create(ctx context.Context, data *models.Users) (err error)
 	Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error)
 	Delete(ctx context.Context, ID uuid.UUID) (err error)

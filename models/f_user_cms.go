@@ -27,7 +27,7 @@ type EditUserCms struct {
 type AddOutletIds struct {
 	OutletId uuid.UUID `json:"outlet_id"`
 }
-type ListUserCms struct {
+type UserCms struct {
 	UserId   uuid.UUID       `json:"user_id"`
 	Username string          `json:"username"`
 	Name     string          `json:"name"`

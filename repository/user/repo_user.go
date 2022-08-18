@@ -35,12 +35,20 @@ func (db *repoSysUser) GetByAccount(ctx context.Context, Account string) (result
 	return result, err
 }
 
-func (db *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *models.Users, err error) {
+func (db *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *models.UserCms, err error) {
 	var (
-		sysUser = &models.Users{}
+		sysUser = &models.UserCms{}
 		logger  = logging.Logger{}
 	)
-	query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysUser)
+	query := db.Conn.WithContext(ctx).Table("users u").Select(`
+				u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
+			`).Joins(`
+			inner join user_role ur 
+			on u.id = ur.user_id 
+			`).Joins(`inner join roles r 
+				on ur."role" =r."role" `).
+		Where("u.id = ?", ID).Find(sysUser)
+	// query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysUser)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo users GetById ", err)
@@ -87,7 +95,7 @@ func (db *repoSysUser) IsExist(ctx context.Context, key, value string) (bool, er
 	return result > 0, nil
 }
 
-func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.ListUserCms, err error) {
+func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.UserCms, err error) {
 
 	var (
 		pageNum  = 0
@@ -209,7 +217,7 @@ func (db *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (
 			on u.id = ur.user_id 
 	`).Joins(`inner join roles r 
 				on ur."role" =r."role" `).
-			Where(sWhere, queryparam.Search).Count(&result)
+			Where(sWhere, queryparam.Search, queryparam.Search).Count(&result)
 	} else {
 		query = db.Conn.WithContext(ctx).Table("users u").Select(`
 		u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
