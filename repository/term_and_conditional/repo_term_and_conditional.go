@@ -35,6 +35,19 @@ func (db *repoTermAndConditional) GetDataBy(ctx context.Context, ID uuid.UUID) (
 	return sysTermAndConditional, nil
 }
 
+func (db *repoTermAndConditional) GetDataOne(ctx context.Context) (result *models.TermAndConditional, err error) {
+	var sysTermAndConditional = &models.TermAndConditional{}
+	query := db.Conn.WithContext(ctx).First(sysTermAndConditional)
+	err = query.Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return sysTermAndConditional, models.ErrNotFound
+		}
+		return nil, err
+	}
+	return sysTermAndConditional, nil
+}
+
 // func (db *repoTermAndConditional) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.TermAndConditionalForm, err error) {
 
 // 	var (

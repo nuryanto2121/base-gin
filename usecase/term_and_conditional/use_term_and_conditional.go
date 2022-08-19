@@ -24,39 +24,20 @@ func NewTermAndConditional(a itermandconditional.Repository, timeout time.Durati
 	return &useTermAndConditional{repoTermAndConditional: a, contextTimeOut: timeout}
 }
 
-func (u *useTermAndConditional) GetDataBy(ctx context.Context, claims util.Claims, ID uuid.UUID) (result *models.TermAndConditional, err error) {
+func (u *useTermAndConditional) GetDataOne(ctx context.Context, claims util.Claims) (result *models.TermAndConditional, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoTermAndConditional.GetDataBy(ctx, ID)
-	if err != nil {
+	result, err = u.repoTermAndConditional.GetDataOne(ctx)
+	if err != nil && err != models.ErrNotFound {
 		return result, err
+	}
+	if result.Id == uuid.Nil {
+		return nil, nil
 	}
 	return result, nil
 }
 
-// func (u *useTermAndConditional) GetList(ctx context.Context, queryparam models.ParamList) (result models.ResponseModelList, err error) {
-// 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
-// 	defer cancel()
-
-// 	if queryparam.Search != "" {
-// 		queryparam.Search = strings.ToLower(fmt.Sprintf("%%%s%%", queryparam.Search))
-// 	}
-// 	result.Data, err = u.repoTermAndConditional.GetList(ctx, queryparam)
-// 	if err != nil {
-// 		return result, err
-// 	}
-
-// 	result.Total, err = u.repoTermAndConditional.Count(ctx, queryparam)
-// 	if err != nil {
-// 		return result, err
-// 	}
-
-// 	result.LastPage = int64(math.Ceil(float64(result.Total) / float64(queryparam.PerPage)))
-// 	result.Page = queryparam.Page
-
-// 	return result, nil
-// }
 func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, data *models.TermAndConditionalForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
@@ -69,12 +50,14 @@ func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, 
 			return err
 		}
 
+		form.CreatedBy = uuid.FromStringOrNil(claims.UserID)
+		form.UpdatedBy = uuid.FromStringOrNil(claims.UserID)
+
 		err = u.repoTermAndConditional.Create(ctx, form)
 		if err != nil {
 			return err
 		}
 	} else {
-		var form = models.TermAndConditional{}
 		dataOld, err := u.repoTermAndConditional.GetDataBy(ctx, data.Id)
 		if err != nil {
 			return err
@@ -84,12 +67,12 @@ func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, 
 			return models.ErrNotFound
 		}
 
-		err = mapstructure.Decode(data, &form)
-		if err != nil {
-			return err
+		TandCupdate := map[string]interface{}{
+			"description": data.Description,
+			"updated_by":  claims.UserID,
 		}
 
-		err = u.repoTermAndConditional.Update(ctx, data.Id, form)
+		err = u.repoTermAndConditional.Update(ctx, data.Id, TandCupdate)
 		if err != nil {
 			return err
 		}
@@ -117,7 +100,7 @@ func (u *useTermAndConditional) Update(ctx context.Context, claims util.Claims, 
 		return err
 	}
 
-	err = u.repoTermAndConditional.Update(ctx, ID, form)
+	err = u.repoTermAndConditional.Update(ctx, ID, &form)
 	if err != nil {
 		return err
 	}
