@@ -52,6 +52,10 @@ import (
 	_useInventory "app/usecase/inventory"
 
 	_repoOutletDetail "app/repository/outlet_detail"
+
+	_contTermAndConditional "app/controllers/term_and_conditional"
+	_repoTermAndConditional "app/repository/term_and_conditional"
+	_useTermAndConditional "app/usecase/term_and_conditional"
 )
 
 type GinRoutes struct {
@@ -103,4 +107,8 @@ func (g *GinRoutes) Init() {
 	repoInventory := _repoInventory.NewRepoInventory(postgres.Conn)
 	useInventory := _useInventory.NewUseInventory(repoInventory, timeoutContext)
 	_contInventory.NewContInventory(g.G, useInventory)
+
+	repoTermAndConditional := _repoTermAndConditional.NewRepoTermAndConditioinal(postgres.Conn)
+	useTermAndConditional := _useTermAndConditional.NewTermAndConditional(repoTermAndConditional, timeoutContext)
+	_contTermAndConditional.NewContTermAndConditional(g.G, useTermAndConditional)
 }

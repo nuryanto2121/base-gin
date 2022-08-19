@@ -113,6 +113,7 @@ func autoMigrate() {
 		models.Outlets{},
 		models.OutletDetail{},
 		models.Inventory{},
+		models.TermAndConditional{},
 	)
 	if err != nil {
 		log.Printf("\nAutoMigrate : %#v", err)
