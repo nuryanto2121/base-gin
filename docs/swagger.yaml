@@ -827,7 +827,7 @@ paths:
       summary: Rubah Outlets
       tags:
       - Outlets
-  /v1/cms/outlets/role/{role}:
+  /v1/cms/outlets/lookup:
     get:
       parameters:
       - description: Device Type
@@ -845,10 +845,27 @@ paths:
         name: Language
         required: true
         type: string
-      - description: Role
-        in: path
-        name: role
+      - description: Page
+        in: query
+        name: page
         required: true
+        type: integer
+      - description: PerPage
+        in: query
+        name: perpage
+        required: true
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: InitSearch
+        in: query
+        name: initsearch
+        type: string
+      - description: SortField
+        in: query
+        name: sortfield
         type: string
       produces:
       - application/json
@@ -856,10 +873,10 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/app.Response'
+            $ref: '#/definitions/models.ResponseModelList'
       security:
       - ApiKeyAuth: []
-      summary: GetById
+      summary: GetDataLookUp Outlets
       tags:
       - Outlets
   /v1/cms/roles:

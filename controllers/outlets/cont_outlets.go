@@ -35,46 +35,56 @@ func NewContOutlets(e *gin.Engine, a ioutlets.Usecase) {
 	r.POST("", controller.Create)
 	r.PUT("/:id", controller.Update)
 	r.DELETE("/:id", controller.Delete)
-	r.GET("/role/:role", controller.GetDataByRole)
+	r.GET("/lookup", controller.GetDataLookUp)
 }
 
-// GetDataByRole :
-// @Summary GetById
+// GetDataLookUp :
+// @Summary GetDataLookUp Outlets
 // @Security ApiKeyAuth
 // @Tags Outlets
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param role path string true "Role"
-// @Success 200 {object} app.Response
-// @Router /v1/cms/outlets/role/{role} [get]
-func (c *contOutlets) GetDataByRole(e *gin.Context) {
+// @Param page query int true "Page"
+// @Param perpage query int true "PerPage"
+// @Param search query string false "Search"
+// @Param initsearch query string false "InitSearch"
+// @Param sortfield query string false "SortField"
+// @Success 200 {object} models.ResponseModelList
+// @Router /v1/cms/outlets/lookup [get]
+func (c *contOutlets) GetDataLookUp(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
 	var (
-		logger = logging.Logger{}
-		appE   = app.Gin{C: e}   // wajib
-		role   = e.Param("role") //kalo bukan int => 0
+		logger       = logging.Logger{}
+		appE         = app.Gin{C: e}      // wajib
+		paramquery   = models.ParamList{} // ini untuk list
+		responseList = models.ResponseModelList{}
 	)
 
-	logger.Info(role)
-
+	httpCode, errMsg := app.BindAndValidMulti(e, &paramquery)
+	logger.Info(util.Stringify(paramquery))
+	if httpCode != 200 {
+		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
+		return
+	}
 	claims, err := app.GetClaims(e)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
-	data, err := c.useOutlets.GetDataByRole(ctx, claims, role)
+
+	responseList, err = c.useOutlets.GetListLookUp(ctx, claims, paramquery)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
-	appE.Response(http.StatusOK, "Ok", data)
+	appE.Response(http.StatusOK, "Ok", responseList)
 }
 
 // GetDataByID :

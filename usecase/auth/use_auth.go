@@ -68,6 +68,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 		return nil, models.ErrAccountNotActive
 	}
 
+	//get outlet
 	outlets, err = u.genOutletList(ctx, dataUser.Id.String())
 	if dataLogin.Account != "root" {
 		roles, err := u.repoUserRole.GetListByUser(ctx, "user_id", dataUser.Id.String())
@@ -78,8 +79,6 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	} else {
 		role = "root"
 	}
-
-	//get outlet
 
 	token, err := util.GenerateToken(dataUser.Id.String(), dataUser.Username, role)
 	if err != nil {
@@ -99,12 +98,23 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 		return nil, err
 	}
 
-	response := map[string]interface{}{
-		"users":   dataUser,
-		"token":   token,
-		"role":    role,
-		"outlets": outlets,
+	response := map[string]interface{}{}
+	if len(outlets) == 0 {
+		response = map[string]interface{}{
+			"users":   dataUser,
+			"token":   token,
+			"role":    role,
+			"outlets": nil,
+		}
+	} else {
+		response = map[string]interface{}{
+			"users":   dataUser,
+			"token":   token,
+			"role":    role,
+			"outlets": outlets[0],
+		}
 	}
+
 	return response, nil
 }
 

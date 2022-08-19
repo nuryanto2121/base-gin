@@ -46,6 +46,7 @@ func (u *useAuht) genOutletList(ctx context.Context, userId string) ([]*models.O
 	outlets, err := u.repoRoleOutlet.GetList(ctx, query)
 	if err != nil {
 		logger.Error("error get role outlet list ", err)
+		return outlets, err
 	}
 
 	return outlets, nil

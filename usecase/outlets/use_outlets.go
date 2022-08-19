@@ -38,14 +38,34 @@ func NewUseOutlets(a ioutlets.Repository,
 	}
 }
 
-func (u *useOutlets) GetDataByRole(ctx context.Context, Claims util.Claims, role string) (result []*models.Outlets, err error) {
+func (u *useOutlets) GetListLookUp(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoOutlets.GetDataByRole(ctx, Claims.UserID, role) //GetDataBy(ctx, "id", ID.String())
-	if err != nil {
-		return nil, err
+	if queryparam.Search != "" {
+		queryparam.Search = strings.ToLower(fmt.Sprintf("%%%s%%", queryparam.Search))
 	}
+
+	// if queryparam.InitSearch != "" {
+	//queryparam.InitSearch += fmt.Sprintf(" AND user_id = '%s' ", Claims.UserID)
+	// }
+	// else {
+	// 	queryparam.InitSearch = fmt.Sprintf(" user_id = '%s' ", Claims.UserID)
+	// }
+
+	result.Data, err = u.repoRoleOutlet.GetList(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	result.Total, err = u.repoRoleOutlet.Count(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	result.LastPage = int64(math.Ceil(float64(result.Total) / float64(queryparam.PerPage)))
+	result.Page = queryparam.Page
+
 	return result, nil
 }
 

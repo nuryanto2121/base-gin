@@ -31,7 +31,7 @@ type UserCms struct {
 	UserId   uuid.UUID       `json:"user_id"`
 	Username string          `json:"username"`
 	Name     string          `json:"name"`
-	Phone    string          `json:"phone_no"`
+	PhoneNo  string          `json:"phone_no"`
 	Email    string          `json:"email"`
 	Role     string          `json:"role"`
 	RoleName string          `json:"role_name"`
@@ -52,4 +52,5 @@ type RoleCodes struct {
 type OutletLookUp struct {
 	OutletId   uuid.UUID `json:"outlet_id"`
 	OutletName string    `json:"outlet_name"`
+	OutletCity string    `json:"outlet_city"`
 }

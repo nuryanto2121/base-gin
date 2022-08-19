@@ -828,7 +828,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/cms/outlets/role/{role}": {
+        "/v1/cms/outlets/lookup": {
             "get": {
                 "security": [
                     {
@@ -841,7 +841,7 @@ var doc = `{
                 "tags": [
                     "Outlets"
                 ],
-                "summary": "GetById",
+                "summary": "GetDataLookUp Outlets",
                 "parameters": [
                     {
                         "type": "string",
@@ -865,18 +865,43 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Role",
-                        "name": "role",
-                        "in": "path",
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PerPage",
+                        "name": "perpage",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "InitSearch",
+                        "name": "initsearch",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortField",
+                        "name": "sortfield",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/app.Response"
+                            "$ref": "#/definitions/models.ResponseModelList"
                         }
                     }
                 }
