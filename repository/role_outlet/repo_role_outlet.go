@@ -7,6 +7,7 @@ import (
 	iroleoutlet "app/interface/role_outlet"
 	"app/models"
 	"app/pkg/logging"
+	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -14,19 +15,20 @@ import (
 )
 
 type repoRoleOutlet struct {
-	Conn *gorm.DB
+	db postgres.DBGormDelegate
 }
 
-func NewRepoRoleOutlet(Conn *gorm.DB) iroleoutlet.Repository {
+func NewRepoRoleOutlet(Conn postgres.DBGormDelegate) iroleoutlet.Repository {
 	return &repoRoleOutlet{Conn}
 }
 
-func (db *repoRoleOutlet) GetDataBy(ctx context.Context, key, value string) (result *models.RoleOutlet, err error) {
+func (r *repoRoleOutlet) GetDataBy(ctx context.Context, key, value string) (result *models.RoleOutlet, err error) {
 	var (
 		logger      = logging.Logger{}
 		mRoleOutlet = &models.RoleOutlet{}
 	)
-	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mRoleOutlet)
+	conn := r.db.Get(ctx)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mRoleOutlet)
 
 	err = query.Error
 	if err != nil {
@@ -39,16 +41,17 @@ func (db *repoRoleOutlet) GetDataBy(ctx context.Context, key, value string) (res
 	return mRoleOutlet, nil
 }
 
-// func (db *repoRoleOutlet) GetListBy(ctx context.Context, key, value string) ([]*models.OutletLookUp, error) {
+// func (r *repoRoleOutlet) GetListBy(ctx context.Context, key, value string) ([]*models.OutletLookUp, error) {
 // 	var (
 // 		logger      = logging.Logger{}
 // 		mRoleOutlet = []*models.OutletLookUp{}
 // 	)
-// 	query := db.Conn.Table(`from role_outlet a`).Where(fmt.Sprintf("%s = ?", key), value).Order(``).Find(&result)
+// 	conn := r.db.Get(ctx)
+// query := conn.Table(`from role_outlet a`).Where(fmt.Sprintf("%s = ?", key), value).Order(``).Find(&result)
 // 	return mRoleOutlet, nil
 // }
 
-func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OutletLookUp, err error) {
+func (r *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OutletLookUp, err error) {
 
 	var (
 		pageNum  = 0
@@ -56,7 +59,7 @@ func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamLi
 		sWhere   = ""
 		logger   = logging.Logger{}
 		orderBy  = queryparam.SortField
-		query    *gorm.DB
+		conn     = r.db.Get(ctx)
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -84,16 +87,14 @@ func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamLi
 		} else {
 			sWhere += "(lower(o.outlet_name) LIKE ?)"
 		}
-		query = db.Conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name,o.outlet_city`).
+		err = conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name,o.outlet_city`).
 			Joins(`inner join outlets o on o.id =a.outlet_id`).Group(`o.id,o.outlet_name,o.outlet_city`).
-			Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+			Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
-		query = db.Conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name,o.outlet_city`).
+		err = conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name,o.outlet_city`).
 			Joins(`inner join outlets o on o.id =a.outlet_id`).Group(`o.id,o.outlet_name,o.outlet_city`).
-			Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+			Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}
-
-	err = query.Error
 
 	if err != nil {
 		logger.Error("repo outlet GetList ", err)
@@ -105,12 +106,13 @@ func (db *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamLi
 	return result, nil
 }
 
-func (db *repoRoleOutlet) Create(ctx context.Context, data *models.RoleOutlet) error {
+func (r *repoRoleOutlet) Create(ctx context.Context, data *models.RoleOutlet) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Create(data)
+	conn := r.db.Get(ctx)
+	query := conn.Create(data)
 
 	err = query.Error
 	if err != nil {
@@ -119,12 +121,13 @@ func (db *repoRoleOutlet) Create(ctx context.Context, data *models.RoleOutlet) e
 	}
 	return nil
 }
-func (db *repoRoleOutlet) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
+func (r *repoRoleOutlet) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Model(models.RoleOutlet{}).Where("groupoutlet_id = ?", ID).Updates(data)
+	conn := r.db.Get(ctx)
+	query := conn.Model(models.RoleOutlet{}).Where("groupoutlet_id = ?", ID).Updates(data)
 
 	err = query.Error
 	if err != nil {
@@ -134,12 +137,13 @@ func (db *repoRoleOutlet) Update(ctx context.Context, ID uuid.UUID, data interfa
 	return nil
 }
 
-func (db *repoRoleOutlet) Delete(ctx context.Context, key, value string) error {
+func (r *repoRoleOutlet) Delete(ctx context.Context, key, value string) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).Delete(&models.RoleOutlet{})
+	conn := r.db.Get(ctx)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).Delete(&models.RoleOutlet{})
 
 	err = query.Error
 	if err != nil {
@@ -149,12 +153,12 @@ func (db *repoRoleOutlet) Delete(ctx context.Context, key, value string) error {
 	return nil
 }
 
-func (db *repoRoleOutlet) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (r *repoRoleOutlet) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
-		sWhere = ""
-		logger = logging.Logger{}
-		query  *gorm.DB
+		sWhere         = ""
+		logger         = logging.Logger{}
 		rest   (int64) = 0
+		conn           = r.db.Get(ctx)
 	)
 
 	// WHERE
@@ -168,17 +172,15 @@ func (db *repoRoleOutlet) Count(ctx context.Context, queryparam models.ParamList
 		} else {
 			sWhere += "(lower(o.outlet_name) LIKE ?)"
 		}
-		query = db.Conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
+		err = conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
 			Joins(`inner join outlets o on o.id =a.outlet_id`).Group(`o.id,o.outlet_name,o.outlet_city`).
-			Where(sWhere, queryparam.Search).Count(&rest)
+			Where(sWhere, queryparam.Search).Count(&rest).Error
 	} else {
-		query = db.Conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
+		err = conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
 			Joins(`inner join outlets o on o.id =a.outlet_id`).Group(`o.id,o.outlet_name,o.outlet_city`).
-			Where(sWhere).Count(&rest)
+			Where(sWhere).Count(&rest).Error
 	}
 	// end where
-
-	err = query.Error
 	if err != nil {
 		logger.Error("repo outlet Count ", err)
 		return 0, models.ErrInternalServerError

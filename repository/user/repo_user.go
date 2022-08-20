@@ -7,6 +7,7 @@ import (
 	iusers "app/interface/user"
 	"app/models"
 	"app/pkg/logging"
+	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -14,15 +15,16 @@ import (
 )
 
 type repoSysUser struct {
-	Conn *gorm.DB
+	db postgres.DBGormDelegate
 }
 
-func NewRepoSysUser(Conn *gorm.DB) iusers.Repository {
+func NewRepoSysUser(Conn postgres.DBGormDelegate) iusers.Repository {
 	return &repoSysUser{Conn}
 }
-func (db *repoSysUser) GetByAccount(ctx context.Context, Account string) (result *models.Users, err error) {
+func (r *repoSysUser) GetByAccount(ctx context.Context, Account string) (result *models.Users, err error) {
 	var logger = logging.Logger{}
-	query := db.Conn.WithContext(ctx).Where("(username like ? OR phone_no = ?)", Account, Account).First(&result)
+	conn := r.db.Get(ctx)
+	query := conn.Where("(username like ? OR phone_no = ?)", Account, Account).First(&result)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo users GetByAccount ", err)
@@ -35,12 +37,13 @@ func (db *repoSysUser) GetByAccount(ctx context.Context, Account string) (result
 	return result, err
 }
 
-func (db *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *models.UserCms, err error) {
+func (r *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *models.UserCms, err error) {
 	var (
 		sysUser = &models.UserCms{}
 		logger  = logging.Logger{}
 	)
-	query := db.Conn.WithContext(ctx).Table("users u").Select(`
+	conn := r.db.Get(ctx)
+	query := conn.Table("users u").Select(`
 				u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
 			`).Joins(`
 			inner join user_role ur 
@@ -48,7 +51,8 @@ func (db *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *model
 			`).Joins(`inner join roles r 
 				on ur."role" =r."role" `).
 		Where("u.id = ?", ID).Find(sysUser)
-	// query := db.Conn.WithContext(ctx).Where("id = ? ", ID).Find(sysUser)
+	// conn := r.db.Get(ctx)
+	//query := conn.Where("id = ? ", ID).Find(sysUser)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo users GetById ", err)
@@ -60,12 +64,13 @@ func (db *repoSysUser) GetById(ctx context.Context, ID uuid.UUID) (result *model
 	return sysUser, nil
 
 }
-func (db *repoSysUser) GetDataBy(ctx context.Context, key, value string) (*models.Users, error) {
+func (r *repoSysUser) GetDataBy(ctx context.Context, key, value string) (*models.Users, error) {
 	var (
 		logger = logging.Logger{}
 		result = &models.Users{}
 	)
-	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(result)
+	conn := r.db.Get(ctx)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).Find(result)
 
 	err := query.Error
 	if err != nil {
@@ -78,12 +83,13 @@ func (db *repoSysUser) GetDataBy(ctx context.Context, key, value string) (*model
 	return result, nil
 }
 
-func (db *repoSysUser) IsExist(ctx context.Context, key, value string) (bool, error) {
+func (r *repoSysUser) IsExist(ctx context.Context, key, value string) (bool, error) {
 	var (
 		logger       = logging.Logger{}
 		result int64 = 0
 	)
-	query := db.Conn.Model(&models.Users{}).Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Count(&result) //.Find(result)
+	conn := r.db.Get(ctx)
+	query := conn.Model(&models.Users{}).Where(fmt.Sprintf("%s = ?", key), value).Count(&result) //.Find(result)
 	err := query.Error
 	if err != nil {
 		logger.Error("repo user Count ", err)
@@ -95,15 +101,16 @@ func (db *repoSysUser) IsExist(ctx context.Context, key, value string) (bool, er
 	return result > 0, nil
 }
 
-func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.UserCms, err error) {
+func (r *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.UserCms, err error) {
 
 	var (
 		pageNum  = 0
 		pageSize = setting.AppSetting.PageSize
 		sWhere   = ""
 		logger   = logging.Logger{}
-		query    *gorm.DB
-		orderBy  = queryparam.SortField
+		// query    *gorm.DB
+		orderBy = queryparam.SortField
+		conn    = r.db.Get(ctx)
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -132,25 +139,25 @@ func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList)
 			sWhere += "((lower(u.username) LIKE ?) OR (lower(u.name) LIKE ?))"
 		}
 
-		query = db.Conn.WithContext(ctx).Table("users u").Select(`
+		err = conn.Table("users u").Select(`
 				u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
 			`).Joins(`
 			inner join user_role ur 
 			on u.id = ur.user_id 
 			`).Joins(`inner join roles r 
 				on ur."role" =r."role" `).
-			Where(sWhere, queryparam.Search, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+			Where(sWhere, queryparam.Search, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
-		query = db.Conn.WithContext(ctx).Table("users u").Select(`
+		err = conn.Table("users u").Select(`
 				u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
 			`).Joins(`
 			inner join user_role ur 
 			on u.id = ur.user_id 
 			`).Joins(`inner join roles r 
-				on ur."role" =r."role" `).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+				on ur."role" =r."role" `).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}
 
-	err = query.Error
+	// err = query.Error
 
 	if err != nil {
 		logger.Error("repo users getlist ", err)
@@ -161,9 +168,10 @@ func (db *repoSysUser) GetList(ctx context.Context, queryparam models.ParamList)
 	}
 	return result, nil
 }
-func (db *repoSysUser) Create(ctx context.Context, data *models.Users) (err error) {
+func (r *repoSysUser) Create(ctx context.Context, data *models.Users) (err error) {
 	var logger = logging.Logger{}
-	query := db.Conn.WithContext(ctx).Create(data)
+	conn := r.db.Get(ctx)
+	query := conn.Create(data)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo user Delete ", err)
@@ -171,9 +179,10 @@ func (db *repoSysUser) Create(ctx context.Context, data *models.Users) (err erro
 	}
 	return nil
 }
-func (db *repoSysUser) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
+func (r *repoSysUser) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
 	var logger = logging.Logger{}
-	query := db.Conn.WithContext(ctx).Model(models.Users{}).Where("id = ?", ID).Updates(data)
+	conn := r.db.Get(ctx)
+	query := conn.Model(models.Users{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo user Update ", err)
@@ -181,9 +190,10 @@ func (db *repoSysUser) Update(ctx context.Context, ID uuid.UUID, data interface{
 	}
 	return nil
 }
-func (db *repoSysUser) Delete(ctx context.Context, ID uuid.UUID) (err error) {
+func (r *repoSysUser) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	var logger = logging.Logger{}
-	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Users{})
+	conn := r.db.Get(ctx)
+	query := conn.Where("id = ?", ID).Delete(&models.Users{})
 	err = query.Error
 	if err != nil {
 		logger.Error("repo user Delete ", err)
@@ -191,11 +201,12 @@ func (db *repoSysUser) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	}
 	return nil
 }
-func (db *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (r *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
-		query  *gorm.DB
+		// query  *gorm.DB
+		conn = r.db.Get(ctx)
 	)
 	result = 0
 
@@ -210,27 +221,27 @@ func (db *repoSysUser) Count(ctx context.Context, queryparam models.ParamList) (
 		} else {
 			sWhere += "((lower(u.username) LIKE ?) OR (lower(u.name) LIKE ?))"
 		}
-		query = db.Conn.WithContext(ctx).Table("users u").Select(`
+		err = conn.Table("users u").Select(`
 		u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
 	`).Joins(`
 	inner join user_role ur 
 			on u.id = ur.user_id 
 	`).Joins(`inner join roles r 
 				on ur."role" =r."role" `).
-			Where(sWhere, queryparam.Search, queryparam.Search).Count(&result)
+			Where(sWhere, queryparam.Search, queryparam.Search).Count(&result).Error
 	} else {
-		query = db.Conn.WithContext(ctx).Table("users u").Select(`
+		err = conn.Table("users u").Select(`
 		u.id as user_id, u.username ,u.name ,u.phone_no ,u.email ,r.role ,r.role_name
 	`).Joins(`
 	inner join user_role ur 
 			on u.id = ur.user_id 
 	`).Joins(`inner join roles r 
 				on ur."role" =r."role" `).
-			Where(sWhere).Count(&result)
+			Where(sWhere).Count(&result).Error
 	}
 	// end where
 
-	err = query.Error
+	// err = query.Error
 	if err != nil {
 		logger.Error(err)
 		return 0, err

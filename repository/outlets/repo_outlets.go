@@ -7,6 +7,7 @@ import (
 	ioutlets "app/interface/outlets"
 	"app/models"
 	"app/pkg/logging"
+	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -14,19 +15,20 @@ import (
 )
 
 type repoOutlets struct {
-	Conn *gorm.DB
+	db postgres.DBGormDelegate
 }
 
-func NewRepoOutlets(Conn *gorm.DB) ioutlets.Repository {
+func NewRepoOutlets(Conn postgres.DBGormDelegate) ioutlets.Repository {
 	return &repoOutlets{Conn}
 }
 
-func (db *repoOutlets) GetDataBy(ctx context.Context, key, value string) (result *models.Outlets, err error) {
+func (r *repoOutlets) GetDataBy(ctx context.Context, key, value string) (result *models.Outlets, err error) {
 	var (
 		logger   = logging.Logger{}
 		mOutlets = &models.Outlets{}
 	)
-	query := db.Conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).First(mOutlets) //(mOutlets)
+	conn := r.db.Get(ctx)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).First(mOutlets) //(mOutlets)
 	// logger.Query(fmt.Sprintf("%#v", query.Statement.Quote("")))
 	err = query.Error
 	if err != nil {
@@ -39,7 +41,7 @@ func (db *repoOutlets) GetDataBy(ctx context.Context, key, value string) (result
 	return mOutlets, nil
 }
 
-func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OutletList, err error) {
+func (r *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OutletList, err error) {
 
 	var (
 		pageNum  = 0
@@ -47,7 +49,7 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		sWhere   = ""
 		logger   = logging.Logger{}
 		orderBy  = queryparam.SortField
-		query    *gorm.DB
+		conn     = r.db.Get(ctx)
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -76,7 +78,7 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 			sWhere += "(lower(outlet_name) LIKE ?)"
 		}
 
-		query = db.Conn.Table(`outlets o`).Select(`
+		err = conn.Table(`outlets o`).Select(`
 		 o.id as outlet_id
 		 ,sm.id as product_id 
 		 ,i.id as inventory_id
@@ -101,10 +103,10 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		left join inventory i
 		 	on i.outlet_id = o.id
 			and i.product_id = sm.id
-		`).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+		`).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
 
-		query = db.Conn.Table(`outlets o`).Select(`
+		err = conn.Table(`outlets o`).Select(`
 		 o.id as outlet_id
 		 ,sm.id as product_id 
 		 ,i.id as inventory_id
@@ -129,10 +131,9 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 		left join inventory i
 		 	on i.outlet_id = o.id
 			and i.product_id = sm.id
-		`).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+		`).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}
 
-	err = query.Error
 	if err != nil {
 		logger.Error("repo outlet getlist ", err)
 		if err == gorm.ErrRecordNotFound {
@@ -143,12 +144,13 @@ func (db *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList)
 	return result, nil
 }
 
-func (db *repoOutlets) Create(ctx context.Context, data *models.Outlets) error {
+func (r *repoOutlets) Create(ctx context.Context, data *models.Outlets) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Create(data)
+	conn := r.db.Get(ctx)
+	query := conn.Create(data)
 
 	err = query.Error
 	if err != nil {
@@ -157,12 +159,13 @@ func (db *repoOutlets) Create(ctx context.Context, data *models.Outlets) error {
 	}
 	return nil
 }
-func (db *repoOutlets) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
+func (r *repoOutlets) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Model(models.Outlets{}).Where("id = ?", ID).Updates(data)
+	conn := r.db.Get(ctx)
+	query := conn.Model(models.Outlets{}).Where("id = ?", ID).Updates(data)
 
 	err = query.Error
 	if err != nil {
@@ -172,12 +175,13 @@ func (db *repoOutlets) Update(ctx context.Context, ID uuid.UUID, data interface{
 	return nil
 }
 
-func (db *repoOutlets) Delete(ctx context.Context, ID uuid.UUID) error {
+func (r *repoOutlets) Delete(ctx context.Context, ID uuid.UUID) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where("id = ?", ID).Delete(&models.Outlets{})
+	conn := r.db.Get(ctx)
+	query := conn.Where("id = ?", ID).Delete(&models.Outlets{})
 
 	err = query.Error
 	if err != nil {
@@ -187,12 +191,12 @@ func (db *repoOutlets) Delete(ctx context.Context, ID uuid.UUID) error {
 	return nil
 }
 
-func (db *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (r *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
-		sWhere = ""
-		logger = logging.Logger{}
-		query  *gorm.DB
+		sWhere         = ""
+		logger         = logging.Logger{}
 		rest   (int64) = 0
+		conn           = r.db.Get(ctx)
 	)
 
 	// WHERE
@@ -236,14 +240,13 @@ func (db *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (
 			sWhere += "(lower(outlet_name) LIKE ? )" //queryparam.Search
 		}
 		sQuery += fmt.Sprintf(" WHERE %s", sWhere)
-		query = db.Conn.Raw(sQuery, queryparam.Search).Count(&rest)
+		err = conn.Raw(sQuery, queryparam.Search).Count(&rest).Error
 	} else {
 		sQuery += fmt.Sprintf(" WHERE %s", sWhere)
-		query = db.Conn.Raw(sQuery).Count(&rest)
+		err = conn.Raw(sQuery).Count(&rest).Error
 	}
 	// end where
 
-	err = query.Error
 	if err != nil {
 		logger.Error("repo outlet Count ", err)
 		return 0, models.ErrInternalServerError

@@ -1,9 +1,10 @@
-package repoinventory
+package repoorder
 
 import (
 	"context"
+	"fmt"
 
-	iinventory "app/interface/inventory"
+	iorder "app/interface/order"
 	"app/models"
 	"app/pkg/logging"
 	"app/pkg/postgres"
@@ -13,34 +14,34 @@ import (
 	"gorm.io/gorm"
 )
 
-type repoInventory struct {
+type repoOrder struct {
 	db postgres.DBGormDelegate
 }
 
-func NewRepoInventory(Conn postgres.DBGormDelegate) iinventory.Repository {
-	return &repoInventory{Conn}
+func NewRepoOrder(Conn postgres.DBGormDelegate) iorder.Repository {
+	return &repoOrder{Conn}
 }
 
-func (r *repoInventory) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.Inventory, err error) {
+func (r *repoOrder) GetDataBy(ctx context.Context, key, value string) (result *models.Order, err error) {
 	var (
-		logger     = logging.Logger{}
-		mInventory = &models.Inventory{}
+		logger = logging.Logger{}
+		mOrder = &models.Order{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where("id = ? ", ID).WithContext(ctx).Find(mInventory)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mOrder)
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo inventory GetDataBy ", err)
+		logger.Error("repo order GetDataBy ", err)
 		if err == gorm.ErrRecordNotFound {
-			return mInventory, models.ErrNotFound
+			return nil, models.ErrNotFound
 		}
 		return nil, err
 	}
-	return mInventory, nil
+	return mOrder, nil
 }
 
-func (r *repoInventory) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Inventory, err error) {
+func (r *repoOrder) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Order, err error) {
 
 	var (
 		pageNum  = 0
@@ -72,9 +73,9 @@ func (r *repoInventory) GetList(ctx context.Context, queryparam models.ParamList
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and (lower() LIKE ?)"
+			sWhere += " and (lower(order_id) LIKE ?)"
 		} else {
-			sWhere += "(lower() LIKE ?)"
+			sWhere += "(lower(order_id) LIKE ?)"
 		}
 		err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
@@ -83,7 +84,7 @@ func (r *repoInventory) GetList(ctx context.Context, queryparam models.ParamList
 
 	// err = query.Error
 	if err != nil {
-		logger.Error("repo inventory GetList ", err)
+		logger.Error("repo order GetList ", err)
 		if err == gorm.ErrRecordNotFound {
 			return nil, err
 		}
@@ -92,7 +93,7 @@ func (r *repoInventory) GetList(ctx context.Context, queryparam models.ParamList
 	return result, nil
 }
 
-func (r *repoInventory) Create(ctx context.Context, data *models.Inventory) error {
+func (r *repoOrder) Create(ctx context.Context, data *models.Order) error {
 	var (
 		logger = logging.Logger{}
 		err    error
@@ -102,50 +103,49 @@ func (r *repoInventory) Create(ctx context.Context, data *models.Inventory) erro
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo inventory Create ", err)
+		logger.Error("repo order Create ", err)
 		return err
 	}
 	return nil
 }
-func (r *repoInventory) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
+func (r *repoOrder) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Model(models.Inventory{}).Where("id = ?", ID).Updates(data)
+	query := conn.Model(models.Order{}).Where("order_id = ?", ID).Updates(data)
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo inventory Update ", err)
+		logger.Error("repo order Update ", err)
 		return err
 	}
 	return nil
 }
 
-func (r *repoInventory) Delete(ctx context.Context, ID uuid.UUID) error {
+func (r *repoOrder) Delete(ctx context.Context, ID uuid.UUID) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where("id = ?", ID).Delete(&models.Inventory{})
+	query := conn.Where("order_id = ?", ID).Delete(&models.Order{})
 
 	err = query.Error
 	if err != nil {
-		logger.Error("repo inventory Delete ", err)
+		logger.Error("repo order Delete ", err)
 		return err
 	}
 	return nil
 }
 
-func (r *repoInventory) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (r *repoOrder) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
-		sWhere = ""
-		logger = logging.Logger{}
-		// query  *gorm.DB
-		rest (int64) = 0
-		conn         = r.db.Get(ctx)
+		sWhere         = ""
+		logger         = logging.Logger{}
+		rest   (int64) = 0
+		conn           = r.db.Get(ctx)
 	)
 
 	// WHERE
@@ -155,18 +155,17 @@ func (r *repoInventory) Count(ctx context.Context, queryparam models.ParamList) 
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and (lower() LIKE ? )" //+ queryparam.Search
+			sWhere += " and (lower(order_id) LIKE ? )" //+ queryparam.Search
 		} else {
-			sWhere += "(lower() LIKE ? )" //queryparam.Search
+			sWhere += "(lower(order_id) LIKE ? )" //queryparam.Search
 		}
-		err = conn.Model(&models.Inventory{}).Where(sWhere, queryparam.Search).Count(&rest).Error
+		err = conn.Model(&models.Order{}).Where(sWhere, queryparam.Search).Count(&rest).Error
 	} else {
-		err = conn.Model(&models.Inventory{}).Where(sWhere).Count(&rest).Error
+		err = conn.Model(&models.Order{}).Where(sWhere).Count(&rest).Error
 	}
 	// end where
-
 	if err != nil {
-		logger.Error("repo inventory Count ", err)
+		logger.Error("repo order Count ", err)
 		return 0, err
 	}
 

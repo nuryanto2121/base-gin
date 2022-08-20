@@ -58,6 +58,7 @@ type Database struct {
 	Port        string
 	Name        string
 	TablePrefix string
+	Debug       bool
 }
 
 var DatabaseSetting = &Database{}

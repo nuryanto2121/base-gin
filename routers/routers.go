@@ -51,6 +51,10 @@ import (
 	_repoInventory "app/repository/inventory"
 	_useInventory "app/usecase/inventory"
 
+	_contOrder "app/controllers/order"
+	_repoOrder "app/repository/order"
+	_useOrder "app/usecase/order"
+
 	_repoOutletDetail "app/repository/outlet_detail"
 
 	_contTermAndConditional "app/controllers/term_and_conditional"
@@ -64,26 +68,28 @@ type GinRoutes struct {
 
 func (g *GinRoutes) Init() {
 	timeoutContext := time.Duration(setting.ServerSetting.ReadTimeout) * time.Second
+	dbConn := postgres.NewDBdelegate(setting.DatabaseSetting.Debug)
+	dbConn.Init()
 
 	r := g.G
 	r.GET("/v1//swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	repoUserSession := _repoUserSession.NewRepoUserSession(postgres.Conn)
+	repoUserSession := _repoUserSession.NewRepoUserSession(dbConn)
 
-	repoFileUpload := _repoFileUpload.NewRepoFileUpload(postgres.Conn)
+	repoFileUpload := _repoFileUpload.NewRepoFileUpload(dbConn)
 	useFileUpload := _useFileUpload.NewSaFileUpload(repoFileUpload, timeoutContext)
 
-	repoRoles := _repoRoles.NewRepoRoles(postgres.Conn)
+	repoRoles := _repoRoles.NewRepoRoles(dbConn)
 	useRoles := _useRoles.NewRoles(repoRoles, timeoutContext)
 	_contRoles.NewContRole(g.G, useRoles)
 
-	repoUserRole := _repoUserRoles.NewRepoUserRole(postgres.Conn)
+	repoUserRole := _repoUserRoles.NewRepoUserRole(dbConn)
 	_ = _useUserRoles.NewUseUserRole(repoUserRole, timeoutContext)
 
-	repoRoleOutlet := _repoRoleOutlet.NewRepoRoleOutlet(postgres.Conn)
+	repoRoleOutlet := _repoRoleOutlet.NewRepoRoleOutlet(dbConn)
 	_ = _useRoleOutlet.NewUseRoleOutlet(repoRoleOutlet, timeoutContext)
 
-	repoUser := _repoUser.NewRepoSysUser(postgres.Conn)
+	repoUser := _repoUser.NewRepoSysUser(dbConn)
 	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, repoRoleOutlet, timeoutContext)
 	useUser := _useUser.NewUserSysUser(repoUser, repoUserRole, repoRoleOutlet, timeoutContext)
 
@@ -92,23 +98,27 @@ func (g *GinRoutes) Init() {
 
 	_contFileUpload.NewContFileUpload(g.G, useFileUpload)
 
-	repoHolidays := _repoHolidays.NewRepoHolidays(postgres.Conn)
+	repoHolidays := _repoHolidays.NewRepoHolidays(dbConn)
 	userHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
 	_contHolidays.NewContHolidays(g.G, userHolidays)
 
-	reposkumanagement := _repoSkumanagement.NewRepoSkuManagement(postgres.Conn)
+	reposkumanagement := _repoSkumanagement.NewRepoSkuManagement(dbConn)
 	useskumanagement := _useSkumanagement.NewSkuManagement(reposkumanagement, timeoutContext)
 	_contSkumanagement.NewContSkuManagement(g.G, useskumanagement)
-	repoOutlet := _repoOutlets.NewRepoOutlets(postgres.Conn)
-	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(postgres.Conn)
+	repoOutlet := _repoOutlets.NewRepoOutlets(dbConn)
+	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(dbConn)
 	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, repoRoleOutlet, timeoutContext)
 	_contOutlets.NewContOutlets(g.G, useOutlet)
 
-	repoInventory := _repoInventory.NewRepoInventory(postgres.Conn)
+	repoInventory := _repoInventory.NewRepoInventory(dbConn)
 	useInventory := _useInventory.NewUseInventory(repoInventory, timeoutContext)
 	_contInventory.NewContInventory(g.G, useInventory)
 
-	repoTermAndConditional := _repoTermAndConditional.NewRepoTermAndConditioinal(postgres.Conn)
+	repoTermAndConditional := _repoTermAndConditional.NewRepoTermAndConditioinal(dbConn)
 	useTermAndConditional := _useTermAndConditional.NewTermAndConditional(repoTermAndConditional, timeoutContext)
 	_contTermAndConditional.NewContTermAndConditional(g.G, useTermAndConditional)
+
+	repoOrder := _repoOrder.NewRepoOrder(dbConn)
+	useOrder := _useOrder.NewUseOrder(repoOrder, timeoutContext)
+	_contOrder.NewContOrder(g.G, useOrder)
 }

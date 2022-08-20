@@ -13,9 +13,11 @@ type Order struct {
 }
 
 type AddOrder struct {
-	OrderID   string    `json:"sku_name" valid:"Required" gorm:"type:varchar(25);Index:idx_orderid,unique;not null"`
-	OrderDate time.Time `json:"order_date" gorm:"type:timestamp;default:now()"`
-	OutletId  uuid.UUID `json:"outlet_id" gorm:"type:uuid;not null"`
-	ProductId uuid.UUID `json:"product_id" gorm:"type:uuid;not null"`
-	Status    string    `json:"status" gorm:"type:varchar(10)";default:'aa'`
+	OrderID     string      `json:"sku_name" gorm:"type:varchar(25);Index:idx_orderid,unique;not null"`
+	OrderDate   time.Time   `json:"order_date" valid:"Required" gorm:"type:timestamp;default:now()"`
+	OutletId    uuid.UUID   `json:"outlet_id" valid:"Required" gorm:"type:uuid;not null"`
+	ProductId   uuid.UUID   `json:"product_id" valid:"Required" gorm:"type:uuid;not null"`
+	StartNumber int64       `json:"start_number" valid:"Required" gorm:"type:integer;not null"`
+	EndNumber   int64       `json:"end_number" valid:"Required" gorm:"type:integer;not null"`
+	Status      StatusOrder `json:"status" gorm:"type:integer;not null"`
 }
