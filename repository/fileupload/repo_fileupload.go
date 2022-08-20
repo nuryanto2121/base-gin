@@ -6,17 +6,17 @@ import (
 
 	ifileupload "app/interface/fileupload"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 
 	"gorm.io/gorm"
 )
 
 type repoAuth struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoFileUpload(Conn postgres.DBGormDelegate) ifileupload.Repository {
+func NewRepoFileUpload(Conn db.DBGormDelegate) ifileupload.Repository {
 	return &repoAuth{Conn}
 }
 

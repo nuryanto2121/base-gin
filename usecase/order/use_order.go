@@ -78,7 +78,17 @@ func (u *useOrder) Create(ctx context.Context, Claims util.Claims, data *models.
 
 	//gen order id
 	if data.OrderID == "" {
+		t := &models.TmpCode{Prefix: "ORD"}
+		mOrder.OrderID = util.GenCode(t)
+	}
 
+	//check duplicate order id
+	dataOld, err := u.repoOrder.GetDataBy(ctx, "order_id", mOrder.OrderID)
+	if err != nil && err != models.ErrNotFound {
+		return err
+	}
+	if dataOld.OrderID == mOrder.OrderID {
+		return models.ErrDataAlreadyExist
 	}
 
 	mOrder.CreatedBy = uuid.FromStringOrNil(Claims.Id)
@@ -97,7 +107,7 @@ func (u *useOrder) Update(ctx context.Context, Claims util.Claims, ID uuid.UUID,
 	defer cancel()
 
 	myMap := structs.Map(data)
-	myMap["user_edit"] = Claims.UserID
+	myMap["updated_by"] = Claims.UserID
 	fmt.Println(myMap)
 	err = u.repoOrder.Update(ctx, ID, myMap)
 	if err != nil {

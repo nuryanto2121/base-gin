@@ -6,8 +6,8 @@ import (
 
 	ioutlets "app/interface/outlets"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -15,10 +15,10 @@ import (
 )
 
 type repoOutlets struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoOutlets(Conn postgres.DBGormDelegate) ioutlets.Repository {
+func NewRepoOutlets(Conn db.DBGormDelegate) ioutlets.Repository {
 	return &repoOutlets{Conn}
 }
 
@@ -28,7 +28,7 @@ func (r *repoOutlets) GetDataBy(ctx context.Context, key, value string) (result 
 		mOutlets = &models.Outlets{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).First(mOutlets) //(mOutlets)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).First(mOutlets) //(mOutlets)
 	// logger.Query(fmt.Sprintf("%#v", query.Statement.Quote("")))
 	err = query.Error
 	if err != nil {

@@ -2501,13 +2501,13 @@ var doc = `{
                 "order_date": {
                     "type": "string"
                 },
+                "order_id": {
+                    "type": "string"
+                },
                 "outlet_id": {
                     "type": "string"
                 },
                 "product_id": {
-                    "type": "string"
-                },
-                "sku_name": {
                     "type": "string"
                 },
                 "start_number": {

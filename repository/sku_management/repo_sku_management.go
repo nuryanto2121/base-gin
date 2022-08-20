@@ -6,8 +6,8 @@ import (
 
 	iskumanagement "app/interface/sku_management"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -15,10 +15,10 @@ import (
 )
 
 type reposkumanagement struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoSkuManagement(Conn postgres.DBGormDelegate) iskumanagement.Repository {
+func NewRepoSkuManagement(Conn db.DBGormDelegate) iskumanagement.Repository {
 	return &reposkumanagement{Conn}
 }
 
@@ -28,7 +28,7 @@ func (r *reposkumanagement) GetDataBy(ctx context.Context, key, value string) (r
 		logger           = logging.Logger{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Where(fmt.Sprintf("%s = ?", key), value).First(sysSkuManagement)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).First(sysSkuManagement)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo sku management GetDataBy ", err)
@@ -76,9 +76,9 @@ func (r *reposkumanagement) GetList(ctx context.Context, queryparam models.Param
 		} else {
 			sWhere += "(lower(sku_name) LIKE ?)"
 		}
-		err = conn.WithContext(ctx).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
-		err = conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}
 	if err != nil {
 		logger.Error("repo sku management GetList ", err)
@@ -93,7 +93,7 @@ func (r *reposkumanagement) GetList(ctx context.Context, queryparam models.Param
 func (r *reposkumanagement) Create(ctx context.Context, data *models.SkuManagement) (err error) {
 	var logger = logging.Logger{}
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Create(data)
+	query := conn.Create(data)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo sku management Create ", err)
@@ -104,7 +104,7 @@ func (r *reposkumanagement) Create(ctx context.Context, data *models.SkuManageme
 func (r *reposkumanagement) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
 	var logger = logging.Logger{}
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Model(models.SkuManagement{}).Where("id = ?", ID).Updates(data)
+	query := conn.Model(models.SkuManagement{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo sku management Update ", err)
@@ -115,7 +115,7 @@ func (r *reposkumanagement) Update(ctx context.Context, ID uuid.UUID, data inter
 func (r *reposkumanagement) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	var logger = logging.Logger{}
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.SkuManagement{})
+	query := conn.Where("id = ?", ID).Delete(&models.SkuManagement{})
 	err = query.Error
 	if err != nil {
 		logger.Error("repo sku management Delete ", err)
@@ -142,9 +142,9 @@ func (r *reposkumanagement) Count(ctx context.Context, queryparam models.ParamLi
 		} else {
 			sWhere += "(lower(sku_name) LIKE ?)"
 		}
-		err = conn.WithContext(ctx).Model(models.SkuManagement{}).Where(sWhere, queryparam.Search).Count(&result).Error
+		err = conn.Model(models.SkuManagement{}).Where(sWhere, queryparam.Search).Count(&result).Error
 	} else {
-		err = conn.WithContext(ctx).Model(models.SkuManagement{}).Where(sWhere).Count(&result).Error
+		err = conn.Model(models.SkuManagement{}).Where(sWhere).Count(&result).Error
 	}
 	// end where
 

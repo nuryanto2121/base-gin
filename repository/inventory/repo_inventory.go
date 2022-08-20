@@ -5,8 +5,8 @@ import (
 
 	iinventory "app/interface/inventory"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -14,10 +14,10 @@ import (
 )
 
 type repoInventory struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoInventory(Conn postgres.DBGormDelegate) iinventory.Repository {
+func NewRepoInventory(Conn db.DBGormDelegate) iinventory.Repository {
 	return &repoInventory{Conn}
 }
 
@@ -27,7 +27,7 @@ func (r *repoInventory) GetDataBy(ctx context.Context, ID uuid.UUID) (result *mo
 		mInventory = &models.Inventory{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where("id = ? ", ID).WithContext(ctx).Find(mInventory)
+	query := conn.Where("id = ? ", ID).Find(mInventory)
 
 	err = query.Error
 	if err != nil {

@@ -5,8 +5,8 @@ import (
 
 	ioutletdetail "app/interface/outlet_detail"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -14,10 +14,10 @@ import (
 )
 
 type repoOutletDetail struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoOutletDetail(Conn postgres.DBGormDelegate) ioutletdetail.Repository {
+func NewRepoOutletDetail(Conn db.DBGormDelegate) ioutletdetail.Repository {
 	return &repoOutletDetail{Conn}
 }
 

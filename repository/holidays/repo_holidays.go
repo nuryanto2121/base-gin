@@ -6,8 +6,8 @@ import (
 
 	iholidays "app/interface/holidays"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -15,10 +15,10 @@ import (
 )
 
 type repoHolidays struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoHolidays(Conn postgres.DBGormDelegate) iholidays.Repository {
+func NewRepoHolidays(Conn db.DBGormDelegate) iholidays.Repository {
 	return &repoHolidays{Conn}
 }
 

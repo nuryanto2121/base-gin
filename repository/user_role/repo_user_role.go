@@ -6,8 +6,8 @@ import (
 
 	iuserrole "app/interface/user_role"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -15,10 +15,10 @@ import (
 )
 
 type repoUserRole struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoUserRole(Conn postgres.DBGormDelegate) iuserrole.Repository {
+func NewRepoUserRole(Conn db.DBGormDelegate) iuserrole.Repository {
 	return &repoUserRole{Conn}
 }
 
@@ -28,7 +28,7 @@ func (r *repoUserRole) GetById(ctx context.Context, ID uuid.UUID) (result *model
 		mUserRole = &models.UserRole{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where("id = ? ", ID).WithContext(ctx).Find(mUserRole)
+	query := conn.Where("id = ? ", ID).Find(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {
@@ -46,7 +46,7 @@ func (r *repoUserRole) GetDataBy(ctx context.Context, key, value string) (result
 		mUserRole = &models.UserRoleDesc{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Table(`user_role`).Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mUserRole)
+	query := conn.Table(`user_role`).Where(fmt.Sprintf("%s = ?", key), value).Find(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {

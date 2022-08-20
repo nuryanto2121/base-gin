@@ -4,7 +4,7 @@ import (
 	"time"
 
 	_ "app/docs"
-	postgres "app/pkg/postgres"
+	"app/pkg/db"
 	"app/pkg/setting"
 
 	"github.com/gin-gonic/gin"
@@ -68,7 +68,7 @@ type GinRoutes struct {
 
 func (g *GinRoutes) Init() {
 	timeoutContext := time.Duration(setting.ServerSetting.ReadTimeout) * time.Second
-	dbConn := postgres.NewDBdelegate(setting.DatabaseSetting.Debug)
+	dbConn := db.NewDBdelegate(setting.DatabaseSetting.Debug)
 	dbConn.Init()
 
 	r := g.G

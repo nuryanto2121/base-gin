@@ -5,8 +5,8 @@ import (
 
 	irole "app/interface/role"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -14,10 +14,10 @@ import (
 )
 
 type repoRoles struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoRoles(Conn postgres.DBGormDelegate) irole.Repository {
+func NewRepoRoles(Conn db.DBGormDelegate) irole.Repository {
 	return &repoRoles{Conn}
 }
 

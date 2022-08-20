@@ -2,8 +2,8 @@ package repouserSessionession
 
 import (
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"context"
 
 	iuserSession "app/interface/user_session"
@@ -13,16 +13,16 @@ import (
 )
 
 type repoUserSession struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoUserSession(Conn postgres.DBGormDelegate) iuserSession.Repository {
+func NewRepoUserSession(Conn db.DBGormDelegate) iuserSession.Repository {
 	return &repoUserSession{Conn}
 }
 func (r *repoUserSession) GetByUser(ctx context.Context, Account uuid.UUID) (result *models.UserSession, err error) {
 	var logger = logging.Logger{}
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Where("(email like ? OR phone_no = ?)", Account, Account).First(&result)
+	query := conn.Where("(email like ? OR phone_no = ?)", Account, Account).First(&result)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo user session GetByUser ", err)
@@ -41,7 +41,7 @@ func (r *repoUserSession) GetByToken(ctx context.Context, Token string) (result 
 		logger  = logging.Logger{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Where("token = ? ", Token).Find(sysUser)
+	query := conn.Where("token = ? ", Token).Find(sysUser)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo user session GetByToken ", err)
@@ -56,7 +56,7 @@ func (r *repoUserSession) GetByToken(ctx context.Context, Token string) (result 
 func (r *repoUserSession) Create(ctx context.Context, data *models.UserSession) (err error) {
 	var logger = logging.Logger{}
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Create(data)
+	query := conn.Create(data)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo user session Create ", err)
@@ -68,7 +68,7 @@ func (r *repoUserSession) Create(ctx context.Context, data *models.UserSession) 
 func (r *repoUserSession) Delete(ctx context.Context, Token string) (err error) {
 	var logger = logging.Logger{}
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Where("token = ?", Token).Delete(&models.UserSession{})
+	query := conn.Where("token = ?", Token).Delete(&models.UserSession{})
 	err = query.Error
 	if err != nil {
 		logger.Error("repo user session Delete ", err)

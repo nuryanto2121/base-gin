@@ -6,8 +6,8 @@ import (
 
 	iroleoutlet "app/interface/role_outlet"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -15,10 +15,10 @@ import (
 )
 
 type repoRoleOutlet struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoRoleOutlet(Conn postgres.DBGormDelegate) iroleoutlet.Repository {
+func NewRepoRoleOutlet(Conn db.DBGormDelegate) iroleoutlet.Repository {
 	return &repoRoleOutlet{Conn}
 }
 
@@ -28,7 +28,7 @@ func (r *repoRoleOutlet) GetDataBy(ctx context.Context, key, value string) (resu
 		mRoleOutlet = &models.RoleOutlet{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mRoleOutlet)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).Find(mRoleOutlet)
 
 	err = query.Error
 	if err != nil {

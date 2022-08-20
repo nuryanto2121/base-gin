@@ -6,8 +6,8 @@ import (
 
 	iorder "app/interface/order"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -15,10 +15,10 @@ import (
 )
 
 type repoOrder struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoOrder(Conn postgres.DBGormDelegate) iorder.Repository {
+func NewRepoOrder(Conn db.DBGormDelegate) iorder.Repository {
 	return &repoOrder{Conn}
 }
 
@@ -28,7 +28,7 @@ func (r *repoOrder) GetDataBy(ctx context.Context, key, value string) (result *m
 		mOrder = &models.Order{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mOrder)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).Find(mOrder)
 
 	err = query.Error
 	if err != nil {
@@ -41,7 +41,7 @@ func (r *repoOrder) GetDataBy(ctx context.Context, key, value string) (result *m
 	return mOrder, nil
 }
 
-func (r *repoOrder) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Order, err error) {
+func (r *repoOrder) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.OrderList, err error) {
 
 	var (
 		pageNum  = 0
@@ -77,9 +77,23 @@ func (r *repoOrder) GetList(ctx context.Context, queryparam models.ParamList) (r
 		} else {
 			sWhere += "(lower(order_id) LIKE ?)"
 		}
-		err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Table(`"order" o`).Select(`
+				o.id, o.order_id, o.order_date, o2.outlet_name, 
+				case when sm.is_bracelet = true then concat(sm.sku_name,', ',sm.duration,' Jam - ',o.qty,' pcs') 
+					else concat(sm.sku_name,', ',o.qty,' pcs') 
+				end as order_lines, 
+				o.status  
+		`).Joins(`inner join outlets o2 on o2.id = o.outlet_id`).Joins(`inner  join sku_management sm on sm.id =o.product_id`).
+			Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
-		err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Table(`"order" o`).Select(`
+				o.id, o.order_id, o.order_date, o2.outlet_name, 
+				case when sm.is_bracelet = true then concat(sm.sku_name,', ',sm.duration,' Jam - ',o.qty,' pcs') 
+					else concat(sm.sku_name,', ',o.qty,' pcs') 
+				end as order_lines, 
+				o.status  
+		`).Joins(`inner join outlets o2 on o2.id = o.outlet_id`).Joins(`inner  join sku_management sm on sm.id =o.product_id`).
+			Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}
 
 	// err = query.Error
@@ -114,7 +128,7 @@ func (r *repoOrder) Update(ctx context.Context, ID uuid.UUID, data interface{}) 
 		err    error
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Model(models.Order{}).Where("order_id = ?", ID).Updates(data)
+	query := conn.Model(models.Order{}).Where("id = ?", ID).Updates(data)
 
 	err = query.Error
 	if err != nil {
@@ -130,7 +144,7 @@ func (r *repoOrder) Delete(ctx context.Context, ID uuid.UUID) error {
 		err    error
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where("order_id = ?", ID).Delete(&models.Order{})
+	query := conn.Where("id = ?", ID).Delete(&models.Order{})
 
 	err = query.Error
 	if err != nil {
@@ -159,9 +173,23 @@ func (r *repoOrder) Count(ctx context.Context, queryparam models.ParamList) (res
 		} else {
 			sWhere += "(lower(order_id) LIKE ? )" //queryparam.Search
 		}
-		err = conn.Model(&models.Order{}).Where(sWhere, queryparam.Search).Count(&rest).Error
+		err = conn.Table(`"order" o`).Select(`
+				o.id, o.order_id, o.order_date, o2.outlet_name, 
+				case when sm.is_bracelet = true then concat(sm.sku_name,', ',sm.duration,' Jam - ',o.qty,' pcs') 
+					else concat(sm.sku_name,', ',o.qty,' pcs') 
+				end as order_lines, 
+				o.status  
+		`).Joins(`inner join outlets o2 on o2.id = o.outlet_id`).Joins(`inner  join sku_management sm on sm.id =o.product_id`).
+			Where(sWhere, queryparam.Search).Count(&rest).Error
 	} else {
-		err = conn.Model(&models.Order{}).Where(sWhere).Count(&rest).Error
+		err = conn.Table(`"order" o`).Select(`
+				o.id, o.order_id, o.order_date, o2.outlet_name, 
+				case when sm.is_bracelet = true then concat(sm.sku_name,', ',sm.duration,' Jam - ',o.qty,' pcs') 
+					else concat(sm.sku_name,', ',o.qty,' pcs') 
+				end as order_lines, 
+				o.status  
+		`).Joins(`inner join outlets o2 on o2.id = o.outlet_id`).Joins(`inner  join sku_management sm on sm.id =o.product_id`).
+			Where(sWhere).Count(&rest).Error
 	}
 	// end where
 	if err != nil {

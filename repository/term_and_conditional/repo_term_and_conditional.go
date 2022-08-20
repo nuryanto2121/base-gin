@@ -6,8 +6,8 @@ import (
 
 	itermandconditional "app/interface/term_and_conditional"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 
 	// "app/pkg/setting"
 
@@ -16,17 +16,17 @@ import (
 )
 
 type repoTermAndConditional struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoTermAndConditioinal(Conn postgres.DBGormDelegate) itermandconditional.Repository {
+func NewRepoTermAndConditioinal(Conn db.DBGormDelegate) itermandconditional.Repository {
 	return &repoTermAndConditional{Conn}
 }
 
 func (r *repoTermAndConditional) GetDataBy(ctx context.Context, ID uuid.UUID) (result *models.TermAndConditional, err error) {
 	var sysTermAndConditional = &models.TermAndConditional{}
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Where("id = ? ", ID).Find(sysTermAndConditional)
+	query := conn.Where("id = ? ", ID).Find(sysTermAndConditional)
 	err = query.Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -40,7 +40,7 @@ func (r *repoTermAndConditional) GetDataBy(ctx context.Context, ID uuid.UUID) (r
 func (r *repoTermAndConditional) GetDataOne(ctx context.Context) (result *models.TermAndConditional, err error) {
 	var sysTermAndConditional = &models.TermAndConditional{}
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).First(sysTermAndConditional)
+	query := conn.First(sysTermAndConditional)
 	err = query.Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -53,7 +53,7 @@ func (r *repoTermAndConditional) GetDataOne(ctx context.Context) (result *models
 
 func (r *repoTermAndConditional) Create(ctx context.Context, data *models.TermAndConditional) (err error) {
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Create(data)
+	query := conn.Create(data)
 	err = query.Error
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (r *repoTermAndConditional) Create(ctx context.Context, data *models.TermAn
 func (r *repoTermAndConditional) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
 
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Model(models.TermAndConditional{}).Where("id = ?", ID).Updates(data)
+	query := conn.Model(models.TermAndConditional{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (r *repoTermAndConditional) Update(ctx context.Context, ID uuid.UUID, data 
 // func (r *repoHolidays) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 
 // 	conn := r.db.Get(ctx)
-//query := conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Holidays{})
+//query := conn.Where("id = ?", ID).Delete(&models.Holidays{})
 // 	err = query.Error
 // 	if err != nil {
 // 		return err
@@ -101,7 +101,7 @@ func (r *repoTermAndConditional) Count(ctx context.Context, queryparam models.Pa
 	// end where
 
 	conn := r.db.Get(ctx)
-	query := conn.WithContext(ctx).Model(&models.TermAndConditional{}).Where(sWhere).Count(&result)
+	query := conn.Model(&models.TermAndConditional{}).Where(sWhere).Count(&result)
 	logger.Query(fmt.Sprintf("%v", query)) //cath to log query string
 
 	if err != nil {

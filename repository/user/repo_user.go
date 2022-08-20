@@ -6,8 +6,8 @@ import (
 
 	iusers "app/interface/user"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
-	"app/pkg/postgres"
 	"app/pkg/setting"
 
 	uuid "github.com/satori/go.uuid"
@@ -15,10 +15,10 @@ import (
 )
 
 type repoSysUser struct {
-	db postgres.DBGormDelegate
+	db db.DBGormDelegate
 }
 
-func NewRepoSysUser(Conn postgres.DBGormDelegate) iusers.Repository {
+func NewRepoSysUser(Conn db.DBGormDelegate) iusers.Repository {
 	return &repoSysUser{Conn}
 }
 func (r *repoSysUser) GetByAccount(ctx context.Context, Account string) (result *models.Users, err error) {
