@@ -106,6 +106,12 @@ func (u *useOrder) Update(ctx context.Context, Claims util.Claims, ID uuid.UUID,
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	//check data exist
+	_, err = u.repoOrder.GetDataBy(ctx, "id", ID.String())
+	if err != nil {
+		return err
+	}
+
 	myMap := structs.Map(data)
 	myMap["updated_by"] = Claims.UserID
 	fmt.Println(myMap)
@@ -119,6 +125,12 @@ func (u *useOrder) Update(ctx context.Context, Claims util.Claims, ID uuid.UUID,
 func (u *useOrder) Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
+
+	//check data exist
+	_, err = u.repoOrder.GetDataBy(ctx, "id", ID.String())
+	if err != nil {
+		return err
+	}
 
 	err = u.repoOrder.Delete(ctx, ID)
 	if err != nil {
