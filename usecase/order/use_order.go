@@ -2,6 +2,8 @@ package useorder
 
 import (
 	iorder "app/interface/order"
+	ioutlets "app/interface/outlets"
+	iskumanagement "app/interface/sku_management"
 	"app/models"
 	util "app/pkg/utils"
 	"context"
@@ -18,20 +20,50 @@ import (
 
 type useOrder struct {
 	repoOrder      iorder.Repository
+	repoOutlet     ioutlets.Repository
+	repoProduct    iskumanagement.Repository
 	contextTimeOut time.Duration
 }
 
-func NewUseOrder(a iorder.Repository, timeout time.Duration) iorder.Usecase {
-	return &useOrder{repoOrder: a, contextTimeOut: timeout}
+func NewUseOrder(a iorder.Repository, b ioutlets.Repository, c iskumanagement.Repository, timeout time.Duration) iorder.Usecase {
+	return &useOrder{
+		repoOrder:      a,
+		repoOutlet:     b,
+		repoProduct:    c,
+		contextTimeOut: timeout}
 }
 
-func (u *useOrder) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Order, err error) {
+func (u *useOrder) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoOrder.GetDataBy(ctx, "id", ID.String())
+	dataOrder, err := u.repoOrder.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
 		return result, err
+	}
+	//getdata sku
+	dataProduct, err := u.repoProduct.GetDataBy(ctx, "id", dataOrder.ProductId.String())
+	if err != nil {
+		return result, err
+	}
+	//get data  outlet
+	dataOutlet, err := u.repoOutlet.GetDataBy(ctx, "id", dataOrder.OutletId.String())
+	if err != nil {
+		return result, err
+	}
+
+	result = map[string]interface{}{
+		"id":           dataOrder.Id,
+		"order_id":     dataOrder.OrderID,
+		"order_date":   dataOrder.OrderDate,
+		"outlet_id":    dataOrder.OutletId,
+		"outlet_name":  dataOutlet.OutletName,
+		"product_id":   dataOrder.ProductId,
+		"sku_name":     dataProduct.SkuName,
+		"start_number": dataOrder.StartNumber,
+		"end_number":   dataOrder.EndNumber,
+		"qty":          dataOrder.Qty,
+		"status":       dataOrder.Status,
 	}
 	return result, nil
 }
@@ -87,7 +119,7 @@ func (u *useOrder) Create(ctx context.Context, Claims util.Claims, data *models.
 	if err != nil && err != models.ErrNotFound {
 		return err
 	}
-	if dataOld.OrderID == mOrder.OrderID {
+	if dataOld != nil {
 		return models.ErrDataAlreadyExist
 	}
 
@@ -114,6 +146,7 @@ func (u *useOrder) Update(ctx context.Context, Claims util.Claims, ID uuid.UUID,
 
 	myMap := structs.Map(data)
 	myMap["updated_by"] = Claims.UserID
+	delete(myMap, "OrderID")
 	fmt.Println(myMap)
 	err = u.repoOrder.Update(ctx, ID, myMap)
 	if err != nil {

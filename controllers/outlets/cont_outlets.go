@@ -5,7 +5,6 @@ import (
 	"app/models"
 	"app/pkg/middleware"
 	"context"
-	"fmt"
 	"net/http"
 
 	//app "app/pkg"
@@ -112,7 +111,7 @@ func (c *contOutlets) GetDataBy(e *gin.Context) {
 	ID, err := uuid.FromString(id)
 	logger.Info(ID)
 	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 	claims, err := app.GetClaims(e)
@@ -306,7 +305,7 @@ func (c *contOutlets) Delete(e *gin.Context) {
 	ID, err := uuid.FromString(id)
 	logger.Info(ID)
 	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 	claims, err := app.GetClaims(e)

@@ -46,7 +46,7 @@ func (r *repoUserRole) GetDataBy(ctx context.Context, key, value string) (result
 		mUserRole = &models.UserRoleDesc{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Table(`user_role`).Where(fmt.Sprintf("%s = ?", key), value).Find(mUserRole)
+	query := conn.Table(`user_role`).Where(fmt.Sprintf("%s = ?", key), value).First(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {

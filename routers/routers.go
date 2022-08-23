@@ -102,9 +102,9 @@ func (g *GinRoutes) Init() {
 	userHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
 	_contHolidays.NewContHolidays(g.G, userHolidays)
 
-	reposkumanagement := _repoSkumanagement.NewRepoSkuManagement(dbConn)
-	useskumanagement := _useSkumanagement.NewSkuManagement(reposkumanagement, timeoutContext)
-	_contSkumanagement.NewContSkuManagement(g.G, useskumanagement)
+	repoSkuManagement := _repoSkumanagement.NewRepoSkuManagement(dbConn)
+	useSkuManagement := _useSkumanagement.NewSkuManagement(repoSkuManagement, timeoutContext)
+	_contSkumanagement.NewContSkuManagement(g.G, useSkuManagement)
 	repoOutlet := _repoOutlets.NewRepoOutlets(dbConn)
 	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(dbConn)
 	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, repoRoleOutlet, timeoutContext)
@@ -119,6 +119,6 @@ func (g *GinRoutes) Init() {
 	_contTermAndConditional.NewContTermAndConditional(g.G, useTermAndConditional)
 
 	repoOrder := _repoOrder.NewRepoOrder(dbConn)
-	useOrder := _useOrder.NewUseOrder(repoOrder, timeoutContext)
+	useOrder := _useOrder.NewUseOrder(repoOrder, repoOutlet, repoSkuManagement, timeoutContext)
 	_contOrder.NewContOrder(g.G, useOrder)
 }

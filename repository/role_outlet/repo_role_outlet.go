@@ -28,7 +28,7 @@ func (r *repoRoleOutlet) GetDataBy(ctx context.Context, key, value string) (resu
 		mRoleOutlet = &models.RoleOutlet{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where(fmt.Sprintf("%s = ?", key), value).Find(mRoleOutlet)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).First(mRoleOutlet)
 
 	err = query.Error
 	if err != nil {

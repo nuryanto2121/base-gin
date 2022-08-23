@@ -75,7 +75,7 @@ func (c *contTermAndConditional) Create(e *gin.Context) {
 		return
 	}
 
-	appE.Response(http.StatusOK, "Ok", nil)
+	appE.Response(http.StatusCreated, "Ok", nil)
 }
 
 // GetById :

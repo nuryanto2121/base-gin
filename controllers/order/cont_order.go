@@ -5,7 +5,6 @@ import (
 	"app/models"
 	"app/pkg/middleware"
 	"context"
-	"fmt"
 	"net/http"
 
 	//app "app/pkg"
@@ -62,17 +61,17 @@ func (c *contOrder) GetDataBy(e *gin.Context) {
 	ID, err := uuid.FromString(id)
 	logger.Info(ID)
 	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 	claims, err := app.GetClaims(e)
 	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 	data, err := c.useOrder.GetDataBy(ctx, claims, ID)
 	if err != nil {
-		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
@@ -256,7 +255,7 @@ func (c *contOrder) Delete(e *gin.Context) {
 	ID, err := uuid.FromString(id)
 	logger.Info(ID)
 	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 	claims, err := app.GetClaims(e)
@@ -266,7 +265,7 @@ func (c *contOrder) Delete(e *gin.Context) {
 	}
 	err = c.useOrder.Delete(ctx, claims, ID)
 	if err != nil {
-		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
+		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 

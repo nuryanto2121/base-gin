@@ -70,7 +70,7 @@ func (r *repoSysUser) GetDataBy(ctx context.Context, key, value string) (*models
 		result = &models.Users{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where(fmt.Sprintf("%s = ?", key), value).Find(result)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).First(result)
 
 	err := query.Error
 	if err != nil {

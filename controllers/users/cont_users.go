@@ -70,7 +70,7 @@ func (c *ContUsers) Create(e *gin.Context) {
 		return
 	}
 
-	appE.Response(http.StatusOK, "Ok", nil)
+	appE.Response(http.StatusCreated, "Ok", nil)
 }
 
 // Update :

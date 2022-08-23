@@ -28,7 +28,7 @@ func (r *repoOrder) GetDataBy(ctx context.Context, key, value string) (result *m
 		mOrder = &models.Order{}
 	)
 	conn := r.db.Get(ctx)
-	query := conn.Where(fmt.Sprintf("%s = ?", key), value).Find(mOrder)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).First(mOrder)
 
 	err = query.Error
 	if err != nil {
