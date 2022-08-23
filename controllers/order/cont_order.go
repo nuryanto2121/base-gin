@@ -1,7 +1,7 @@
-package contoutlets
+package contorder
 
 import (
-	ioutlets "app/interface/outlets"
+	iorder "app/interface/order"
 	"app/models"
 	"app/pkg/middleware"
 	"context"
@@ -17,16 +17,16 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type contOutlets struct {
-	useOutlets ioutlets.Usecase
+type contOrder struct {
+	useOrder iorder.Usecase
 }
 
-func NewContOutlets(e *gin.Engine, a ioutlets.Usecase) {
-	controller := &contOutlets{
-		useOutlets: a,
+func NewContOrder(e *gin.Engine, a iorder.Usecase) {
+	controller := &contOrder{
+		useOrder: a,
 	}
 
-	r := e.Group("/v1/cms/outlets")
+	r := e.Group("/v1/cms/order")
 	r.Use(middleware.Authorize())
 	//r.Use(midd.Versioning)
 	r.GET("/:id", controller.GetDataBy)
@@ -34,70 +34,20 @@ func NewContOutlets(e *gin.Engine, a ioutlets.Usecase) {
 	r.POST("", controller.Create)
 	r.PUT("/:id", controller.Update)
 	r.DELETE("/:id", controller.Delete)
-	r.GET("/lookup", controller.GetDataLookUp)
-}
-
-// GetDataLookUp :
-// @Summary GetDataLookUp Outlets
-// @Security ApiKeyAuth
-// @Tags Outlets
-// @Produce  json
-// @Param Device-Type header string true "Device Type"
-// @Param Version header string true "Version Apps"
-// @Param Language header string true "Language Apps"
-// @Param page query int true "Page"
-// @Param perpage query int true "PerPage"
-// @Param search query string false "Search"
-// @Param initsearch query string false "InitSearch"
-// @Param sortfield query string false "SortField"
-// @Success 200 {object} models.ResponseModelList
-// @Router /v1/cms/outlets/lookup [get]
-func (c *contOutlets) GetDataLookUp(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	var (
-		logger       = logging.Logger{}
-		appE         = app.Gin{C: e}      // wajib
-		paramquery   = models.ParamList{} // ini untuk list
-		responseList = models.ResponseModelList{}
-	)
-
-	httpCode, errMsg := app.BindAndValidMulti(e, &paramquery)
-	logger.Info(util.Stringify(paramquery))
-	if httpCode != 200 {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
-		return
-	}
-	claims, err := app.GetClaims(e)
-	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
-		return
-	}
-
-	responseList, err = c.useOutlets.GetListLookUp(ctx, claims, paramquery)
-	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
-		return
-	}
-
-	appE.Response(http.StatusOK, "Ok", responseList)
 }
 
 // GetDataByID :
 // @Summary GetById
 // @Security ApiKeyAuth
-// @Tags Outlets
+// @Tags Order
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/outlets/{id} [get]
-func (c *contOutlets) GetDataBy(e *gin.Context) {
+// @Router /v1/cms/order/{id} [get]
+func (c *contOrder) GetDataBy(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -119,7 +69,7 @@ func (c *contOutlets) GetDataBy(e *gin.Context) {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
-	data, err := c.useOutlets.GetDataBy(ctx, claims, ID)
+	data, err := c.useOrder.GetDataBy(ctx, claims, ID)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -129,9 +79,9 @@ func (c *contOutlets) GetDataBy(e *gin.Context) {
 }
 
 // GetList :
-// @Summary GetList Outlets
+// @Summary GetList Order
 // @Security ApiKeyAuth
-// @Tags Outlets
+// @Tags Order
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -142,8 +92,8 @@ func (c *contOutlets) GetDataBy(e *gin.Context) {
 // @Param initsearch query string false "InitSearch"
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
-// @Router /v1/cms/outlets [get]
-func (c *contOutlets) GetList(e *gin.Context) {
+// @Router /v1/cms/order [get]
+func (c *contOrder) GetList(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -169,7 +119,7 @@ func (c *contOutlets) GetList(e *gin.Context) {
 		return
 	}
 
-	responseList, err = c.useOutlets.GetList(ctx, claims, paramquery)
+	responseList, err = c.useOrder.GetList(ctx, claims, paramquery)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -178,18 +128,18 @@ func (c *contOutlets) GetList(e *gin.Context) {
 	appE.Response(http.StatusOK, "", responseList)
 }
 
-// CreateOutlets :
-// @Summary Add Outlets
+// CreateOrder :
+// @Summary Add Order
 // @Security ApiKeyAuth
-// @Tags Outlets
+// @Tags Order
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.OutletForm true "req param #changes are possible to adjust the form of the registration form from frontend"
+// @Param req body models.AddOrder true "req param #status int64 0 = SUBMITTED , 1 = APPROVE"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/outlets [post]
-func (c *contOutlets) Create(e *gin.Context) {
+// @Router /v1/cms/order [post]
+func (c *contOrder) Create(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -198,7 +148,7 @@ func (c *contOutlets) Create(e *gin.Context) {
 	var (
 		logger = logging.Logger{} // wajib
 		appE   = app.Gin{C: e}    // wajib
-		form   models.OutletForm
+		form   models.AddOrder
 	)
 
 	httpCode, errMsg := app.BindAndValidMulti(e, &form)
@@ -214,7 +164,7 @@ func (c *contOutlets) Create(e *gin.Context) {
 		return
 	}
 
-	err = c.useOutlets.Create(ctx, claims, &form)
+	err = c.useOrder.Create(ctx, claims, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -223,19 +173,19 @@ func (c *contOutlets) Create(e *gin.Context) {
 	appE.Response(http.StatusCreated, "Ok", nil)
 }
 
-// UpdateOutlets :
-// @Summary Rubah Outlets
+// UpdateOrder :
+// @Summary Rubah Order
 // @Security ApiKeyAuth
-// @Tags Outlets
+// @Tags Order
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
-// @Param req body models.OutletForm true "req param #changes are possible to adjust the form of the registration form from frontend"
+// @Param req body models.AddOrder true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/outlets/{id} [put]
-func (c *contOutlets) Update(e *gin.Context) {
+// @Router /v1/cms/order/{id} [put]
+func (c *contOrder) Update(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -247,11 +197,11 @@ func (c *contOutlets) Update(e *gin.Context) {
 		err    error
 
 		id   = e.Param("id") //kalo bukan int => 0
-		form = models.OutletForm{}
+		form = models.AddOrder{}
 	)
 
-	ID, err := uuid.FromString(id)
-	logger.Info(ID)
+	SchoolID, err := uuid.FromString(id)
+	logger.Info(SchoolID)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -271,8 +221,8 @@ func (c *contOutlets) Update(e *gin.Context) {
 		return
 	}
 
-	// form.UpdatedBy = claims.OutletsName
-	err = c.useOutlets.Update(ctx, claims, ID, &form)
+	// form.UpdatedBy = claims.OrderName
+	err = c.useOrder.Update(ctx, claims, SchoolID, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -280,18 +230,18 @@ func (c *contOutlets) Update(e *gin.Context) {
 	appE.Response(http.StatusCreated, "Ok", nil)
 }
 
-// DeleteOutlets :
-// @Summary Delete Outlets
+// DeleteOrder :
+// @Summary Delete Order
 // @Security ApiKeyAuth
-// @Tags Outlets
+// @Tags Order
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/outlets/{id} [delete]
-func (c *contOutlets) Delete(e *gin.Context) {
+// @Router /v1/cms/order/{id} [delete]
+func (c *contOrder) Delete(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -313,7 +263,7 @@ func (c *contOutlets) Delete(e *gin.Context) {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
-	err = c.useOutlets.Delete(ctx, claims, ID)
+	err = c.useOrder.Delete(ctx, claims, ID)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return

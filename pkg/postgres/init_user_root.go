@@ -1,25 +1,24 @@
 package postgres
 
 import (
+	"app/models"
+	util "app/pkg/utils"
 	"context"
 	"fmt"
 	"time"
-
-	"app/models"
-	util "app/pkg/utils"
 
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
 
-func Create() (err error) {
+func InitUser() (err error) {
 	var ctx = context.Background()
 	data := &models.Users{}
 	//check data is exist
 	query := Conn.WithContext(ctx).Where("email = 'root@gmail.com'").First(data)
 	err = query.Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		fmt.Println("error postgres.Create() getdataby", err)
+		fmt.Println("error postgres.InitUser() getdataby", err)
 	}
 
 	if data.Id == uuid.Nil {
@@ -37,7 +36,7 @@ func Create() (err error) {
 		query := Conn.WithContext(ctx).Create(data)
 		err = query.Error
 		if err != nil {
-			fmt.Println("error postgres.Create() save ", err)
+			fmt.Println("error postgres.InitUser() save ", err)
 		}
 	}
 

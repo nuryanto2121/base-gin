@@ -42,14 +42,9 @@ func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, 
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	if data.Id == uuid.Nil {
+	if data.Id == "" {
 		var form = &models.TermAndConditional{}
-		err = mapstructure.Decode(data, &form)
-
-		if err != nil {
-			return err
-		}
-
+		form.Description = data.Description
 		form.CreatedBy = uuid.FromStringOrNil(claims.UserID)
 		form.UpdatedBy = uuid.FromStringOrNil(claims.UserID)
 
@@ -58,7 +53,8 @@ func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, 
 			return err
 		}
 	} else {
-		dataOld, err := u.repoTermAndConditional.GetDataBy(ctx, data.Id)
+		ID := uuid.FromStringOrNil(data.Id)
+		dataOld, err := u.repoTermAndConditional.GetDataBy(ctx, ID)
 		if err != nil {
 			return err
 		}
@@ -72,7 +68,7 @@ func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, 
 			"updated_by":  claims.UserID,
 		}
 
-		err = u.repoTermAndConditional.Update(ctx, data.Id, TandCupdate)
+		err = u.repoTermAndConditional.Update(ctx, ID, TandCupdate)
 		if err != nil {
 			return err
 		}

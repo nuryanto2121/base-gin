@@ -36,9 +36,9 @@ func Setup() {
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
-			SlowThreshold: time.Second, // Slow SQL threshold
-			LogLevel:      logger.Info, // Log level
-			Colorful:      true,        // Disable color
+			SlowThreshold: time.Second,   // Slow SQL threshold
+			LogLevel:      logger.Silent, // Log level
+			Colorful:      true,          // Disable color
 		},
 	)
 
@@ -114,32 +114,40 @@ func autoMigrate() {
 		models.OutletDetail{},
 		models.Inventory{},
 		models.TermAndConditional{},
+		models.Order{},
+		authorize.AppVersion{},
+		models.TmpCode{},
 	)
 	if err != nil {
 		log.Printf("\nAutoMigrate : %#v", err)
 		panic(err)
 	}
-	go Create()
+
+	go func() {
+		// init data first
+		InitUser()
+		InitVersion()
+	}()
 
 	log.Println("FINISHING AUTO MIGRATE ")
 }
 
 // updateTimeStampForCreateCallback will set `CreatedOn`, `ModifiedOn` when creating
-func updateTimeStampForCreateCallback(db *gorm.DB) {
+func updateTimeStampForCreateCallback(r *gorm.DB) {
 	var ctx = context.Background()
-	if db.Statement.Error == nil {
-		TimeInput := db.Statement.Schema.LookUpField("created_at")
-		TimeInput.Set(ctx, db.Statement.ReflectValue, util.GetTimeNow())
+	if r.Statement.Error == nil {
+		TimeInput := r.Statement.Schema.LookUpField("created_at")
+		TimeInput.Set(ctx, r.Statement.ReflectValue, util.GetTimeNow())
 
-		TimeEdit := db.Statement.Schema.LookUpField("updated_at")
-		TimeEdit.Set(ctx, db.Statement.ReflectValue, util.GetTimeNow())
+		TimeEdit := r.Statement.Schema.LookUpField("updated_at")
+		TimeEdit.Set(ctx, r.Statement.ReflectValue, util.GetTimeNow())
 	}
 }
 
 // updateTimeStampForUpdateCallback will set `ModifiedOn` when updating
-func updateTimeStampForUpdateCallback(db *gorm.DB) {
-	if db.Statement.Changed() {
-		db.Statement.SetColumn("updated_at", util.GetTimeNow())
+func updateTimeStampForUpdateCallback(r *gorm.DB) {
+	if r.Statement.Changed() {
+		r.Statement.SetColumn("updated_at", util.GetTimeNow())
 	}
 
 }

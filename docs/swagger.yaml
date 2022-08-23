@@ -8,6 +8,23 @@ definitions:
       msg:
         type: string
     type: object
+  models.AddOrder:
+    properties:
+      end_number:
+        type: integer
+      order_date:
+        type: string
+      order_id:
+        type: string
+      outlet_id:
+        type: string
+      product_id:
+        type: string
+      start_number:
+        type: integer
+      status:
+        type: integer
+    type: object
   models.AddOutletDetail:
     properties:
       outlet_id:
@@ -636,6 +653,203 @@ paths:
       summary: logout
       tags:
       - Auth
+  /v1/cms/order:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: PerPage
+        in: query
+        name: perpage
+        required: true
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: InitSearch
+        in: query
+        name: initsearch
+        type: string
+      - description: SortField
+        in: query
+        name: sortfield
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseModelList'
+      security:
+      - ApiKeyAuth: []
+      summary: GetList Order
+      tags:
+      - Order
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #status int64 0 = SUBMITTED , 1 = APPROVE'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Add Order
+      tags:
+      - Order
+  /v1/cms/order/{id}:
+    delete:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Order
+      tags:
+      - Order
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: GetById
+      tags:
+      - Order
+    put:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Rubah Order
+      tags:
+      - Order
   /v1/cms/outlets:
     get:
       parameters:

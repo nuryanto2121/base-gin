@@ -1,6 +1,7 @@
 package authorize
 
 import (
+	"app/models"
 	"context"
 
 	"gorm.io/gorm"
@@ -11,6 +12,7 @@ type AppVersion struct {
 	DeviceType string `json:"device_type" gorm:"type:varchar(20)" cql:"device_type"`
 	Version    int    `json:"version" gorm:"type:integer" cql:"version"`
 	MinVersion int    `json:"min_version" gorm:"type:integer" cql:"min_version"`
+	models.Model
 }
 
 func (V *AppVersion) GetVersion(ctx context.Context, Conn *gorm.DB) (result *AppVersion, err error) {

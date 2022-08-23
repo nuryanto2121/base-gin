@@ -6,22 +6,24 @@ import (
 
 	ifileupload "app/interface/fileupload"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
 
 	"gorm.io/gorm"
 )
 
 type repoAuth struct {
-	Conn *gorm.DB
+	db db.DBGormDelegate
 }
 
-func NewRepoFileUpload(Conn *gorm.DB) ifileupload.Repository {
+func NewRepoFileUpload(Conn db.DBGormDelegate) ifileupload.Repository {
 	return &repoAuth{Conn}
 }
 
 func (m *repoAuth) CreateFileUpload(ctx context.Context, data *models.FileUpload) (err error) {
 	var logger = logging.Logger{}
-	query := m.Conn.Create(&data)
+	conn := m.db.Get(ctx)
+	query := conn.Create(&data)
 
 	err = query.Error
 	// err = db.Conn.Create(userData).Error
@@ -38,7 +40,8 @@ func (m *repoAuth) GetBySaFileUpload(ctx context.Context, fileID int) (models.Fi
 		logger         = logging.Logger{}
 		err            error
 	)
-	query := m.Conn.Where("file_id = ?", fileID).First(&dataFileUpload)
+	conn := m.db.Get(ctx)
+	query := conn.Where("file_id = ?", fileID).First(&dataFileUpload)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 
@@ -60,7 +63,8 @@ func (m *repoAuth) DeleteSaFileUpload(ctx context.Context, fileID int) error {
 	userData := &models.FileUpload{}
 	userData.ID = fileID
 
-	query := m.Conn.Delete(&userData)
+	conn := m.db.Get(ctx)
+	query := conn.Delete(&userData)
 
 	err = query.Error
 

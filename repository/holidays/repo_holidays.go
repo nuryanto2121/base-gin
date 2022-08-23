@@ -6,6 +6,7 @@ import (
 
 	iholidays "app/interface/holidays"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
 	"app/pkg/setting"
 
@@ -14,19 +15,20 @@ import (
 )
 
 type repoHolidays struct {
-	Conn *gorm.DB
+	db db.DBGormDelegate
 }
 
-func NewRepoHolidays(Conn *gorm.DB) iholidays.Repository {
+func NewRepoHolidays(Conn db.DBGormDelegate) iholidays.Repository {
 	return &repoHolidays{Conn}
 }
 
-func (db *repoHolidays) GetDataBy(ctx context.Context, key, value string) (result *models.Holidays, err error) {
+func (r *repoHolidays) GetDataBy(ctx context.Context, key, value string) (result *models.Holidays, err error) {
 	var (
 		sysHoliday = &models.Holidays{}
 		logger     = logging.Logger{}
 	)
-	query := db.Conn.WithContext(ctx).Where(fmt.Sprintf("%s = ?", key), value).First(sysHoliday)
+	conn := r.db.Get(ctx)
+	query := conn.Where(fmt.Sprintf("%s = ?", key), value).First(sysHoliday)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo holiday GetDataBy ", err)
@@ -38,7 +40,7 @@ func (db *repoHolidays) GetDataBy(ctx context.Context, key, value string) (resul
 	return sysHoliday, nil
 }
 
-func (db *repoHolidays) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Holidays, err error) {
+func (r *repoHolidays) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.Holidays, err error) {
 
 	var (
 		pageNum  = 0
@@ -46,7 +48,8 @@ func (db *repoHolidays) GetList(ctx context.Context, queryparam models.ParamList
 		sWhere   = ""
 		logger   = logging.Logger{}
 		orderBy  = queryparam.SortField
-		query    *gorm.DB
+		// query    *gorm.DB
+		conn = r.db.Get(ctx)
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -74,12 +77,12 @@ func (db *repoHolidays) GetList(ctx context.Context, queryparam models.ParamList
 		} else {
 			sWhere += "(lower(description) LIKE ?)"
 		}
-		query = db.Conn.WithContext(ctx).Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+		err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
-		query = db.Conn.WithContext(ctx).Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+		err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}
 
-	err = query.Error
+	// err = query.Error
 	if err != nil {
 		logger.Error("repo holiday GetList ", err)
 		if err == gorm.ErrRecordNotFound {
@@ -89,9 +92,10 @@ func (db *repoHolidays) GetList(ctx context.Context, queryparam models.ParamList
 	}
 	return result, nil
 }
-func (db *repoHolidays) Create(ctx context.Context, data *models.Holidays) (err error) {
+func (r *repoHolidays) Create(ctx context.Context, data *models.Holidays) (err error) {
 	var logger = logging.Logger{}
-	query := db.Conn.WithContext(ctx).Create(data)
+	conn := r.db.Get(ctx)
+	query := conn.Create(data)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo holiday Create ", err)
@@ -99,9 +103,10 @@ func (db *repoHolidays) Create(ctx context.Context, data *models.Holidays) (err 
 	}
 	return nil
 }
-func (db *repoHolidays) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
+func (r *repoHolidays) Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error) {
 	var logger = logging.Logger{}
-	query := db.Conn.WithContext(ctx).Model(models.Holidays{}).Where("id = ?", ID).Updates(data)
+	conn := r.db.Get(ctx)
+	query := conn.Model(models.Holidays{}).Where("id = ?", ID).Updates(data)
 	err = query.Error
 	if err != nil {
 		logger.Error("repo holiday Update ", err)
@@ -109,9 +114,10 @@ func (db *repoHolidays) Update(ctx context.Context, ID uuid.UUID, data interface
 	}
 	return nil
 }
-func (db *repoHolidays) Delete(ctx context.Context, ID uuid.UUID) (err error) {
+func (r *repoHolidays) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	var logger = logging.Logger{}
-	query := db.Conn.WithContext(ctx).Where("id = ?", ID).Delete(&models.Holidays{})
+	conn := r.db.Get(ctx)
+	query := conn.Where("id = ?", ID).Delete(&models.Holidays{})
 	err = query.Error
 	if err != nil {
 		logger.Error("repo holiday Delete ", err)
@@ -119,11 +125,12 @@ func (db *repoHolidays) Delete(ctx context.Context, ID uuid.UUID) (err error) {
 	}
 	return nil
 }
-func (db *repoHolidays) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (r *repoHolidays) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
 		sWhere = ""
 		logger = logging.Logger{}
-		query  *gorm.DB
+		// query  *gorm.DB
+		conn = r.db.Get(ctx)
 	)
 	result = 0
 
@@ -138,13 +145,12 @@ func (db *repoHolidays) Count(ctx context.Context, queryparam models.ParamList) 
 		} else {
 			sWhere += "(lower(description) LIKE ?)"
 		}
-		query = db.Conn.WithContext(ctx).Model(&models.Holidays{}).Where(sWhere, queryparam.Search).Count(&result)
+		err = conn.Model(&models.Holidays{}).Where(sWhere, queryparam.Search).Count(&result).Error
 	} else {
-		query = db.Conn.WithContext(ctx).Model(&models.Holidays{}).Where(sWhere).Count(&result)
+		err = conn.Model(&models.Holidays{}).Where(sWhere).Count(&result).Error
 	}
 	// end where
 
-	err = query.Error
 	if err != nil {
 		logger.Error("repo holiday Count ", err)
 		return 0, models.ErrInternalServerError

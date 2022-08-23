@@ -6,6 +6,7 @@ import (
 
 	iuserrole "app/interface/user_role"
 	"app/models"
+	"app/pkg/db"
 	"app/pkg/logging"
 	"app/pkg/setting"
 
@@ -14,19 +15,20 @@ import (
 )
 
 type repoUserRole struct {
-	Conn *gorm.DB
+	db db.DBGormDelegate
 }
 
-func NewRepoUserRole(Conn *gorm.DB) iuserrole.Repository {
+func NewRepoUserRole(Conn db.DBGormDelegate) iuserrole.Repository {
 	return &repoUserRole{Conn}
 }
 
-func (db *repoUserRole) GetById(ctx context.Context, ID uuid.UUID) (result *models.UserRole, err error) {
+func (r *repoUserRole) GetById(ctx context.Context, ID uuid.UUID) (result *models.UserRole, err error) {
 	var (
 		logger    = logging.Logger{}
 		mUserRole = &models.UserRole{}
 	)
-	query := db.Conn.Where("id = ? ", ID).WithContext(ctx).Find(mUserRole)
+	conn := r.db.Get(ctx)
+	query := conn.Where("id = ? ", ID).Find(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {
@@ -38,12 +40,13 @@ func (db *repoUserRole) GetById(ctx context.Context, ID uuid.UUID) (result *mode
 	return mUserRole, nil
 }
 
-func (db *repoUserRole) GetDataBy(ctx context.Context, key, value string) (result *models.UserRoleDesc, err error) {
+func (r *repoUserRole) GetDataBy(ctx context.Context, key, value string) (result *models.UserRoleDesc, err error) {
 	var (
 		logger    = logging.Logger{}
 		mUserRole = &models.UserRoleDesc{}
 	)
-	query := db.Conn.Table(`user_role`).Where(fmt.Sprintf("%s = ?", key), value).WithContext(ctx).Find(mUserRole)
+	conn := r.db.Get(ctx)
+	query := conn.Table(`user_role`).Where(fmt.Sprintf("%s = ?", key), value).First(mUserRole)
 	logger.Query(fmt.Sprintf("%v", query))
 	err = query.Error
 	if err != nil {
@@ -54,13 +57,14 @@ func (db *repoUserRole) GetDataBy(ctx context.Context, key, value string) (resul
 	}
 	return mUserRole, nil
 }
-func (db *repoUserRole) GetListByUser(ctx context.Context, key, value string) (result []*models.UserRoleDesc, err error) {
+func (r *repoUserRole) GetListByUser(ctx context.Context, key, value string) (result []*models.UserRoleDesc, err error) {
 	var (
 		logger    = logging.Logger{}
 		mUserRole = []*models.UserRoleDesc{}
 	)
 
-	query := db.Conn.Raw(`
+	conn := r.db.Get(ctx)
+	query := conn.Raw(`
 	SELECT ug.user_id,ug.role ,r.role_name 
 	FROM user_role ug 	inner join roles r
 	 on r."role" = ug."role" 	
@@ -78,7 +82,7 @@ func (db *repoUserRole) GetListByUser(ctx context.Context, key, value string) (r
 	return mUserRole, nil
 }
 
-func (db *repoUserRole) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.UserRole, err error) {
+func (r *repoUserRole) GetList(ctx context.Context, queryparam models.ParamList) (result []*models.UserRole, err error) {
 
 	var (
 		pageNum  = 0
@@ -86,7 +90,7 @@ func (db *repoUserRole) GetList(ctx context.Context, queryparam models.ParamList
 		sWhere   = ""
 		logger   = logging.Logger{}
 		orderBy  = queryparam.SortField
-		query    *gorm.DB
+		conn     = r.db.Get(ctx)
 	)
 	// pagination
 	if queryparam.Page > 0 {
@@ -114,12 +118,10 @@ func (db *repoUserRole) GetList(ctx context.Context, queryparam models.ParamList
 		} else {
 			sWhere += "(lower() LIKE ?)"
 		}
-		query = db.Conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+		err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
-		query = db.Conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result)
+		err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}
-
-	err = query.Error
 
 	if err != nil {
 		logger.Error("repo user group GetList ", err)
@@ -131,12 +133,13 @@ func (db *repoUserRole) GetList(ctx context.Context, queryparam models.ParamList
 	return result, nil
 }
 
-func (db *repoUserRole) Create(ctx context.Context, data *models.UserRole) error {
+func (r *repoUserRole) Create(ctx context.Context, data *models.UserRole) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Create(data)
+	conn := r.db.Get(ctx)
+	query := conn.Create(data)
 
 	err = query.Error
 	if err != nil {
@@ -145,12 +148,13 @@ func (db *repoUserRole) Create(ctx context.Context, data *models.UserRole) error
 	}
 	return nil
 }
-func (db *repoUserRole) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
+func (r *repoUserRole) Update(ctx context.Context, ID uuid.UUID, data interface{}) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Model(models.UserRole{}).Where("user_id = ?", ID).Updates(data)
+	conn := r.db.Get(ctx)
+	query := conn.Model(models.UserRole{}).Where("user_id = ?", ID).Updates(data)
 
 	err = query.Error
 	if err != nil {
@@ -160,12 +164,13 @@ func (db *repoUserRole) Update(ctx context.Context, ID uuid.UUID, data interface
 	return nil
 }
 
-func (db *repoUserRole) Delete(ctx context.Context, ID uuid.UUID) error {
+func (r *repoUserRole) Delete(ctx context.Context, ID uuid.UUID) error {
 	var (
 		logger = logging.Logger{}
 		err    error
 	)
-	query := db.Conn.Where("user_id = ?", ID).Delete(&models.UserRole{})
+	conn := r.db.Get(ctx)
+	query := conn.Where("user_id = ?", ID).Delete(&models.UserRole{})
 
 	err = query.Error
 	if err != nil {
@@ -175,12 +180,12 @@ func (db *repoUserRole) Delete(ctx context.Context, ID uuid.UUID) error {
 	return nil
 }
 
-func (db *repoUserRole) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
+func (r *repoUserRole) Count(ctx context.Context, queryparam models.ParamList) (result int64, err error) {
 	var (
-		sWhere = ""
-		logger = logging.Logger{}
-		query  *gorm.DB
+		sWhere         = ""
+		logger         = logging.Logger{}
 		rest   (int64) = 0
+		conn           = r.db.Get(ctx)
 	)
 
 	// WHERE
@@ -194,13 +199,12 @@ func (db *repoUserRole) Count(ctx context.Context, queryparam models.ParamList) 
 		} else {
 			sWhere += "(lower() LIKE ? )" //queryparam.Search
 		}
-		query = db.Conn.Model(&models.UserRole{}).Where(sWhere, queryparam.Search).Count(&rest)
+		err = conn.Model(&models.UserRole{}).Where(sWhere, queryparam.Search).Count(&rest).Error
 	} else {
-		query = db.Conn.Model(&models.UserRole{}).Where(sWhere).Count(&rest)
+		err = conn.Model(&models.UserRole{}).Where(sWhere).Count(&rest).Error
 	}
 	// end where
 
-	err = query.Error
 	if err != nil {
 		logger.Error("repo user group Count ", err)
 		return 0, err

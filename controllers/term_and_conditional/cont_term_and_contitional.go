@@ -24,8 +24,8 @@ func NewContTermAndConditional(e *gin.Engine, useTermAndConditional itermandcond
 	}
 
 	r := e.Group("/v1/cms/term-and-conditional")
-	r.POST("", cont.Create)
 	r.Use(middleware.Authorize())
+	r.POST("", cont.Create)
 	// r.PUT("/:id", cont.Update)
 	r.GET("", cont.GetById)
 	// r.GET("", cont.GetList)
@@ -75,7 +75,7 @@ func (c *contTermAndConditional) Create(e *gin.Context) {
 		return
 	}
 
-	appE.Response(http.StatusOK, "Ok", nil)
+	appE.Response(http.StatusCreated, "Ok", nil)
 }
 
 // GetById :
