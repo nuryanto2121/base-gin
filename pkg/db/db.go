@@ -1,6 +1,7 @@
 package db
 
 import (
+	"app/models"
 	"app/pkg/setting"
 	"context"
 	"fmt"
@@ -89,6 +90,8 @@ func (dbdget *dbDelegate) run(withDB bool) {
 		if dbdget.debug {
 			dbdget.dbGorm = dbdget.dbGorm.Debug()
 		}
+
+		go dbdget.autoMigrates()
 	})
 }
 
@@ -113,6 +116,50 @@ func (dbdget *dbDelegate) Rollback() {
 
 func (dbdget *dbDelegate) Commit() {
 	dbdget.dbGorm.Commit()
+}
+
+func (dbdget *dbDelegate) autoMigrates() {
+	conn := dbdget.dbGorm
+	trx, err := conn.DB()
+	if err != nil {
+		log.Printf("connection.setup autoMigrate err : %v", err)
+		panic(err)
+	}
+
+	rest, err := trx.Exec(`
+		CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+	`)
+
+	log.Printf("%v", rest)
+	if err != nil {
+		log.Printf(" : %v", err)
+		panic(err)
+	}
+
+	log.Println("STARTING AUTO MIGRATE ")
+	err = conn.AutoMigrate(
+		models.Users{},
+		models.UserSession{},
+		models.UserRole{},
+		models.UserOutlets{},
+		models.SkuManagement{},
+		models.Roles{},
+		models.RoleOutlet{},
+		models.AppVersion{},
+		models.Holidays{},
+		models.Outlets{},
+		models.OutletDetail{},
+		models.Inventory{},
+		models.TermAndConditional{},
+		models.Order{},
+		models.TmpCode{},
+		models.AuditLogs{},
+	)
+	if err != nil {
+		log.Printf("\nAutoMigrate : %#v", err)
+		panic(err)
+	}
+	log.Println("FINISHING AUTO MIGRATE ")
 }
 
 func connectionstring() string {

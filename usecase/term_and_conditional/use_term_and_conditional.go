@@ -9,7 +9,7 @@ import (
 
 	itermandconditional "app/interface/term_and_conditional"
 	"app/models"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"github.com/mitchellh/mapstructure"
 	uuid "github.com/satori/go.uuid"

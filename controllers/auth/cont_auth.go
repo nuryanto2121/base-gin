@@ -11,7 +11,7 @@ import (
 	"app/pkg/logging"
 	"app/pkg/middleware"
 	tool "app/pkg/tools"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"github.com/gin-gonic/gin"
 )

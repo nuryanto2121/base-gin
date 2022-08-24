@@ -8,7 +8,6 @@ import (
 	"app/pkg/logging"
 	"app/pkg/middleware"
 	multilanguage "app/pkg/multiLanguage"
-	"app/pkg/postgres"
 
 	s3gateway "app/pkg/s3"
 	"app/pkg/setting"
@@ -19,7 +18,7 @@ func init() {
 	setting.Setup()
 	multilanguage.Setup()
 	logging.Setup()
-	postgres.Setup()
+	// postgres.Setup()
 	s3gateway.Setup()
 }
 

@@ -3,7 +3,7 @@ package useuserrole
 import (
 	iuserrole "app/interface/user_role"
 	"app/models"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 	"context"
 	"fmt"
 	"math"

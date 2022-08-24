@@ -11,7 +11,7 @@ import (
 	"app/pkg/app"
 	"app/pkg/logging"
 	tool "app/pkg/tools"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"

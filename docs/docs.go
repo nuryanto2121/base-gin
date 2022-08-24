@@ -2510,6 +2510,9 @@ var doc = `{
                 "product_id": {
                     "type": "string"
                 },
+                "qty": {
+                    "type": "integer"
+                },
                 "start_number": {
                     "type": "integer"
                 },

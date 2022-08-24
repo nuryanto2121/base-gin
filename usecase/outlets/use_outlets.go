@@ -6,7 +6,7 @@ import (
 	iroleoutlet "app/interface/role_outlet"
 	"app/models"
 	"app/pkg/logging"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 	"context"
 	"fmt"
 	"math"

@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	templateemail "app/pkg/email"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 )
 
 type Register struct {

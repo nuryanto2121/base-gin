@@ -6,7 +6,7 @@ import (
 
 	"app/models"
 	multilanguage "app/pkg/multiLanguage"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"

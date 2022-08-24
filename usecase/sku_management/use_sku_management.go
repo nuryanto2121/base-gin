@@ -9,7 +9,7 @@ import (
 
 	iskumanagement "app/interface/sku_management"
 	"app/models"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"

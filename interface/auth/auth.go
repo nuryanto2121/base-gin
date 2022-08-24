@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"app/models"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 )
 
 type Usecase interface {
