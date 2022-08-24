@@ -114,19 +114,19 @@ func (g *GinRoutes) Init() {
 	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, repoRoleOutlet, timeoutContext)
 	_contOutlets.NewContOutlets(g.G, useOutlet)
 
-	repoInventory := _repoInventory.NewRepoInventory(dbConn)
-	useInventory := _useInventory.NewUseInventory(repoInventory, timeoutContext)
-	_contInventory.NewContInventory(g.G, useInventory)
-
 	repoTermAndConditional := _repoTermAndConditional.NewRepoTermAndConditioinal(dbConn)
 	useTermAndConditional := _useTermAndConditional.NewTermAndConditional(repoTermAndConditional, timeoutContext)
 	_contTermAndConditional.NewContTermAndConditional(g.G, useTermAndConditional)
 
-	repoOrder := _repoOrder.NewRepoOrder(dbConn)
-	useOrder := _useOrder.NewUseOrder(repoOrder, repoOutlet, repoSkuManagement, timeoutContext)
-	_contOrder.NewContOrder(g.G, useOrder)
-
 	repoAuditLogs := _repoAuditLogs.NewRepoAuditLogs(dbConn)
 	useAuditLogs := _useAuditLogs.NewUseAuditLogs(repoAuditLogs, time.Nanosecond)
 	_contAuditLogs.NewContAuditLogs(g.G, useAuditLogs)
+
+	repoOrder := _repoOrder.NewRepoOrder(dbConn)
+	useOrder := _useOrder.NewUseOrder(repoOrder, repoOutlet, repoSkuManagement, useAuditLogs, timeoutContext)
+	_contOrder.NewContOrder(g.G, useOrder)
+
+	repoInventory := _repoInventory.NewRepoInventory(dbConn)
+	useInventory := _useInventory.NewUseInventory(repoInventory, timeoutContext)
+	_contInventory.NewContInventory(g.G, useInventory, useOrder)
 }

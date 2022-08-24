@@ -133,7 +133,7 @@ func (r *repoOrder) Update(ctx context.Context, ID uuid.UUID, data interface{}) 
 	err = query.Error
 	if err != nil {
 		logger.Error("repo order Update ", err)
-		return err
+		return models.ErrInternalServerError
 	}
 	return nil
 }
