@@ -1,6 +1,7 @@
 package useorder
 
 import (
+	iauditlogs "app/interface/audit_logs"
 	iorder "app/interface/order"
 	ioutlets "app/interface/outlets"
 	iskumanagement "app/interface/sku_management"
@@ -22,14 +23,16 @@ type useOrder struct {
 	repoOrder      iorder.Repository
 	repoOutlet     ioutlets.Repository
 	repoProduct    iskumanagement.Repository
+	useAuditLogs   iauditlogs.Usecase
 	contextTimeOut time.Duration
 }
 
-func NewUseOrder(a iorder.Repository, b ioutlets.Repository, c iskumanagement.Repository, timeout time.Duration) iorder.Usecase {
+func NewUseOrder(a iorder.Repository, b ioutlets.Repository, c iskumanagement.Repository, d iauditlogs.Usecase, timeout time.Duration) iorder.Usecase {
 	return &useOrder{
 		repoOrder:      a,
 		repoOutlet:     b,
 		repoProduct:    c,
+		useAuditLogs:   d,
 		contextTimeOut: timeout}
 }
 
@@ -169,5 +172,61 @@ func (u *useOrder) Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// UpdateStatus implements iorder.Usecase
+func (u *useOrder) UpdateStatus(c context.Context, Claims util.Claims, data *models.InventoryStatusForm) (err error) {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeOut)
+	defer cancel()
+
+	var ID = data.ID
+	//check data exist
+	order, err := u.repoOrder.GetDataBy(ctx, "id", ID.String())
+	if err != nil {
+		return err
+	}
+
+	order.Status = data.Status
+	myMap := structs.Map(order.AddOrder)
+	myMap["updated_by"] = Claims.UserID
+	// delete(myMap, "OrderID")
+	fmt.Println(myMap)
+	err = u.repoOrder.Update(ctx, ID, myMap)
+	if err != nil {
+		return err
+	}
+	if data.Status == models.REJECT {
+		//data outlets
+		outlets, err := u.repoOutlet.GetDataBy(ctx, "id", order.OutletId.String())
+		if err != nil {
+			return err
+		}
+		//data sku
+		product, err := u.repoProduct.GetDataBy(ctx, "id", order.ProductId.String())
+		if err != nil {
+			return err
+		}
+
+		auditLogs := &models.AddAuditLogs{
+			AuditDate:   util.GetTimeNow(),
+			OutletId:    order.OutletId,
+			OutletName:  outlets.OutletName,
+			ProductId:   order.ProductId,
+			SkuName:     product.SkuName,
+			Qty:         order.Qty,
+			QtyChange:   order.Qty,
+			QtyDelta:    order.Qty,
+			Source:      "order",
+			Description: data.Description,
+			Username:    Claims.UserName,
+		}
+
+		err = u.useAuditLogs.Create(ctx, Claims, auditLogs)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

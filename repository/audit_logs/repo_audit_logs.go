@@ -78,7 +78,10 @@ func (r *repoAuditLogs) GetList(ctx context.Context, queryparam models.ParamList
 		} else {
 			sWhere += "(lower(username) LIKE ?)"
 		}
-		err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Table(`audit_logs a`).Select(`
+		
+		`).
+			Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
 		err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}

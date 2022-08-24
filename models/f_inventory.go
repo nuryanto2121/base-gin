@@ -8,3 +8,9 @@ type InventoryForm struct {
 	Qty       int64     `json:"qty"`
 	QtyChange int64     `json:"qty_change" valid:"Required"`
 }
+
+type InventoryStatusForm struct {
+	ID          uuid.UUID   `json:"id" valid:"Required"`
+	Status      StatusOrder `json:"status"`
+	Description string      `json:"description"`
+}

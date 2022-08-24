@@ -16,7 +16,9 @@ type AddAuditLogs struct {
 	AuditDate   time.Time `json:"audit_date" gorm:"type:timestamp;default:now()"`
 	Username    string    `json:"username" gorm:"type:varchar(60);not null" `
 	OutletId    uuid.UUID `json:"outlet_id" gorm:"type:uuid;not null"`
+	OutletName  string    `json:"outlet_name" gorm:"type:varchar(100)"`
 	ProductId   uuid.UUID `json:"product_id" gorm:"type:uuid;not null"`
+	SkuName     string    `json:"sku_name" valid:"Required" gorm:"type:varchar(60)"`
 	Qty         int64     `json:"qty" gorm:"type:integer;default:0"`
 	QtyChange   int64     `json:"qty_change" gorm:"type:integer;default:0"`
 	QtyDelta    int64     `json:"qty_delta" gorm:"type:integer;default:0"`

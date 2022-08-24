@@ -23,4 +23,5 @@ type Usecase interface {
 	Create(ctx context.Context, Claims util.Claims, data *models.AddOrder) (err error)
 	Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.AddOrder) (err error)
 	Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error)
+	UpdateStatus(ctx context.Context, Claims util.Claims, data *models.InventoryStatusForm) (err error)
 }
