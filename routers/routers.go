@@ -60,6 +60,10 @@ import (
 	_contTermAndConditional "app/controllers/term_and_conditional"
 	_repoTermAndConditional "app/repository/term_and_conditional"
 	_useTermAndConditional "app/usecase/term_and_conditional"
+
+	_contAuditLogs "app/controllers/audit_logs"
+	_repoAuditLogs "app/repository/audit_logs"
+	_useAuditLogs "app/usecase/audit_logs"
 )
 
 type GinRoutes struct {
@@ -121,4 +125,8 @@ func (g *GinRoutes) Init() {
 	repoOrder := _repoOrder.NewRepoOrder(dbConn)
 	useOrder := _useOrder.NewUseOrder(repoOrder, repoOutlet, repoSkuManagement, timeoutContext)
 	_contOrder.NewContOrder(g.G, useOrder)
+
+	repoAuditLogs := _repoAuditLogs.NewRepoAuditLogs(dbConn)
+	useAuditLogs := _useAuditLogs.NewUseAuditLogs(repoAuditLogs, time.Nanosecond)
+	_contAuditLogs.NewContAuditLogs(g.G, useAuditLogs)
 }
