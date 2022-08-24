@@ -132,6 +132,306 @@ var doc = `{
                 }
             }
         },
+        "/v1/cms/audit_logs": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AuditLogs"
+                ],
+                "summary": "GetList AuditLogs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PerPage",
+                        "name": "perpage",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "InitSearch",
+                        "name": "initsearch",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortField",
+                        "name": "sortfield",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseModelList"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AuditLogs"
+                ],
+                "summary": "Add AuditLogs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddAuditLogs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/cms/audit_logs/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AuditLogs"
+                ],
+                "summary": "GetById",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AuditLogs"
+                ],
+                "summary": "Rubah AuditLogs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddAuditLogs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AuditLogs"
+                ],
+                "summary": "Delete AuditLogs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/cms/change-password": {
             "post": {
                 "produces": [
@@ -2492,6 +2792,38 @@ var doc = `{
                 }
             }
         },
+        "models.AddAuditLogs": {
+            "type": "object",
+            "properties": {
+                "audit_date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "outlet_id": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "qty": {
+                    "type": "integer"
+                },
+                "qty_change": {
+                    "type": "integer"
+                },
+                "qty_delta": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AddOrder": {
             "type": "object",
             "properties": {
@@ -2509,6 +2841,9 @@ var doc = `{
                 },
                 "product_id": {
                     "type": "string"
+                },
+                "qty": {
+                    "type": "integer"
                 },
                 "start_number": {
                     "type": "integer"

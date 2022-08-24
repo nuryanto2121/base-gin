@@ -13,7 +13,7 @@ import (
 	iuserrole "app/interface/user_role"
 	"app/models"
 	"app/pkg/logging"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"github.com/fatih/structs"
 	uuid "github.com/satori/go.uuid"

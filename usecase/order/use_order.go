@@ -5,7 +5,7 @@ import (
 	ioutlets "app/interface/outlets"
 	iskumanagement "app/interface/sku_management"
 	"app/models"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 	"context"
 	"fmt"
 	"math"

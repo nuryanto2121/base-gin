@@ -3,7 +3,7 @@ package useroleoutlet
 import (
 	iroleoutlet "app/interface/role_outlet"
 	"app/models"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 	"context"
 	"fmt"
 	"math"

@@ -2,7 +2,7 @@ package iholidays
 
 import (
 	"app/models"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 	"context"
 
 	uuid "github.com/satori/go.uuid"

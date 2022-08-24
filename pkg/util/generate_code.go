@@ -47,7 +47,7 @@ func GenCode(t *models.TmpCode) string {
 		// generate new code, cause last code not found
 		t.SeqNo = 1
 		code = fmt.Sprintf("%s/%s/%s/%04d", t.Prefix, years, roman[month], t.SeqNo)
-		t.Prefix = t.Prefix
+		// t.Prefix = t.Prefix
 		t.Code = code
 
 		if err := conn.Create(t).Error; err != nil {

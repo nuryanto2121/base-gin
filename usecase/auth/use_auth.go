@@ -16,7 +16,7 @@ import (
 
 	"app/pkg/logging"
 	"app/pkg/setting"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 )
 
 type useAuht struct {

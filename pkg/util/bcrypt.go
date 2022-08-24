@@ -9,6 +9,7 @@ import (
 	"io"
 
 	"app/pkg/setting"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -56,7 +57,7 @@ func ComparePassword(hashedPwd string, plainPwd []byte) bool {
 		return false
 	}
 
-	return true
+	return err == nil
 }
 func EncryptMessage(message string) (string, error) {
 	key := []byte(setting.AppSetting.SaltKey)

@@ -8,9 +8,8 @@ import (
 	"time"
 
 	"app/models"
-	authorize "app/pkg/middleware/authorize"
 	"app/pkg/setting"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -108,14 +107,13 @@ func autoMigrate() {
 		models.SkuManagement{},
 		models.Roles{},
 		models.RoleOutlet{},
-		authorize.AppVersion{},
+		models.AppVersion{},
 		models.Holidays{},
 		models.Outlets{},
 		models.OutletDetail{},
 		models.Inventory{},
 		models.TermAndConditional{},
 		models.Order{},
-		authorize.AppVersion{},
 		models.TmpCode{},
 	)
 	if err != nil {
@@ -123,11 +121,11 @@ func autoMigrate() {
 		panic(err)
 	}
 
-	go func() {
-		// init data first
-		InitUser()
-		InitVersion()
-	}()
+	// go func() {
+	// 	// init data first
+	// 	InitUser()
+	// 	InitVersion()
+	// }()
 
 	log.Println("FINISHING AUTO MIGRATE ")
 }

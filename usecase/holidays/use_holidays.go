@@ -9,7 +9,7 @@ import (
 
 	iholidays "app/interface/holidays"
 	"app/models"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"github.com/fatih/structs"
 	"github.com/jinzhu/copier"

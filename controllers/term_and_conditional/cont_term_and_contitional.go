@@ -7,7 +7,7 @@ import (
 	"app/pkg/logging"
 	"app/pkg/middleware"
 	tool "app/pkg/tools"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 	"context"
 	"net/http"
 

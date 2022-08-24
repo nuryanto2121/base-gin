@@ -1,32 +1,33 @@
-package contorder
+package contauditlogs
 
 import (
-	iorder "app/interface/order"
+	iauditlogs "app/interface/audit_logs"
 	"app/models"
 	"app/pkg/middleware"
 	"context"
+	"fmt"
 	"net/http"
 
 	//app "app/pkg"
 	"app/pkg/app"
 	"app/pkg/logging"
 	tool "app/pkg/tools"
-	util "app/pkg/util"
+	"app/pkg/util"
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 )
 
-type contOrder struct {
-	useOrder iorder.Usecase
+type contAuditLogs struct {
+	useAuditLogs iauditlogs.Usecase
 }
 
-func NewContOrder(e *gin.Engine, a iorder.Usecase) {
-	controller := &contOrder{
-		useOrder: a,
+func NewContAuditLogs(e *gin.Engine, a iauditlogs.Usecase) {
+	controller := &contAuditLogs{
+		useAuditLogs: a,
 	}
 
-	r := e.Group("/v1/cms/order")
+	r := e.Group("/v1/cms/audit_logs")
 	r.Use(middleware.Authorize())
 	//r.Use(midd.Versioning)
 	r.GET("/:id", controller.GetDataBy)
@@ -39,15 +40,15 @@ func NewContOrder(e *gin.Engine, a iorder.Usecase) {
 // GetDataByID :
 // @Summary GetById
 // @Security ApiKeyAuth
-// @Tags Order
+// @Tags AuditLogs
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/order/{id} [get]
-func (c *contOrder) GetDataBy(e *gin.Context) {
+// @Router /v1/cms/audit_logs/{id} [get]
+func (c *contAuditLogs) GetDataBy(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -61,17 +62,17 @@ func (c *contOrder) GetDataBy(e *gin.Context) {
 	ID, err := uuid.FromString(id)
 	logger.Info(ID)
 	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
+		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
 		return
 	}
 	claims, err := app.GetClaims(e)
 	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
+		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
 		return
 	}
-	data, err := c.useOrder.GetDataBy(ctx, claims, ID)
+	data, err := c.useAuditLogs.GetDataBy(ctx, claims, ID)
 	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
+		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
 		return
 	}
 
@@ -79,9 +80,9 @@ func (c *contOrder) GetDataBy(e *gin.Context) {
 }
 
 // GetList :
-// @Summary GetList Order
+// @Summary GetList AuditLogs
 // @Security ApiKeyAuth
-// @Tags Order
+// @Tags AuditLogs
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
@@ -92,8 +93,8 @@ func (c *contOrder) GetDataBy(e *gin.Context) {
 // @Param initsearch query string false "InitSearch"
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
-// @Router /v1/cms/order [get]
-func (c *contOrder) GetList(e *gin.Context) {
+// @Router /v1/cms/audit_logs [get]
+func (c *contAuditLogs) GetList(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -119,7 +120,7 @@ func (c *contOrder) GetList(e *gin.Context) {
 		return
 	}
 
-	responseList, err = c.useOrder.GetList(ctx, claims, paramquery)
+	responseList, err = c.useAuditLogs.GetList(ctx, claims, paramquery)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -128,18 +129,18 @@ func (c *contOrder) GetList(e *gin.Context) {
 	appE.Response(http.StatusOK, "", responseList)
 }
 
-// CreateOrder :
-// @Summary Add Order
+// CreateAuditLogs :
+// @Summary Add AuditLogs
 // @Security ApiKeyAuth
-// @Tags Order
+// @Tags AuditLogs
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.AddOrder true "req param #status int64 0 = SUBMITTED , 1 = APPROVE"
+// @Param req body models.AddAuditLogs true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/order [post]
-func (c *contOrder) Create(e *gin.Context) {
+// @Router /v1/cms/audit_logs [post]
+func (c *contAuditLogs) Create(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -148,7 +149,7 @@ func (c *contOrder) Create(e *gin.Context) {
 	var (
 		logger = logging.Logger{} // wajib
 		appE   = app.Gin{C: e}    // wajib
-		form   models.AddOrder
+		form   models.AddAuditLogs
 	)
 
 	httpCode, errMsg := app.BindAndValidMulti(e, &form)
@@ -164,7 +165,7 @@ func (c *contOrder) Create(e *gin.Context) {
 		return
 	}
 
-	err = c.useOrder.Create(ctx, claims, &form)
+	err = c.useAuditLogs.Create(ctx, claims, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -173,19 +174,19 @@ func (c *contOrder) Create(e *gin.Context) {
 	appE.Response(http.StatusCreated, "Ok", nil)
 }
 
-// UpdateOrder :
-// @Summary Rubah Order
+// UpdateAuditLogs :
+// @Summary Rubah AuditLogs
 // @Security ApiKeyAuth
-// @Tags Order
+// @Tags AuditLogs
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
-// @Param req body models.AddOrder true "req param #changes are possible to adjust the form of the registration form from frontend"
+// @Param req body models.AddAuditLogs true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/order/{id} [put]
-func (c *contOrder) Update(e *gin.Context) {
+// @Router /v1/cms/audit_logs/{id} [put]
+func (c *contAuditLogs) Update(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -197,7 +198,7 @@ func (c *contOrder) Update(e *gin.Context) {
 		err    error
 
 		id   = e.Param("id") //kalo bukan int => 0
-		form = models.AddOrder{}
+		form = models.AddAuditLogs{}
 	)
 
 	SchoolID, err := uuid.FromString(id)
@@ -221,8 +222,8 @@ func (c *contOrder) Update(e *gin.Context) {
 		return
 	}
 
-	// form.UpdatedBy = claims.OrderName
-	err = c.useOrder.Update(ctx, claims, SchoolID, &form)
+	// form.UpdatedBy = claims.AuditLogsName
+	err = c.useAuditLogs.Update(ctx, claims, SchoolID, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -230,18 +231,18 @@ func (c *contOrder) Update(e *gin.Context) {
 	appE.Response(http.StatusCreated, "Ok", nil)
 }
 
-// DeleteOrder :
-// @Summary Delete Order
+// DeleteAuditLogs :
+// @Summary Delete AuditLogs
 // @Security ApiKeyAuth
-// @Tags Order
+// @Tags AuditLogs
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/order/{id} [delete]
-func (c *contOrder) Delete(e *gin.Context) {
+// @Router /v1/cms/audit_logs/{id} [delete]
+func (c *contAuditLogs) Delete(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -255,7 +256,7 @@ func (c *contOrder) Delete(e *gin.Context) {
 	ID, err := uuid.FromString(id)
 	logger.Info(ID)
 	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
+		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
 		return
 	}
 	claims, err := app.GetClaims(e)
@@ -263,9 +264,9 @@ func (c *contOrder) Delete(e *gin.Context) {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
-	err = c.useOrder.Delete(ctx, claims, ID)
+	err = c.useAuditLogs.Delete(ctx, claims, ID)
 	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
+		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
 		return
 	}
 

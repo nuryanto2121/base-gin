@@ -1,7 +1,7 @@
 package repofunction
 
 import (
-	util "app/pkg/utils"
+	util "app/pkg/util"
 )
 
 type FN struct {

@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	"app/models"
 	"app/pkg/app"
 	authorize "app/pkg/middleware/authorize"
-	postgres "app/pkg/postgres"
 	"app/pkg/redisdb"
 	"app/pkg/setting"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -49,11 +49,11 @@ func Versioning() gin.HandlerFunc {
 			return
 		}
 
-		verService := &authorize.AppVersion{
+		verService := &models.AppVersion{
 			DeviceType: DeviceType,
 			Version:    Version,
 		}
-		dataVersion, err := verService.GetVersion(ctx, postgres.Conn)
+		dataVersion, err := authorize.GetVersion(ctx, verService)
 		if err != nil {
 			resp := app.Response{
 				Error: fmt.Sprintf("Versioning : %v", err),
@@ -121,7 +121,7 @@ func Authorize() gin.HandlerFunc {
 			auth := authorize.Session{
 				Token: token,
 			}
-			dtSession, err := auth.GetSession(context.Background(), postgres.Conn)
+			dtSession, err := auth.GetSession(context.Background())
 			if err != nil {
 				code = http.StatusUnauthorized
 				msg = "Token Failed"

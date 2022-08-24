@@ -9,7 +9,7 @@ import (
 	"app/pkg/app"
 	"app/pkg/middleware"
 	s3gateway "app/pkg/s3"
-	util "app/pkg/utils"
+	util "app/pkg/util"
 
 	"app/pkg/logging"
 	tool "app/pkg/tools"
