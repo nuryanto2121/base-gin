@@ -130,7 +130,7 @@ func (u *ContAuth) Login(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.SosmedForm true "this model set from firebase"
+// @Param req body models.LoginForm true "this model set from firebase"
 // @Success 200 {object} app.Response
 // @Router /v1/login [post]
 func (u *ContAuth) LoginSosmed(e *gin.Context) {
@@ -142,7 +142,7 @@ func (u *ContAuth) LoginSosmed(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.SosmedForm{}
+		form   = models.LoginForm{}
 	)
 
 	// validasi and bind to struct

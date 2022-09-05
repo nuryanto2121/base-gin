@@ -4,6 +4,7 @@ import (
 	ioutletDetail "app/interface/outlet_detail"
 	ioutlets "app/interface/outlets"
 	iroleoutlet "app/interface/role_outlet"
+	itrx "app/interface/trx"
 	"app/models"
 	"app/pkg/logging"
 	util "app/pkg/util"
@@ -23,17 +24,20 @@ type useOutlets struct {
 	repoOutlets      ioutlets.Repository
 	repoOutletDetail ioutletDetail.Repository
 	repoRoleOutlet   iroleoutlet.Repository
+	repoTrx          itrx.Repository
 	contextTimeOut   time.Duration
 }
 
 func NewUseOutlets(a ioutlets.Repository,
 	b ioutletDetail.Repository,
 	c iroleoutlet.Repository,
+	trx itrx.Repository,
 	timeout time.Duration) ioutlets.Usecase {
 	return &useOutlets{
 		repoOutlets:      a,
 		repoOutletDetail: b,
 		repoRoleOutlet:   c,
+		repoTrx:          trx,
 		contextTimeOut:   timeout,
 	}
 }
@@ -162,30 +166,38 @@ func (u *useOutlets) Create(ctx context.Context, Claims util.Claims, data *model
 	mOutlets.CreatedBy = userID
 	mOutlets.UpdatedBy = userID
 
-	err = u.repoOutlets.Create(ctx, &mOutlets)
-	if err != nil {
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+		err = u.repoOutlets.Create(trxCtx, &mOutlets)
+		if err != nil {
+			return err
+		}
+
+		//insert detail
+		for _, val := range data.OutletDetail {
+			var mOutletDetail = models.OutletDetail{}
+			val.OutletId = mOutlets.Id
+
+			err = mapstructure.Decode(val, &mOutletDetail.AddOutletDetail)
+			if err != nil {
+				return err
+			}
+
+			mOutletDetail.CreatedBy = userID
+			mOutletDetail.UpdatedBy = userID
+
+			err = u.repoOutletDetail.Create(trxCtx, &mOutletDetail)
+			if err != nil {
+				return err
+			}
+
+		}
+		return nil
+	})
+
+	if errTx != nil {
 		return err
 	}
 
-	//insert detail
-	for _, val := range data.OutletDetail {
-		var mOutletDetail = models.OutletDetail{}
-		val.OutletId = mOutlets.Id
-
-		err = mapstructure.Decode(val, &mOutletDetail.AddOutletDetail)
-		if err != nil {
-			return err
-		}
-
-		mOutletDetail.CreatedBy = userID
-		mOutletDetail.UpdatedBy = userID
-
-		err = u.repoOutletDetail.Create(ctx, &mOutletDetail)
-		if err != nil {
-			return err
-		}
-
-	}
 	go func() {
 		//for root insert to role_outlet
 		logger := logging.Logger{}
@@ -241,39 +253,45 @@ func (u *useOutlets) Update(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	if err != nil {
 		return err
 	}
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+		//update header
+		dataUpdate := structs.Map(dataUpdateHeader.AddOutlets)
 
-	//update header
-	dataUpdate := structs.Map(dataUpdateHeader.AddOutlets)
-
-	dataUpdate["updated_by"] = Claims.UserID
-	err = u.repoOutlets.Update(ctx, ID, dataUpdate)
-	if err != nil {
-		return err
-	}
-
-	//delete then insert detail
-	err = u.repoOutletDetail.Delete(ctx, ID)
-	if err != nil {
-		return err
-	}
-	//insert detail
-	for _, val := range data.OutletDetail {
-		var mOutletDetail = models.OutletDetail{}
-		val.OutletId = ID
-
-		err = mapstructure.Decode(val, &mOutletDetail.AddOutletDetail)
+		dataUpdate["updated_by"] = Claims.UserID
+		err = u.repoOutlets.Update(trxCtx, ID, dataUpdate)
 		if err != nil {
 			return err
 		}
 
-		mOutletDetail.CreatedBy = userID
-		mOutletDetail.UpdatedBy = userID
-
-		err = u.repoOutletDetail.Create(ctx, &mOutletDetail)
+		//delete then insert detail
+		err = u.repoOutletDetail.Delete(trxCtx, ID)
 		if err != nil {
 			return err
 		}
+		//insert detail
+		for _, val := range data.OutletDetail {
+			var mOutletDetail = models.OutletDetail{}
+			val.OutletId = ID
 
+			err = mapstructure.Decode(val, &mOutletDetail.AddOutletDetail)
+			if err != nil {
+				return err
+			}
+
+			mOutletDetail.CreatedBy = userID
+			mOutletDetail.UpdatedBy = userID
+
+			err = u.repoOutletDetail.Create(trxCtx, &mOutletDetail)
+			if err != nil {
+				return err
+			}
+
+		}
+		return nil
+	})
+
+	if errTx != nil {
+		return err
 	}
 
 	return nil
