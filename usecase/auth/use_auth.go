@@ -9,7 +9,9 @@ import (
 	iauth "app/interface/auth"
 	ifileupload "app/interface/fileupload"
 	iroleoutlet "app/interface/role_outlet"
+	itrx "app/interface/trx"
 	iusers "app/interface/user"
+	iuserapps "app/interface/user_apps"
 	iuserrole "app/interface/user_role"
 	iusersession "app/interface/user_session"
 	"app/models"
@@ -25,25 +27,31 @@ type useAuht struct {
 	repoUserSession iusersession.Repository
 	repoUserRole    iuserrole.Repository
 	repoRoleOutlet  iroleoutlet.Repository
+	repoUserApps    iuserapps.Repository
+	repoTrx         itrx.Repository
 	contextTimeOut  time.Duration
 }
 
-func NewUserAuth(repoAuth iusers.Repository, repoFile ifileupload.Repository,
+func NewUserAuth(
+	repoAuth iusers.Repository, repoFile ifileupload.Repository,
 	repoUserSession iusersession.Repository, repoUserRole iuserrole.Repository,
-	repoRoleOutlet iroleoutlet.Repository, timeout time.Duration) iauth.Usecase {
+	repoRoleOutlet iroleoutlet.Repository, repoUserApps iuserapps.Repository,
+	repoTrx itrx.Repository, timeout time.Duration,
+) iauth.Usecase {
 	return &useAuht{
 		repoAuth:        repoAuth,
 		repoFile:        repoFile,
 		repoUserSession: repoUserSession,
 		repoUserRole:    repoUserRole,
 		repoRoleOutlet:  repoRoleOutlet,
+		repoUserApps:    repoUserApps,
+		repoTrx:         repoTrx,
 		contextTimeOut:  timeout,
 	}
 }
 
 func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (output interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
-
 	defer cancel()
 
 	var (
@@ -118,77 +126,36 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	return response, nil
 }
 
-func (u *useAuht) LoginMobile(ctx context.Context, dataLogin *models.SosmedForm) (output interface{}, err error) {
+func (u *useAuht) LoginMobile(ctx context.Context, req *models.LoginForm) (output interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
-	// var (
-	// 	dataUser = &models.Users{}
-	// 	fb       = firebase.InitFirebase(ctx)
-	// 	token    (string)
-	// 	response map[string]interface{}
-	// )
-	// defer fb.Close()
+	var (
+		// logger = logging.Logger{}
+		token string = ""
+	)
 
-	// dataToken, err := fb.VerifyIDToken(ctx, dataLogin.AccessToken)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// expiredDate := util.Int64ToTime(dataToken.Expires)
-	// if expiredDate.Before(util.GetTimeNow()) {
-	// 	return nil, models.ErrExpiredFirebaseToken
-	// }
+	userApps, err := u.repoUserApps.GetByAccount(ctx, req.Account)
+	if err != nil {
+		if err == models.ErrNotFound {
+			return nil, models.ErrAccountNotFound
+		}
+		return nil, err
+	}
 
-	// dataUser, _ = fb.GetUserByAccount(ctx, util.NameStruct(models.Users{}), dataLogin.Email)
-	// if dataUser != nil {
-	// 	if dataUser.PhoneNo == "" && !dataUser.IsActive {
-	// 		response = map[string]interface{}{
-	// 			"user_id":  dataUser.ID,
-	// 			"token":    token,
-	// 			"email":    dataUser.Email,
-	// 			"name":     dataUser.Name,
-	// 			"avatar":   dataUser.Avatar,
-	// 			"phone_no": dataUser.PhoneNo,
-	// 		}
-	// 		return response, nil
-	// 	}
+	if !util.ComparePassword(userApps.Password, util.GetPassword(req.Password)) {
+		return nil, models.ErrInvalidPassword
+	}
 
-	// 	token, err = util.GenerateToken(dataUser.ID, dataUser.Name, "")
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-
-	// 	redisdb.AddSession(token, dataUser.ID, time.Duration(setting.AppSetting.ExpiredJwt)*time.Hour)
-
-	// 	response = map[string]interface{}{
-	// 		"user_id":  dataUser.ID,
-	// 		"token":    token,
-	// 		"email":    dataUser.Email,
-	// 		"name":     dataUser.Name,
-	// 		"avatar":   dataUser.Avatar,
-	// 		"phone_no": dataUser.PhoneNo,
-	// 	}
-	// 	return response, nil
-	// } else {
-	// 	var User models.Users
-	// 	User.CreatedBy = dataLogin.Name
-	// 	User.UpdatedBy = dataLogin.Name
-	// 	User.IsActive = false
-	// 	User.Email = dataLogin.Email
-	// 	User.Name = dataLogin.Name
-	// 	User.SosmedID = dataToken.UID
-
-	// 	// err = u.repoAuth.Create(ctx, &User)
-	// 	rest, _, err := fb.Create(ctx, util.NameStruct(User), User)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
+	token, err = util.GenerateToken(userApps.Id.String(), userApps.Name, "user")
+	if err != nil {
+		return nil, err
+	}
 
 	response := map[string]interface{}{
-		// "user_id":  rest.ID,
-		// "token":    token,
-		// "email":    dataLogin.Email,
-		// "name":     dataLogin.Name,
-		"phone_no": "",
+		"user_id":  userApps.Id,
+		"token":    token,
+		"name":     userApps.Name,
+		"phone_no": userApps.PhoneNo,
 	}
 	return response, nil
 	// }
@@ -265,82 +232,71 @@ func (u *useAuht) ResetPassword(ctx context.Context, dataReset *models.ResetPass
 	return nil
 }
 
-func (u *useAuht) Register(ctx context.Context, dataRegister models.RegisterForm) (err error) {
+func (u *useAuht) Register(ctx context.Context, req models.RegisterForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
-	// fb := firebase.InitFirebase(ctx)
-	// var User models.Users
-	// defer fb.Close()
 	defer cancel()
+	var (
+		now    = util.GetTimeNow()
+		logger = logging.Logger{}
+	)
 
-	// dataUser, err := fb.GetUserByAccount(ctx, util.NameStruct(User), dataRegister.Email)
-	// if err != nil && err != models.ErrAccountNotFound {
-	// 	return models.ErrInternalServerError
-	// }
-	// //check duplicate email
-	// if dataUser != nil && dataUser.Email != "" {
-	// 	return models.ErrAccountAlreadyExist
-	// }
+	if req.ConfirmasiPassword != req.Password {
+		return models.ErrWrongPasswordConfirm
+	}
+	// req.Password, _ = util.HashAndSalt()
+	req.Password, _ = util.Hash(req.Password)
 
-	// err = mapstructure.Decode(dataRegister, &User.AddUser)
-	// if err != nil {
-	// 	return err
-	// }
+	userApps, err := u.repoUserApps.GetDataBy(ctx, "phone_no", req.PhoneNo)
+	if err != nil && err != models.ErrNotFound {
+		return err
+	}
+	if userApps != nil {
+		return models.ErrAccountAlreadyExist
+	}
 
-	// User.Password, _ = util.Hash(dataRegister.Password)
-	// User.CreatedBy = dataRegister.Name
-	// User.UpdatedBy = dataRegister.Name
-	// User.IsActive = false
-	// User.CreatedAt = util.UnixNow()
-	// User.UpdatedAt = util.UnixNow()
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+		parent := &models.UserApps{
+			AddUserApps: models.AddUserApps{
+				Name:     req.Name,
+				PhoneNo:  req.PhoneNo,
+				IsParent: true,
+				Password: req.Password,
+				JoinDate: now,
+			},
+		}
+		err := u.repoUserApps.Create(trxCtx, parent)
+		if err != nil {
+			logger.Error("error create parent ", err)
+			return err
+		}
 
-	// dtt, _, err := fb.Create(ctx, util.NameStruct(User), User)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Printf("\nKey == %v\n", dtt.ID)
-	// defer fb.Close()
-	return nil
+		for _, val := range req.Childs {
+			child := &models.UserApps{
+				AddUserApps: models.AddUserApps{
+					Name:     val.Name,
+					ParentId: parent.Id,
+					IsParent: false,
+					JoinDate: now,
+					DOB:      val.BOD,
+				},
+			}
+
+			err := u.repoUserApps.Create(trxCtx, child)
+			if err != nil {
+				logger.Error("error create child ", err)
+				return err
+			}
+		}
+		return nil
+	})
+
+	return errTx
 }
 
 func (u *useAuht) Verify(ctx context.Context, dataVerify models.VerifyForm) (output interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
-	// fb := firebase.InitFirebase(ctx)
-
-	// defer fb.Close()
 	defer cancel()
-	// dataToken, err := fb.VerifyIDToken(ctx, dataVerify.AccessToken)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// expiredDate := util.Int64ToTime(dataToken.Expires)
-	// if expiredDate.Before(util.GetTimeNow()) {
-	// 	return nil, models.ErrExpiredFirebaseToken
-	// }
 
-	// //validasi phone no
-
-	// dataUser, err := fb.GetUserByAccount(ctx, util.NameStruct(models.Users{}), dataVerify.Email)
-	// if err != nil {
-	// 	return nil, models.ErrAccountNotFound
-	// }
-
-	// dtUpdate := map[string]interface{}{
-	// 	"is_active": true,
-	// 	"phone_no":  dataVerify.PhoneNo,
-	// 	"join_date": util.UnixNow(),
-	// }
-
-	// _, err = fb.Update(ctx, util.NameStruct(models.Users{}), dataUser.ID, dtUpdate)
-	// if err != nil {
-	// 	return nil, models.ErrInternalServerError
-	// }
-
-	// token, err := util.GenerateToken(dataUser.ID, dataUser.Name, "")
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// redisdb.AddSession(token, dataUser.ID, time.Duration(24)*time.Hour)
 	response := map[string]interface{}{
 		"user_id": "dataUser.ID",
 		// "token":    token,

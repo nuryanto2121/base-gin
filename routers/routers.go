@@ -64,6 +64,14 @@ import (
 	_contAuditLogs "app/controllers/audit_logs"
 	_repoAuditLogs "app/repository/audit_logs"
 	_useAuditLogs "app/usecase/audit_logs"
+
+	_contTransaction "app/controllers/transaction"
+	_repoTransaction "app/repository/transaction"
+	_useTransaction "app/usecase/transaction"
+
+	_repoTrx "app/repository/trx"
+
+	_repoUserApps "app/repository/user_apps"
 )
 
 type GinRoutes struct {
@@ -78,7 +86,10 @@ func (g *GinRoutes) Init() {
 	r := g.G
 	r.GET("/v1//swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	repoTrx := _repoTrx.NewRepoTrx(dbConn)
 	repoUserSession := _repoUserSession.NewRepoUserSession(dbConn)
+
+	repoUserApps := _repoUserApps.NewRepoUserApps(dbConn)
 
 	repoFileUpload := _repoFileUpload.NewRepoFileUpload(dbConn)
 	useFileUpload := _useFileUpload.NewSaFileUpload(repoFileUpload, timeoutContext)
@@ -94,7 +105,7 @@ func (g *GinRoutes) Init() {
 	_ = _useRoleOutlet.NewUseRoleOutlet(repoRoleOutlet, timeoutContext)
 
 	repoUser := _repoUser.NewRepoSysUser(dbConn)
-	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, repoRoleOutlet, timeoutContext)
+	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, repoRoleOutlet, repoUserApps, repoTrx, timeoutContext)
 	useUser := _useUser.NewUserSysUser(repoUser, repoUserRole, repoRoleOutlet, timeoutContext)
 
 	_contUser.NewContUsers(g.G, useUser)
@@ -111,7 +122,7 @@ func (g *GinRoutes) Init() {
 	_contSkumanagement.NewContSkuManagement(g.G, useSkuManagement)
 	repoOutlet := _repoOutlets.NewRepoOutlets(dbConn)
 	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(dbConn)
-	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, repoRoleOutlet, timeoutContext)
+	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, repoRoleOutlet, repoTrx, timeoutContext)
 	_contOutlets.NewContOutlets(g.G, useOutlet)
 
 	repoTermAndConditional := _repoTermAndConditional.NewRepoTermAndConditioinal(dbConn)
@@ -129,4 +140,8 @@ func (g *GinRoutes) Init() {
 	repoInventory := _repoInventory.NewRepoInventory(dbConn)
 	useInventory := _useInventory.NewUseInventory(repoInventory, timeoutContext)
 	_contInventory.NewContInventory(g.G, useInventory, useOrder)
+
+	repoTransaction := _repoTransaction.NewRepoTransaction(dbConn)
+	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, timeoutContext)
+	_contTransaction.NewContTransaction(g.G, useTransaction)
 }

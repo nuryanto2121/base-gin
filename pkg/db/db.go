@@ -154,6 +154,9 @@ func (dbdget *dbDelegate) autoMigrates() {
 		models.Order{},
 		models.TmpCode{},
 		models.AuditLogs{},
+		models.Transaction{},
+		models.TransactionDetail{},
+		models.UserApps{},
 	)
 	if err != nil {
 		log.Printf("\nAutoMigrate : %#v", err)

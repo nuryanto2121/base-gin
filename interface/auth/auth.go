@@ -9,7 +9,7 @@ import (
 
 type Usecase interface {
 	LoginCms(ctx context.Context, dataLogin *models.LoginForm) (output interface{}, err error)
-	LoginMobile(ctx context.Context, dataLogin *models.SosmedForm) (output interface{}, err error)
+	LoginMobile(ctx context.Context, dataLogin *models.LoginForm) (output interface{}, err error)
 	ForgotPassword(ctx context.Context, dataForgot *models.ForgotForm) (err error)
 	ResetPassword(ctx context.Context, dataReset *models.ResetPasswd) (err error)
 	Register(ctx context.Context, dataRegister models.RegisterForm) (err error)

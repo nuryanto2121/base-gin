@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 //LoginForm :
 type LoginForm struct {
 	Account  string `json:"account" valid:"Required"`
@@ -9,10 +11,17 @@ type LoginForm struct {
 
 // RegisterForm :
 type RegisterForm struct {
-	Name     string `json:"name" valid:"Required"`
-	PhoneNo  string `json:"phone_no"`
-	Email    string `json:"email" valid:"Required;Email"`
-	Password string `json:"password" valid:"Required;MinSize(6)"`
+	Name    string `json:"name" valid:"Required"`
+	PhoneNo string `json:"phone_no"`
+	// Email              string           `json:"email" valid:"Required;Email"`
+	Password           string           `json:"pwd" valid:"Required;MinSize(6)"`
+	ConfirmasiPassword string           `json:"confirm_pwd" valid:"Required;MinSize(6)"`
+	Childs             []*RegisterChild `json:"childs"`
+}
+
+type RegisterChild struct {
+	Name string    `json:"name"`
+	BOD  time.Time `json:"bod"`
 }
 
 // ForgotForm :
