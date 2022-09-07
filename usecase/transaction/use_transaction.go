@@ -1,7 +1,12 @@
 package usetransaction
 
 import (
+	ioutlets "app/interface/outlets"
+	iskumanagement "app/interface/sku_management"
 	itransaction "app/interface/transaction"
+	itransactiondetail "app/interface/transaction_detail"
+	itrx "app/interface/trx"
+	iuserapps "app/interface/user_apps"
 	"app/models"
 	"app/pkg/util"
 	"context"
@@ -11,18 +16,30 @@ import (
 	"time"
 
 	"github.com/fatih/structs"
-	"github.com/mitchellh/mapstructure"
 
 	uuid "github.com/satori/go.uuid"
 )
 
 type useTransaction struct {
-	repoTransaction itransaction.Repository
-	contextTimeOut  time.Duration
+	repoTransaction   itransaction.Repository
+	repoTransDetail   itransactiondetail.Repository
+	repoOutlet        ioutlets.Repository
+	repoSkuManagement iskumanagement.Repository
+	repoCustomer      iuserapps.Repository
+	repoTrx           itrx.Repository
+	contextTimeOut    time.Duration
 }
 
-func NewUseTransaction(a itransaction.Repository, timeout time.Duration) itransaction.Usecase {
-	return &useTransaction{repoTransaction: a, contextTimeOut: timeout}
+func NewUseTransaction(a itransaction.Repository, a1 itransactiondetail.Repository, b ioutlets.Repository, c iskumanagement.Repository, d iuserapps.Repository, e itrx.Repository, timeout time.Duration) itransaction.Usecase {
+	return &useTransaction{
+		repoTransaction:   a,
+		repoTransDetail:   a1,
+		repoOutlet:        b,
+		repoSkuManagement: c,
+		repoCustomer:      d,
+		repoTrx:           e,
+		contextTimeOut:    timeout,
+	}
 }
 
 func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Transaction, err error) {
@@ -63,27 +80,93 @@ func (u *useTransaction) GetList(ctx context.Context, Claims util.Claims, queryp
 	return result, nil
 }
 
-func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, data *models.TransactionForm) (err error) {
+func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *models.TransactionForm) (*models.TransactionResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
-		mTransaction = models.Transaction{}
+		// mTransaction = models.Transaction{}
+		tsCode      string  = ""
+		jmlTicket   int64   = 0
+		result              = &models.TransactionResponse{}
+		dtl                 = []*models.TransactionDetailResponse{}
+		totalAmount float64 = 0
 	)
+	t := &models.TmpCode{Prefix: "TRX"}
+	tsCode = util.GenCode(t)
 
-	// mapping to struct model saRole
-	err = mapstructure.Decode(data, &mTransaction.AddTransaction)
-	if err != nil {
-		return err
+	mTransaction := &models.Transaction{
+		AddTransaction: models.AddTransaction{
+			TransactionDate:   req.TransactionDate,
+			OutletId:          req.OutletId,
+			StatusPayment:     models.STATUS_WAITINGPAYMENT,
+			StatusTransaction: models.STATUS_ORDER,
+			TransactionCode:   tsCode,
+			TotalAmount:       0,
+		},
+		Model: models.Model{
+			CreatedBy: uuid.FromStringOrNil(Claims.UserID),
+			UpdatedBy: uuid.FromStringOrNil(Claims.UserID),
+		},
 	}
 
-	mTransaction.CreatedBy = uuid.FromStringOrNil(Claims.Id)
-	mTransaction.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+		err := u.repoTransaction.Create(trxCtx, mTransaction)
+		if err != nil {
+			return err
+		}
 
-	err = u.repoTransaction.Create(ctx, &mTransaction)
-	if err != nil {
-		return err
+		for _, val := range req.Details {
+			Product, err := u.repoSkuManagement.GetDataBy(trxCtx, "id", val.ProductId.String())
+			if err != nil {
+				return err
+			}
+			if Product.IsBracelet {
+				jmlTicket++
+			}
+			Customer, err := u.repoCustomer.GetDataBy(trxCtx, "id", val.CustomerId.String())
+			if err != nil {
+				return err
+			}
+
+			trxDetail := &models.TransactionDetail{
+				AddTransactionDetail: models.AddTransactionDetail{
+					TransactionId: mTransaction.Id,
+					CustomerId:    val.CustomerId,
+					IsParent:      false,
+					ProductId:     val.ProductId,
+					ProductQty:    val.ProductQty,
+					Amount:        Product.PriceWeekday,
+					Duration:      Product.Duration,
+				},
+			}
+
+			err = u.repoTransDetail.Create(trxCtx, trxDetail)
+			if err != nil {
+				return err
+			}
+			//nnti diganti dengan outlet dan hari
+			totalAmount += Product.PriceWeekday
+
+			dtl = append(dtl, &models.TransactionDetailResponse{
+				CustomerName: Customer.Name,
+				ProductQty:   val.ProductQty,
+				Duration:     Product.Duration,
+				Amount:       Product.PriceWeekday,
+				Description:  Product.SkuName,
+			})
+		}
+
+		return nil
+	})
+	if errTx != nil {
+		return result, errTx
 	}
-	return nil
+	result.TotalTicket = jmlTicket
+	result.TransactionDate = req.TransactionDate
+	result.TotalAmount = totalAmount
+	result.Details = dtl
+
+	return result, nil
 
 }
 

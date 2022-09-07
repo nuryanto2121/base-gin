@@ -69,6 +69,8 @@ import (
 	_repoTransaction "app/repository/transaction"
 	_useTransaction "app/usecase/transaction"
 
+	_repoTransactionDetail "app/repository/transaction_detail"
+
 	_repoTrx "app/repository/trx"
 
 	_repoUserApps "app/repository/user_apps"
@@ -82,7 +84,7 @@ func (g *GinRoutes) Init() {
 	timeoutContext := time.Duration(setting.ServerSetting.ReadTimeout) * time.Second
 	dbConn := db.NewDBdelegate(setting.DatabaseSetting.Debug)
 	dbConn.Init()
-
+	go dbConn.AutoMigrates()
 	r := g.G
 	r.GET("/v1//swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -141,7 +143,8 @@ func (g *GinRoutes) Init() {
 	useInventory := _useInventory.NewUseInventory(repoInventory, timeoutContext)
 	_contInventory.NewContInventory(g.G, useInventory, useOrder)
 
+	repoTransactionDetail := _repoTransactionDetail.NewRepoTransactionDetail(dbConn)
 	repoTransaction := _repoTransaction.NewRepoTransaction(dbConn)
-	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, timeoutContext)
+	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, repoTransactionDetail, repoOutlet, repoSkuManagement, repoUserApps, repoTrx, timeoutContext)
 	_contTransaction.NewContTransaction(g.G, useTransaction)
 }

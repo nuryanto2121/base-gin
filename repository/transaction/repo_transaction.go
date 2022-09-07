@@ -83,7 +83,7 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 			ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
-			Joins(`inner join user_apps ua on td.user_app_id = ua.id`).
+			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
 			Where(sWhere, queryparam.Search).Offset(pageNum).
 			Limit(pageSize).
 			Order(orderBy).
@@ -94,7 +94,7 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 			ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
-			Joins(`inner join user_apps ua on td.user_app_id = ua.id`).
+			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
 			Where(sWhere).Offset(pageNum).
 			Limit(pageSize).
 			Order(orderBy).
@@ -177,7 +177,7 @@ func (r *repoTransaction) Count(ctx context.Context, queryparam models.ParamList
 			ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
-			Joins(`inner join user_apps ua on td.user_app_id = ua.id`).
+			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
 			Where(sWhere, queryparam.Search).
 			Count(&rest).Error
 	} else {
@@ -186,7 +186,7 @@ func (r *repoTransaction) Count(ctx context.Context, queryparam models.ParamList
 			ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
-			Joins(`inner join user_apps ua on td.user_app_id = ua.id`).
+			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
 			Where(sWhere).
 			Count(&rest).Error
 	}

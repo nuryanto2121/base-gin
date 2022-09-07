@@ -26,15 +26,16 @@ func NewContOutlets(e *gin.Engine, a ioutlets.Usecase) {
 		useOutlets: a,
 	}
 
-	r := e.Group("/v1/cms/outlets")
+	r := e.Group("/v1")
 	r.Use(middleware.Authorize())
 	//r.Use(midd.Versioning)
-	r.GET("/:id", controller.GetDataBy)
-	r.GET("", controller.GetList)
-	r.POST("", controller.Create)
-	r.PUT("/:id", controller.Update)
-	r.DELETE("/:id", controller.Delete)
-	r.GET("/lookup", controller.GetDataLookUp)
+	r.GET("/cms/outlets/:id", controller.GetDataBy)
+	r.GET("/cms/outlets", controller.GetList)
+	r.POST("/cms/outlets", controller.Create)
+	r.PUT("/cms/outlets/:id", controller.Update)
+	r.DELETE("/cms/outlets/:id", controller.Delete)
+	r.GET("/cms/outlets/lookup", controller.GetDataLookUp)
+	r.GET("/outlets/lookup/price", controller.GetDataLookUpPrice)
 }
 
 // GetDataLookUp :
@@ -320,4 +321,53 @@ func (c *contOutlets) Delete(e *gin.Context) {
 	}
 
 	appE.Response(http.StatusOK, "Ok", nil)
+}
+
+// GetDataLookUp :
+// @Summary GetDataLookUp Outlets
+// @Security ApiKeyAuth
+// @Tags Outlets
+// @Produce  json
+// @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
+// @Param Language header string true "Language Apps"
+// @Param page query int true "Page"
+// @Param perpage query int true "PerPage"
+// @Param search query string false "Search"
+// @Param initsearch query string false "InitSearch"
+// @Param sortfield query string false "SortField"
+// @Success 200 {object} models.ResponseModelList
+// @Router /v1/outlets/lookup/price [get]
+func (c *contOutlets) GetDataLookUpPrice(e *gin.Context) {
+	ctx := e.Request.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	var (
+		logger       = logging.Logger{}
+		appE         = app.Gin{C: e}      // wajib
+		paramquery   = models.ParamList{} // ini untuk list
+		responseList = models.ResponseModelList{}
+	)
+
+	httpCode, errMsg := app.BindAndValidMulti(e, &paramquery)
+	logger.Info(util.Stringify(paramquery))
+	if httpCode != 200 {
+		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
+		return
+	}
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	responseList, err = c.useOutlets.GetListLookUpPrice(ctx, claims, paramquery)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	appE.Response(http.StatusOK, "Ok", responseList)
 }

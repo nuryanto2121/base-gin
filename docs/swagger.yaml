@@ -247,12 +247,12 @@ definitions:
     properties:
       amount:
         type: number
+      customer_id:
+        type: string
       duration:
         type: integer
       extra_adult:
         type: integer
-      user_app_id:
-        type: string
     type: object
   models.TransactionForm:
     properties:
@@ -2082,6 +2082,58 @@ paths:
       summary: auth
       tags:
       - Auth Mobile
+  /v1/outlets/lookup/price:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: PerPage
+        in: query
+        name: perpage
+        required: true
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: InitSearch
+        in: query
+        name: initsearch
+        type: string
+      - description: SortField
+        in: query
+        name: sortfield
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseModelList'
+      security:
+      - ApiKeyAuth: []
+      summary: GetDataLookUp Outlets
+      tags:
+      - Outlets
   /v1/register:
     post:
       parameters:

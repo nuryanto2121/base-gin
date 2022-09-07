@@ -165,13 +165,13 @@ func (c *contTransaction) Create(e *gin.Context) {
 		return
 	}
 
-	err = c.useTransaction.Create(ctx, claims, &form)
+	response, err := c.useTransaction.Create(ctx, claims, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
-	appE.Response(http.StatusCreated, "Ok", nil)
+	appE.Response(http.StatusCreated, "Ok", response)
 }
 
 // UpdateTransaction :

@@ -321,3 +321,34 @@ func (u *useOutlets) Delete(ctx context.Context, Claims util.Claims, ID uuid.UUI
 
 	return nil
 }
+
+// GetListLookUpPrice implements ioutlets.Usecase
+func (u *useOutlets) GetListLookUpPrice(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	if queryparam.Search != "" {
+		queryparam.Search = strings.ToLower(fmt.Sprintf("%%%s%%", queryparam.Search))
+	}
+
+	if queryparam.InitSearch != "" {
+		queryparam.InitSearch = strings.ReplaceAll(queryparam.InitSearch, "outlet_id", "o.id")
+		// queryparam.InitSearch += fmt.Sprintf(" AND user_id = '%s' ", Claims.UserID)
+	}
+
+	result.Data, err = u.repoOutlets.GetListLookUp(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	queryparam.InitSearch = strings.ReplaceAll(queryparam.InitSearch, "o.id", "outlet_id")
+	result.Total, err = u.repoOutlets.CountLookUp(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	result.LastPage = int64(math.Ceil(float64(result.Total) / float64(queryparam.PerPage)))
+	result.Page = queryparam.Page
+
+	return result, nil
+}

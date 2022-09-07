@@ -23,6 +23,7 @@ type DBGormDelegate interface {
 	BeginTx() *gorm.DB
 	Rollback()
 	Commit()
+	AutoMigrates()
 }
 
 type dbDelegate struct {
@@ -91,7 +92,7 @@ func (dbdget *dbDelegate) run(withDB bool) {
 			dbdget.dbGorm = dbdget.dbGorm.Debug()
 		}
 
-		go dbdget.autoMigrates()
+		// go dbdget.autoMigrates()
 	})
 }
 
@@ -118,7 +119,7 @@ func (dbdget *dbDelegate) Commit() {
 	dbdget.dbGorm.Commit()
 }
 
-func (dbdget *dbDelegate) autoMigrates() {
+func (dbdget *dbDelegate) AutoMigrates() {
 	conn := dbdget.dbGorm
 	trx, err := conn.DB()
 	if err != nil {

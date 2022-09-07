@@ -13,8 +13,9 @@ type TransactionForm struct {
 }
 
 type TransactionDetailForm struct {
-	UserAppId  uuid.UUID `json:"user_app_id"`
-	ExtraAdult int64     `json:"extra_adult"`
+	CustomerId uuid.UUID `json:"customer_id"`
+	ProductId  uuid.UUID `json:"product_id"`
+	ProductQty int64     `json:"product_qty"`
 	Duration   int64     `json:"duration"`
 	Amount     float64   `json:"amount"`
 }
@@ -28,4 +29,21 @@ type TransactionList struct {
 	Duration          int64             `json:"duration" gorm:"duration"`
 	StatusTransaction StatusTransaction `json:"status_transaction" gorm:"status_transaction"`
 	StatusPayment     StatusPayment     `json:"status_payment" gorm:"status_payment"`
+}
+
+type TransactionResponse struct {
+	TransactionDate time.Time                    `json:"transaction_date" `
+	OutletName      string                       `json:"outlet_name"`
+	OutletCity      string                       `json:"outlet_city"`
+	TotalTicket     int64                        `json:"total_ticket"`
+	TotalAmount     float64                      `json:"total_amount"`
+	Details         []*TransactionDetailResponse `json:"details"`
+}
+
+type TransactionDetailResponse struct {
+	CustomerName string  `json:"customer_name"`
+	Description  string  `json:"description"`
+	ProductQty   int64   `json:"product_qty"`
+	Duration     int64   `json:"duration"`
+	Amount       float64 `json:"amount"`
 }
