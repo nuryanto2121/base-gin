@@ -3600,7 +3600,10 @@ var doc = `{
                 "duration": {
                     "type": "integer"
                 },
-                "extra_adult": {
+                "product_id": {
+                    "type": "string"
+                },
+                "product_qty": {
                     "type": "integer"
                 }
             }

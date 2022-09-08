@@ -130,7 +130,7 @@ func (r *repoTransaction) Update(ctx context.Context, ID uuid.UUID, data interfa
 		conn   = r.db.Get(ctx)
 	)
 
-	err := conn.Model(models.Transaction{}).Where("transaction_id = ?", ID).Updates(data).Error
+	err := conn.Model(models.Transaction{}).Where("id = ?", ID).Updates(data).Error
 	if err != nil {
 		logger.Error("repo transaction Update ", err)
 		return err
@@ -144,7 +144,7 @@ func (r *repoTransaction) Delete(ctx context.Context, ID uuid.UUID) error {
 		conn   = r.db.Get(ctx)
 	)
 
-	err := conn.Where("transaction_id = ?", ID).Delete(&models.Transaction{}).Error
+	err := conn.Where("id = ?", ID).Delete(&models.Transaction{}).Error
 	if err != nil {
 		logger.Error("repo transaction Delete ", err)
 		return err

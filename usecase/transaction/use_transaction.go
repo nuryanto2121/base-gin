@@ -120,9 +120,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			if err != nil {
 				return err
 			}
-			if Product.IsBracelet {
-				jmlTicket++
-			}
+
 			Customer, err := u.repoCustomer.GetDataBy(trxCtx, "id", val.CustomerId.String())
 			if err != nil {
 				return err
@@ -147,15 +145,26 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			//nnti diganti dengan outlet dan hari
 			totalAmount += Product.PriceWeekday
 
+			var desc = fmt.Sprintf("%d x %s", val.ProductQty, Product.SkuName)
+			if Product.IsBracelet {
+				jmlTicket++
+				desc = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, Product.Duration)
+			}
+
 			dtl = append(dtl, &models.TransactionDetailResponse{
 				CustomerName: Customer.Name,
 				ProductQty:   val.ProductQty,
 				Duration:     Product.Duration,
 				Amount:       Product.PriceWeekday,
-				Description:  Product.SkuName,
+				Description:  desc,
 			})
 		}
 
+		// update header
+		dtUpdate := map[string]interface{}{
+			"total_amount": totalAmount,
+		}
+		u.repoTransaction.Update(trxCtx, mTransaction.Id, dtUpdate)
 		return nil
 	})
 	if errTx != nil {
