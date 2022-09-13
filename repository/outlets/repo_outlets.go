@@ -400,7 +400,10 @@ func (r *repoOutlets) CountLookUp(ctx context.Context, queryparam models.ParamLi
 		sQuery += fmt.Sprintf(" WHERE %s", sWhere)
 		err = conn.Raw(sQuery, queryparam.Search).Count(&rest).Error
 	} else {
-		sQuery += fmt.Sprintf(" WHERE %s", sWhere)
+		if sWhere != "" {
+			sQuery += fmt.Sprintf(" WHERE %s", sWhere)
+		}
+
 		err = conn.Raw(sQuery).Count(&rest).Error
 	}
 	// end where

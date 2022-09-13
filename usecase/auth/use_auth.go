@@ -2,7 +2,6 @@ package useauth
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -95,7 +94,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 
 	//save to session
 	exDate := util.GetTimeNow().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour)
-	fmt.Println(exDate)
+
 	dataSession := &models.UserSession{
 		UserId:      dataUser.Id,
 		Token:       token,
@@ -147,6 +146,18 @@ func (u *useAuht) LoginMobile(ctx context.Context, req *models.LoginForm) (outpu
 	}
 
 	token, err = util.GenerateToken(userApps.Id.String(), userApps.Name, "user")
+	if err != nil {
+		return nil, err
+	}
+
+	//save to session
+	exDate := util.GetTimeNow().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour)
+	dataSession := &models.UserSession{
+		UserId:      userApps.Id,
+		Token:       token,
+		ExpiredDate: exDate,
+	}
+	err = u.repoUserSession.Create(ctx, dataSession)
 	if err != nil {
 		return nil, err
 	}
