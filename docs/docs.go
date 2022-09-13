@@ -3045,7 +3045,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/transaction/{id}": {
+        "/v1/transaction/scan": {
             "get": {
                 "security": [
                     {
@@ -3058,7 +3058,7 @@ var doc = `{
                 "tags": [
                     "Transaction"
                 ],
-                "summary": "GetById",
+                "summary": "GetById for scan ticket / detail transaction",
                 "parameters": [
                     {
                         "type": "string",
@@ -3083,9 +3083,9 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "ID",
-                        "name": "id",
-                        "in": "path",
+                        "description": "transactionId",
+                        "name": "transactionId",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -3097,7 +3097,9 @@ var doc = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/v1/transaction/{id}": {
             "put": {
                 "security": [
                     {
@@ -3594,11 +3596,14 @@ var doc = `{
                 "amount": {
                     "type": "number"
                 },
-                "customer_id": {
+                "children_id": {
                     "type": "string"
                 },
                 "duration": {
                     "type": "integer"
+                },
+                "price": {
+                    "type": "number"
                 },
                 "product_id": {
                     "type": "string"

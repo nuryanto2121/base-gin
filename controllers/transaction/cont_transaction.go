@@ -30,7 +30,7 @@ func NewContTransaction(e *gin.Engine, a itransaction.Usecase) {
 	r := e.Group("/v1/transaction")
 	r.Use(middleware.Authorize())
 	r.Use(middleware.Versioning())
-	r.GET("/:id", controller.GetDataBy)
+	r.GET("/scan", controller.GetDataBy)
 	r.GET("", controller.GetList)
 	r.POST("", controller.Create)
 	r.PUT("/:id", controller.Update)
@@ -38,16 +38,16 @@ func NewContTransaction(e *gin.Engine, a itransaction.Usecase) {
 }
 
 // GetDataByID :
-// @Summary GetById
+// @Summary GetById for scan ticket / detail transaction
 // @Security ApiKeyAuth
 // @Tags Transaction
 // @Produce  json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param id path string true "ID"
+// @Param transactionId query string true "transactionId"
 // @Success 200 {object} app.Response
-// @Router /v1/transaction/{id} [get]
+// @Router /v1/transaction/scan [get]
 func (c *contTransaction) GetDataBy(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -55,22 +55,18 @@ func (c *contTransaction) GetDataBy(e *gin.Context) {
 	}
 
 	var (
-		logger = logging.Logger{}
-		appE   = app.Gin{C: e} // wajib
-		id     = e.Param("id") //kalo bukan int => 0
+		logger        = logging.Logger{}
+		appE          = app.Gin{C: e}            // wajib
+		transactionId = e.Query("transactionId") //e.Param("transactionId") //kalo bukan int => 0
 	)
-	ID, err := uuid.FromString(id)
-	logger.Info(ID)
-	if err != nil {
-		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
-		return
-	}
+	logger.Info(transactionId)
+
 	claims, err := app.GetClaims(e)
 	if err != nil {
 		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
 		return
 	}
-	data, err := c.useTransaction.GetDataBy(ctx, claims, ID)
+	data, err := c.useTransaction.GetDataBy(ctx, claims, transactionId)
 	if err != nil {
 		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
 		return
@@ -272,3 +268,48 @@ func (c *contTransaction) Delete(e *gin.Context) {
 
 	appE.Response(http.StatusOK, "Ok", nil)
 }
+
+// // ScanTransaction :
+// // @Summary Add Transaction
+// // @Security ApiKeyAuth
+// // @Tags Transaction
+// // @Produce json
+// // @Param Device-Type header string true "Device Type"
+// // @Param Version header string true "Version Apps"
+// // @Param Language header string true "Language Apps"
+// // @Param req body models.TransactionScanRequest true "req param #changes are possible to adjust the form of the registration form from frontend"
+// // @Success 200 {object} app.Response
+// // @Router /v1/transaction/scan [post]
+// func (c *contTransaction) Scan(e *gin.Context) {
+// 	ctx := e.Request.Context()
+// 	if ctx == nil {
+// 		ctx = context.Background()
+// 	}
+
+// 	var (
+// 		logger = logging.Logger{} // wajib
+// 		appE   = app.Gin{C: e}    // wajib
+// 		form   models.TransactionScanRequest
+// 	)
+
+// 	httpCode, errMsg := app.BindAndValidMulti(e, &form)
+// 	logger.Info(util.Stringify(form))
+// 	if httpCode != 200 {
+// 		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
+// 		return
+// 	}
+
+// 	claims, err := app.GetClaims(e)
+// 	if err != nil {
+// 		appE.ResponseError(tool.GetStatusCode(err), err)
+// 		return
+// 	}
+
+// 	response, err := c.useTransaction.Scan(ctx, claims, &form)
+// 	if err != nil {
+// 		appE.ResponseError(tool.GetStatusCode(err), err)
+// 		return
+// 	}
+
+// 	appE.Response(http.StatusCreated, "Ok", response)
+// }

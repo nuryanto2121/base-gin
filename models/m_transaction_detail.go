@@ -15,11 +15,12 @@ type TransactionDetail struct {
 type AddTransactionDetail struct {
 	TransactionId uuid.UUID `json:"transaction_id" gorm:"type:uuid;not null"`
 	CustomerId    uuid.UUID `json:"customer_id" gorm:"type:uuid;not null"`
-	IsParent      bool      `json:"is_parent" gorm:"type:boolean;default:false"`
+	IsChildren    bool      `json:"is_children" gorm:"type:boolean;default:false"`
 	ProductId     uuid.UUID `json:"product_id" gorm:"type:uuid;not null"`
 	ProductQty    int64     `json:"product_qty" gorm:"type:integer"`
 	Duration      int64     `json:"duration" gorm:"type:integer"`
 	CheckIn       time.Time `json:"check_in" gorm:"type:timestamp"`
 	CheckOut      time.Time `json:"check_out" gorm:"type:timestamp"`
 	Amount        float64   `json:"amount" valid:"Required" gorm:"type:numeric(20,2)"`
+	Price         float64   `json:"price"  gorm:"type:numeric(20,2)"`
 }

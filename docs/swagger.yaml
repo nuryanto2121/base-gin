@@ -247,10 +247,12 @@ definitions:
     properties:
       amount:
         type: number
-      customer_id:
+      children_id:
         type: string
       duration:
         type: integer
+      price:
+        type: number
       product_id:
         type: string
       product_qty:
@@ -2293,40 +2295,6 @@ paths:
       summary: Delete Transaction
       tags:
       - Transaction
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: GetById
-      tags:
-      - Transaction
     put:
       parameters:
       - description: Device Type
@@ -2366,6 +2334,41 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Rubah Transaction
+      tags:
+      - Transaction
+  /v1/transaction/scan:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: transactionId
+        in: query
+        name: transactionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: GetById for scan ticket / detail transaction
       tags:
       - Transaction
 securityDefinitions:

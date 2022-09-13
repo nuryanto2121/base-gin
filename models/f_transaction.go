@@ -12,11 +12,16 @@ type TransactionForm struct {
 	Details         []*TransactionDetailForm `json:"details"`
 }
 
+type TransactionScanRequest struct {
+	TransactionId string `json:"transaction_id"`
+}
+
 type TransactionDetailForm struct {
-	CustomerId uuid.UUID `json:"customer_id"`
+	ChildrenId uuid.UUID `json:"children_id"`
 	ProductId  uuid.UUID `json:"product_id"`
 	ProductQty int64     `json:"product_qty"`
 	Duration   int64     `json:"duration"`
+	Price      float64   `json:"price"`
 	Amount     float64   `json:"amount"`
 }
 
@@ -32,12 +37,17 @@ type TransactionList struct {
 }
 
 type TransactionResponse struct {
-	TransactionDate time.Time                    `json:"transaction_date" `
-	OutletName      string                       `json:"outlet_name"`
-	OutletCity      string                       `json:"outlet_city"`
-	TotalTicket     int64                        `json:"total_ticket"`
-	TotalAmount     float64                      `json:"total_amount"`
-	Details         []*TransactionDetailResponse `json:"details"`
+	TransactionId         string                       `json:"transaction_id"`
+	TransactionDate       time.Time                    `json:"transaction_date" `
+	OutletName            string                       `json:"outlet_name"`
+	OutletCity            string                       `json:"outlet_city"`
+	TotalTicket           int64                        `json:"total_ticket"`
+	TotalAmount           float64                      `json:"total_amount"`
+	StatusTransaction     StatusTransaction            `json:"status_transaction"`
+	StatusTransactionDesc string                       `json:"status_transaction_desc"`
+	StatusPayment         StatusPayment                `json:"status_payment"`
+	StatusPaymentDesc     string                       `json:"status_payment_desc"`
+	Details               []*TransactionDetailResponse `json:"details"`
 }
 
 type TransactionDetailResponse struct {

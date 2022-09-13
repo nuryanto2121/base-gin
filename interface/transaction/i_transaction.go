@@ -18,7 +18,7 @@ type Repository interface {
 }
 
 type Usecase interface {
-	GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Transaction, err error)
+	GetDataBy(ctx context.Context, Claims util.Claims, transactionId string) (result *models.TransactionResponse, err error)
 	GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
 	Create(ctx context.Context, Claims util.Claims, data *models.TransactionForm) (result *models.TransactionResponse, err error)
 	Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.TransactionForm) (err error)

@@ -10,6 +10,7 @@ import (
 	"app/models"
 	"app/pkg/util"
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -27,10 +28,18 @@ type useTransaction struct {
 	repoSkuManagement iskumanagement.Repository
 	repoCustomer      iuserapps.Repository
 	repoTrx           itrx.Repository
-	contextTimeOut    time.Duration
+	// repuUserApps iuserapps.Repository
+	contextTimeOut time.Duration
 }
 
-func NewUseTransaction(a itransaction.Repository, a1 itransactiondetail.Repository, b ioutlets.Repository, c iskumanagement.Repository, d iuserapps.Repository, e itrx.Repository, timeout time.Duration) itransaction.Usecase {
+func NewUseTransaction(
+	a itransaction.Repository,
+	a1 itransactiondetail.Repository,
+	b ioutlets.Repository,
+	c iskumanagement.Repository,
+	d iuserapps.Repository,
+	e itrx.Repository, timeout time.Duration,
+) itransaction.Usecase {
 	return &useTransaction{
 		repoTransaction:   a,
 		repoTransDetail:   a1,
@@ -42,13 +51,69 @@ func NewUseTransaction(a itransaction.Repository, a1 itransactiondetail.Reposito
 	}
 }
 
-func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Transaction, err error) {
+func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, transactionId string) (*models.TransactionResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	result, err = u.repoTransaction.GetDataBy(ctx, "id", ID.String())
+	trxHeader, err := u.repoTransaction.GetDataBy(ctx, "transaction_code", transactionId)
 	if err != nil {
-		return result, err
+		return nil, err
+	}
+	//get outlet
+	outlet, err := u.repoOutlet.GetDataBy(ctx, "id", trxHeader.OutletId.String())
+	if err != nil {
+		return nil, err
+	}
+
+	//get detail
+	trxDetail, err := u.repoTransDetail.GetList(ctx, models.ParamList{
+		Page:       1,
+		PerPage:    100,
+		InitSearch: fmt.Sprintf("transaction_id = '%s'", trxHeader.Id),
+	}) //GetDataBy(ctx, "transaction_id", trxHeader.Id.String())
+	if err != nil {
+		return nil, err
+	}
+
+	details := make([]*models.TransactionDetailResponse, 0, len(trxDetail))
+
+	for _, val := range trxDetail {
+		dt := &models.TransactionDetailResponse{}
+
+		//get product
+		product, err := u.repoSkuManagement.GetDataBy(ctx, "id", val.ProductId.String())
+		if err != nil {
+			return nil, err
+		}
+
+		dt.Description = fmt.Sprintf("%d x %s", val.ProductQty, product.SkuName)
+		if val.IsChildren {
+			child, err := u.repoCustomer.GetDataBy(ctx, "id", val.CustomerId.String())
+			if err != nil {
+				return nil, err
+			}
+			dt.CustomerName = child.Name
+			dt.Description = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, product.Duration)
+		}
+		dt.Amount = val.Amount
+		dt.Duration = val.Duration
+		dt.ProductQty = val.ProductQty
+
+		details = append(details, dt)
+	}
+
+	result := &models.TransactionResponse{
+		TransactionId:         transactionId,
+		TransactionDate:       trxHeader.TransactionDate,
+		OutletName:            outlet.OutletName,
+		OutletCity:            outlet.OutletCity,
+		TotalTicket:           trxHeader.TotalTicket,
+		TotalAmount:           trxHeader.TotalAmount,
+		StatusTransaction:     trxHeader.StatusTransaction,
+		StatusTransactionDesc: trxHeader.StatusTransaction.String(),
+		StatusPayment:         trxHeader.StatusPayment,
+		StatusPaymentDesc:     trxHeader.StatusPayment.String(),
+		Details:               details,
 	}
 	return result, nil
 }
@@ -91,7 +156,14 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 		dtl                 = []*models.TransactionDetailResponse{}
 		totalAmount float64 = 0
 	)
-	t := &models.TmpCode{Prefix: "TRX"}
+	//get Outlet
+	outlet, err := u.repoOutlet.GetDataBy(ctx, "id", req.OutletId.String())
+	if err != nil {
+		return nil, errors.New("outlets not found")
+	}
+
+	trxPrefix := fmt.Sprintf("TRX-%s", strings.ToUpper(outlet.OutletName[0:3]))
+	t := &models.TmpCode{Prefix: trxPrefix}
 	tsCode = util.GenCode(t)
 
 	mTransaction := &models.Transaction{
@@ -102,6 +174,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			StatusTransaction: models.STATUS_ORDER,
 			TransactionCode:   tsCode,
 			TotalAmount:       0,
+			CustomerId:        uuid.FromStringOrNil(Claims.UserID),
 		},
 		Model: models.Model{
 			CreatedBy: uuid.FromStringOrNil(Claims.UserID),
@@ -116,24 +189,50 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 		}
 
 		for _, val := range req.Details {
+			isChild := false
+			customerName := ""
 			Product, err := u.repoSkuManagement.GetDataBy(trxCtx, "id", val.ProductId.String())
 			if err != nil {
 				return err
 			}
 
-			Customer, err := u.repoCustomer.GetDataBy(trxCtx, "id", val.CustomerId.String())
-			if err != nil {
+			Customer, err := u.repoCustomer.GetDataBy(trxCtx, "id", val.ChildrenId.String())
+			if err != nil && err != models.ErrNotFound {
 				return err
 			}
 
+			if Customer != nil {
+				customerName = Customer.Name
+			}
+			//nnti diganti dengan outlet dan hari
+			totalAmount += val.Amount //Product.PriceWeekday
+
+			var desc = fmt.Sprintf("%d x %s", val.ProductQty, Product.SkuName)
+			if Product.IsBracelet {
+				jmlTicket++
+				isChild = true
+				desc = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, Product.Duration)
+			}
+
+			//for response
+			dtl = append(dtl, &models.TransactionDetailResponse{
+				CustomerName: customerName,
+				ProductQty:   val.ProductQty,
+				Duration:     Product.Duration,
+				Amount:       val.Amount,
+				Description:  desc,
+			})
+
+			//insert to detail
 			trxDetail := &models.TransactionDetail{
 				AddTransactionDetail: models.AddTransactionDetail{
 					TransactionId: mTransaction.Id,
-					CustomerId:    val.CustomerId,
-					IsParent:      false,
+					CustomerId:    val.ChildrenId,
+					IsChildren:    isChild,
 					ProductId:     val.ProductId,
 					ProductQty:    val.ProductQty,
-					Amount:        Product.PriceWeekday,
+					Amount:        val.Amount,
+					Price:         val.Price,
 					Duration:      Product.Duration,
 				},
 			}
@@ -142,30 +241,15 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			if err != nil {
 				return err
 			}
-			//nnti diganti dengan outlet dan hari
-			totalAmount += Product.PriceWeekday
-
-			var desc = fmt.Sprintf("%d x %s", val.ProductQty, Product.SkuName)
-			if Product.IsBracelet {
-				jmlTicket++
-				desc = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, Product.Duration)
-			}
-
-			dtl = append(dtl, &models.TransactionDetailResponse{
-				CustomerName: Customer.Name,
-				ProductQty:   val.ProductQty,
-				Duration:     Product.Duration,
-				Amount:       Product.PriceWeekday,
-				Description:  desc,
-			})
 		}
 
 		// update header
 		dtUpdate := map[string]interface{}{
 			"total_amount": totalAmount,
+			"total_ticket": jmlTicket,
 		}
-		u.repoTransaction.Update(trxCtx, mTransaction.Id, dtUpdate)
-		return nil
+		return u.repoTransaction.Update(trxCtx, mTransaction.Id, dtUpdate)
+
 	})
 	if errTx != nil {
 		return result, errTx
@@ -174,6 +258,9 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 	result.TransactionDate = req.TransactionDate
 	result.TotalAmount = totalAmount
 	result.Details = dtl
+	result.TransactionId = tsCode
+	result.OutletCity = outlet.OutletCity
+	result.OutletName = outlet.OutletName
 
 	return result, nil
 
