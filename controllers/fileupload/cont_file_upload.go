@@ -31,7 +31,7 @@ func NewContFileUpload(e *gin.Engine, useSaFileUpload ifileupload.UseCase) {
 	e.Static("/wwwroot", "wwwroot")
 	r := e.Group("/v1/account/fileupload")
 	// Configure middleware with custom claims
-	// r.Use(midd.Versioning)
+	r.Use(middleware.Versioning())
 	r.Use(middleware.Authorize())
 	r.POST("", cont.CreateImage)
 	r.DELETE("", cont.Delete)

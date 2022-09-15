@@ -28,7 +28,7 @@ func NewContOrder(e *gin.Engine, a iorder.Usecase) {
 
 	r := e.Group("/v1/cms/order")
 	r.Use(middleware.Authorize())
-	//r.Use(midd.Versioning)
+	r.Use(middleware.Versioning())
 	r.GET("/:id", controller.GetDataBy)
 	r.GET("", controller.GetList)
 	r.POST("", controller.Create)

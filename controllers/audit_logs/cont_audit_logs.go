@@ -29,7 +29,7 @@ func NewContAuditLogs(e *gin.Engine, a iauditlogs.Usecase) {
 
 	r := e.Group("/v1/cms/audit_logs")
 	r.Use(middleware.Authorize())
-	//r.Use(midd.Versioning)
+	r.Use(middleware.Versioning())
 	r.GET("/:id", controller.GetDataBy)
 	r.GET("", controller.GetList)
 	r.POST("", controller.Create)

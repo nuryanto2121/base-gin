@@ -27,7 +27,7 @@ func NewContAuth(e *gin.Engine, useAuth iauth.Usecase) {
 
 	e.GET("/v1/cms/health_check", cont.Health)
 	r := e.Group("/v1/cms")
-	// r.Use(middleware.Versioning())
+	r.Use(middleware.Versioning())
 	r.POST("/login", cont.Login)
 	r.POST("/forgot", cont.ForgotPassword)
 	r.POST("/change-password", cont.ChangePassword)

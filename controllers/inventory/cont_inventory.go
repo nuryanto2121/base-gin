@@ -31,7 +31,7 @@ func NewContInventory(e *gin.Engine, a iinventory.Usecase, b iorder.Usecase) {
 
 	r := e.Group("/v1/cms/inventory")
 	r.Use(middleware.Authorize())
-	//r.Use(midd.Versioning)
+	r.Use(middleware.Versioning())
 	r.POST("/:id", controller.Update)
 	r.POST("/status", controller.Status)
 

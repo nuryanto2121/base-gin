@@ -28,7 +28,7 @@ func NewContOutlets(e *gin.Engine, a ioutlets.Usecase) {
 
 	r := e.Group("/v1")
 	r.Use(middleware.Authorize())
-	//r.Use(midd.Versioning)
+	r.Use(middleware.Versioning())
 	r.GET("/cms/outlets/:id", controller.GetDataBy)
 	r.GET("/cms/outlets", controller.GetList)
 	r.POST("/cms/outlets", controller.Create)
