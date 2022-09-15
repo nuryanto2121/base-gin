@@ -55,6 +55,14 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	var now = time.Now()
+
+	//get data parent
+	parent, err := u.repoCustomer.GetDataBy(ctx, "id", Claims.UserID)
+	if err != nil {
+		return nil, err
+	}
+
 	trxHeader, err := u.repoTransaction.GetDataBy(ctx, "transaction_code", transactionId)
 	if err != nil {
 		return nil, err
@@ -94,6 +102,25 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 			}
 			dt.CustomerName = child.Name
 			dt.Description = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, product.Duration)
+			//gen ticket
+			if Claims.Role == "ticket" {
+
+				child, err := u.repoCustomer.GetDataBy(ctx, "id", val.CustomerId.String())
+				if err != nil {
+					return nil, err
+				}
+
+				endTime := now.Add(time.Hour * time.Duration(val.Duration))
+				qr := map[string]interface{}{
+					"child_name":  child.Name,
+					"parent_name": parent.Name,
+					"phone_no":    parent.PhoneNo,
+					"end_time":    endTime,
+					"ticket_no":   val.TicketNo,
+				}
+
+				dt.QR = qr
+			}
 		}
 		dt.Amount = val.Amount
 		dt.Duration = val.Duration
@@ -162,7 +189,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 		return nil, errors.New("outlets not found")
 	}
 
-	trxPrefix := fmt.Sprintf("TRX-%s", strings.ToUpper(outlet.OutletName[0:3]))
+	trxPrefix := fmt.Sprintf("BOK-%s", strings.ToUpper(outlet.OutletName[0:3]))
 	t := &models.TmpCode{Prefix: trxPrefix}
 	tsCode = util.GenCode(t)
 
@@ -208,7 +235,11 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			totalAmount += val.Amount //Product.PriceWeekday
 
 			var desc = fmt.Sprintf("%d x %s", val.ProductQty, Product.SkuName)
+			var TicketNo = ""
 			if Product.IsBracelet {
+				// t.Prefix = fmt.Sprintf("%s",)
+				t.Prefix = fmt.Sprintf("TRC-%s", strings.ToUpper(outlet.OutletName[0:3]))
+				TicketNo = util.GenCode(t)
 				jmlTicket++
 				isChild = true
 				desc = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, Product.Duration)
@@ -227,6 +258,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			trxDetail := &models.TransactionDetail{
 				AddTransactionDetail: models.AddTransactionDetail{
 					TransactionId: mTransaction.Id,
+					TicketNo:      TicketNo,
 					CustomerId:    val.ChildrenId,
 					IsChildren:    isChild,
 					ProductId:     val.ProductId,
@@ -289,4 +321,42 @@ func (u *useTransaction) Delete(ctx context.Context, Claims util.Claims, ID uuid
 		return err
 	}
 	return nil
+}
+
+// Payment implements itransaction.Usecase
+func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *models.TransactionPaymentForm) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+	var (
+		now    = time.Now()
+		userId = uuid.FromStringOrNil(Claims.UserID)
+	)
+
+	transaction, err := u.repoTransaction.GetDataBy(ctx, "transaction_code", req.TransactionId)
+	if err != nil {
+		return err
+	}
+	transaction.PaymentCode = req.PaymentCode
+	transaction.Description = req.Description
+
+	transaction.StatusPayment = models.STATUS_PAYMENTSUCCESS
+	transaction.UpdatedAt = now
+	transaction.UpdatedBy = userId
+
+	err = u.repoTransaction.Update(ctx, transaction.Id, transaction)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *useTransaction) genTicket() string {
+	var result = ""
+	// 	Child Name:
+	// Parents Name :
+	// Phone Number :
+	// End Time :
+	// No tiket :
+	return result
 }

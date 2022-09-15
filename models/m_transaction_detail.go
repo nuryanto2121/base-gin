@@ -14,6 +14,7 @@ type TransactionDetail struct {
 
 type AddTransactionDetail struct {
 	TransactionId uuid.UUID `json:"transaction_id" gorm:"type:uuid;not null"`
+	TicketNo      string    `json:"ticket_no" gorm:"type:varchar(60)"`
 	CustomerId    uuid.UUID `json:"customer_id" gorm:"type:uuid;not null"`
 	IsChildren    bool      `json:"is_children" gorm:"type:boolean;default:false"`
 	ProductId     uuid.UUID `json:"product_id" gorm:"type:uuid;not null"`
