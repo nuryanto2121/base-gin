@@ -53,3 +53,32 @@ func (s StatusTransaction) String() string {
 
 	return result
 }
+
+type PaymentCode int64
+
+const (
+	PAYMENT_BCA   PaymentCode = 3000001
+	PAYMENT_CC    PaymentCode = 3000002
+	PAYMENT_CASH  PaymentCode = 3000003
+	PAYMENT_QRIS  PaymentCode = 3000004
+	PAYMENT_OTHER PaymentCode = 3000005
+)
+
+func (s PaymentCode) String() string {
+	var result string = ""
+	switch s {
+	case PAYMENT_BCA:
+		result = "BCA"
+	case PAYMENT_CC:
+		result = "Kartu Kredit"
+	case PAYMENT_CASH:
+		result = "Tunai"
+	case PAYMENT_QRIS:
+		result = "QRIS"
+	case PAYMENT_OTHER:
+		result = "Other"
+
+	}
+
+	return result
+}

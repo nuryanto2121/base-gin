@@ -21,6 +21,6 @@ type AddTransaction struct {
 	TotalTicket       int64             `json:"total_ticket"  gorm:"type:integer"`
 	StatusPayment     StatusPayment     `json:"status_payment" gorm:"type:integer;not null"`
 	StatusTransaction StatusTransaction `json:"status_transaction" gorm:"type:integer;not null"`
-	PaymentCode       string            `json:"payment_code" gorm:"type:varchar(60)"`
+	PaymentCode       PaymentCode       `json:"payment_code" gorm:"type:integer"`
 	Description       string            `json:"description"  gorm:"type:varchar(250)"`
 }

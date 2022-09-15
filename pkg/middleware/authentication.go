@@ -35,7 +35,7 @@ func Versioning() gin.HandlerFunc {
 				Msg:  fmt.Sprintf("Versioning : %v", err),
 				Data: nil,
 			}
-			e.JSON(http.StatusBadRequest, resp)
+			e.AbortWithStatusJSON(http.StatusBadRequest, resp)
 			return
 		}
 
@@ -45,7 +45,7 @@ func Versioning() gin.HandlerFunc {
 				Data:  nil,
 				Error: "Please Set Header Version",
 			}
-			e.JSON(http.StatusExpectationFailed, resp)
+			e.AbortWithStatusJSON(http.StatusExpectationFailed, resp)
 			return
 		}
 
@@ -59,7 +59,7 @@ func Versioning() gin.HandlerFunc {
 				Error: fmt.Sprintf("Versioning : %v", err),
 				Data:  nil,
 			}
-			e.JSON(http.StatusBadRequest, resp)
+			e.AbortWithStatusJSON(http.StatusBadRequest, resp)
 			return
 		}
 
@@ -69,7 +69,7 @@ func Versioning() gin.HandlerFunc {
 				Data:  dataVersion.Version,
 				Error: "",
 			}
-			e.JSON(http.StatusHTTPVersionNotSupported, resp)
+			e.AbortWithStatusJSON(http.StatusHTTPVersionNotSupported, resp)
 			return
 		}
 

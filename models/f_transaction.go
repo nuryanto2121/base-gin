@@ -51,9 +51,19 @@ type TransactionResponse struct {
 }
 
 type TransactionDetailResponse struct {
-	CustomerName string  `json:"customer_name"`
-	Description  string  `json:"description"`
-	ProductQty   int64   `json:"product_qty"`
-	Duration     int64   `json:"duration"`
-	Amount       float64 `json:"amount"`
+	CustomerName string      `json:"customer_name"`
+	Description  string      `json:"description"`
+	ProductQty   int64       `json:"product_qty"`
+	Duration     int64       `json:"duration"`
+	Amount       float64     `json:"amount"`
+	QR           interface{} `json:"qr,omitempty"`
+}
+
+type TransactionPaymentForm struct {
+	TransactionId string      `json:"transaction_id"`
+	PaymentCode   PaymentCode `json:"payment_code" valid:"Required"`
+	Description   string      `json:"description"`
+}
+
+type TransactionPaymentResponse struct {
 }
