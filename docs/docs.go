@@ -2731,63 +2731,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/costumer": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Costumers"
-                ],
-                "summary": "Create Costumers",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Device Type",
-                        "name": "Device-Type",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version Apps",
-                        "name": "Version",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Language Apps",
-                        "name": "Language",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "this model set from firebase",
-                        "name": "req",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.AddUserApps"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/app.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/costumers/child": {
+        "/v1/customer": {
             "get": {
                 "security": [
                     {
@@ -2845,7 +2789,7 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "InitSearch",
+                        "description": "if want to get child is_parent = false and parent_id = parameter.user_id",
                         "name": "initsearch",
                         "in": "query"
                     },
@@ -2864,9 +2808,63 @@ var doc = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Costumers"
+                ],
+                "summary": "Create Costumers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "this model set from firebase",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUserApps"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
             }
         },
-        "/v1/costumers/{id}": {
+        "/v1/customer/{id}": {
             "get": {
                 "security": [
                     {

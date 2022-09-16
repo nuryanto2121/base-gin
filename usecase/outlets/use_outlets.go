@@ -119,9 +119,8 @@ func (u *useOutlets) GetList(ctx context.Context, Claims util.Claims, queryparam
 	}
 
 	if queryparam.InitSearch != "" {
-		queryparam.InitSearch += fmt.Sprintf("is_parent = false AND parent_id = '%s' ", Claims.UserID)
-	} else {
-		queryparam.InitSearch = fmt.Sprintf(" user_id = '%s' ", Claims.UserID)
+		// queryparam.InitSearch += fmt.Sprintf("is_parent = false AND parent_id = '%s' ", Claims.UserID)
+		// queryparam.InitSearch += fmt.Sprintf(" and user_id = '%s' ", Claims.UserID)
 	}
 
 	result.Data, err = u.repoOutlets.GetList(ctx, queryparam)

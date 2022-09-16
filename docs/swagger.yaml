@@ -2079,7 +2079,58 @@ paths:
       summary: Update Users
       tags:
       - Users
-  /v1/costumer:
+  /v1/customer:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: PerPage
+        in: query
+        name: perpage
+        required: true
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: if want to get child is_parent = false and parent_id = parameter.user_id
+        in: query
+        name: initsearch
+        type: string
+      - description: SortField
+        in: query
+        name: sortfield
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseModelList'
+      security:
+      - ApiKeyAuth: []
+      summary: GetList Costumers
+      tags:
+      - Costumers
     post:
       parameters:
       - description: Device Type
@@ -2115,7 +2166,7 @@ paths:
       summary: Create Costumers
       tags:
       - Costumers
-  /v1/costumers/{id}:
+  /v1/customer/{id}:
     get:
       parameters:
       - description: Device Type
@@ -2188,58 +2239,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update Costumers
-      tags:
-      - Costumers
-  /v1/costumers/child:
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: Page
-        in: query
-        name: page
-        required: true
-        type: integer
-      - description: PerPage
-        in: query
-        name: perpage
-        required: true
-        type: integer
-      - description: Search
-        in: query
-        name: search
-        type: string
-      - description: InitSearch
-        in: query
-        name: initsearch
-        type: string
-      - description: SortField
-        in: query
-        name: sortfield
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ResponseModelList'
-      security:
-      - ApiKeyAuth: []
-      summary: GetList Costumers
       tags:
       - Costumers
   /v1/login:

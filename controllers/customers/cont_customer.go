@@ -30,7 +30,7 @@ func NewContCostumers(e *gin.Engine, useUserApps iuserapps.Usecase) {
 	r.POST("", cont.Create)
 	r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)
-	r.GET("/child", cont.GetList)
+	r.GET("", cont.GetList)
 	r.DELETE("/:id", cont.Delete)
 }
 
@@ -44,7 +44,7 @@ func NewContCostumers(e *gin.Engine, useUserApps iuserapps.Usecase) {
 // @Param Language header string true "Language Apps"
 // @Param req body models.AddUserApps true "this model set from firebase"
 // @Success 200 {object} app.Response
-// @Router /v1/costumer [post]
+// @Router /v1/customer [post]
 func (c *ContCostumers) Create(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -91,7 +91,7 @@ func (c *ContCostumers) Create(e *gin.Context) {
 // @Param id path string true "ID"
 // @Param req body models.AddUserApps true "this model set from firebase"
 // @Success 200 {object} app.Response
-// @Router /v1/costumer/{id} [put]
+// @Router /v1/customer/{id} [put]
 func (c *ContCostumers) Update(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -139,7 +139,7 @@ func (c *ContCostumers) Update(e *gin.Context) {
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/costumer/{id} [get]
+// @Router /v1/customer/{id} [get]
 func (c *ContCostumers) GetById(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -181,10 +181,10 @@ func (c *ContCostumers) GetById(e *gin.Context) {
 // @Param page query int true "Page"
 // @Param perpage query int true "PerPage"
 // @Param search query string false "Search"
-// @Param initsearch query string false "InitSearch"
+// @Param initsearch query string false "if want to get child is_parent = false and parent_id = parameter.user_id"
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
-// @Router /v1/costumer/child [get]
+// @Router /v1/customer [get]
 func (c *ContCostumers) GetList(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {

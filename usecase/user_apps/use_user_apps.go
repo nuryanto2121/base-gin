@@ -45,9 +45,6 @@ func (u *useUserApps) GetList(ctx context.Context, Claims util.Claims, querypara
 	}
 
 	if queryparam.InitSearch != "" {
-		queryparam.InitSearch += fmt.Sprintf(" and is_parent = false and parent_id = '%s'", Claims.UserID)
-	} else {
-		queryparam.InitSearch += fmt.Sprintf(" is_parent = false and parent_id = '%s'", Claims.UserID)
 	}
 
 	result.Data, err = u.repoUserApps.GetList(ctx, queryparam)
