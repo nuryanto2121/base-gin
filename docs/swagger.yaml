@@ -81,6 +81,24 @@ definitions:
       sku_name:
         type: string
     type: object
+  models.AddUserApps:
+    properties:
+      avatar:
+        type: string
+      dob:
+        type: string
+      is_parent:
+        type: boolean
+      join_date:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      phone_no:
+        description: ;Index:idx_phone,unique"
+        type: string
+    type: object
   models.AddUserCms:
     properties:
       confirm_password:
@@ -2052,6 +2070,169 @@ paths:
       summary: Update Users
       tags:
       - Users
+  /v1/costumer:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddUserApps'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Costumers
+      tags:
+      - Costumers
+  /v1/costumers/{id}:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: GetById Costumers
+      tags:
+      - Costumers
+    put:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddUserApps'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Costumers
+      tags:
+      - Costumers
+  /v1/costumers/child:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: PerPage
+        in: query
+        name: perpage
+        required: true
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: InitSearch
+        in: query
+        name: initsearch
+        type: string
+      - description: SortField
+        in: query
+        name: sortfield
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseModelList'
+      security:
+      - ApiKeyAuth: []
+      summary: GetList Costumers
+      tags:
+      - Costumers
   /v1/login:
     post:
       parameters:
