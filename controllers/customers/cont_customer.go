@@ -91,7 +91,7 @@ func (c *ContCostumers) Create(e *gin.Context) {
 // @Param id path string true "ID"
 // @Param req body models.AddUserApps true "this model set from firebase"
 // @Success 200 {object} app.Response
-// @Router /v1/costumers/{id} [put]
+// @Router /v1/costumer/{id} [put]
 func (c *ContCostumers) Update(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -139,7 +139,7 @@ func (c *ContCostumers) Update(e *gin.Context) {
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID"
 // @Success 200 {object} app.Response
-// @Router /v1/costumers/{id} [get]
+// @Router /v1/costumer/{id} [get]
 func (c *ContCostumers) GetById(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
@@ -184,7 +184,7 @@ func (c *ContCostumers) GetById(e *gin.Context) {
 // @Param initsearch query string false "InitSearch"
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
-// @Router /v1/costumers/child [get]
+// @Router /v1/costumer/child [get]
 func (c *ContCostumers) GetList(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
