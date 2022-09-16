@@ -73,7 +73,9 @@ import (
 
 	_repoTrx "app/repository/trx"
 
+	_contCustomers "app/controllers/customers"
 	_repoUserApps "app/repository/user_apps"
+	_useUserApps "app/usecase/user_apps"
 )
 
 type GinRoutes struct {
@@ -147,4 +149,7 @@ func (g *GinRoutes) Init() {
 	repoTransaction := _repoTransaction.NewRepoTransaction(dbConn)
 	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, repoTransactionDetail, repoOutlet, repoSkuManagement, repoUserApps, repoTrx, timeoutContext)
 	_contTransaction.NewContTransaction(g.G, useTransaction)
+
+	useUserApps := _useUserApps.NewUseUserApps(repoUserApps, timeoutContext)
+	_contCustomers.NewContCostumers(g.G, useUserApps)
 }
