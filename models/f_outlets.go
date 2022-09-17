@@ -1,6 +1,10 @@
 package models
 
-import uuid "github.com/satori/go.uuid"
+import (
+	"time"
+
+	uuid "github.com/satori/go.uuid"
+)
 
 type OutletForm struct {
 	OutletName   string             `json:"outlet_name" valid:"Required"`
@@ -38,4 +42,17 @@ type OutletLookupList struct {
 	PriceWeekend       float64   `json:"price_weekend"`
 	OutletPriceWeekday float64   `json:"outlet_price_weekday"`
 	OutletPriceWeekend float64   `json:"outlet_price_weekend"`
+}
+
+type OutletPriceProductRequest struct {
+	OutletId        string    `json:"outlet_id" form:"outlet_id"`
+	TransactionDate time.Time `json:"transaction_date" form:"transaction_date"`
+}
+
+type OutletPriceProductResponse struct {
+	ProductId  uuid.UUID `json:"product_id"`
+	SkuName    string    `json:"sku_name"`
+	IsBracelet bool      `json:"is_bracelet"`
+	Duration   int64     `json:"duration"`
+	Price      float64   `json:"price"`
 }

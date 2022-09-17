@@ -55,13 +55,19 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	var now = time.Now()
+	var (
+		now    = time.Now()
+		parent = &models.UserApps{}
+		err    error
+	)
 
-	//get data parent
-	parent, err := u.repoCustomer.GetDataBy(ctx, "id", Claims.UserID)
-	if err != nil {
-		return nil, err
-	}
+	// if Claims.Role == "user" {
+	// 	//get data parent
+	// 	parent, err = u.repoCustomer.GetDataBy(ctx, "id", Claims.UserID)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
 
 	trxHeader, err := u.repoTransaction.GetDataBy(ctx, "transaction_code", transactionId)
 	if err != nil {
@@ -104,6 +110,14 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 			dt.Description = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, product.Duration)
 			//gen ticket
 			if Claims.Role == "ticket" {
+
+				//get parent
+				if parent.Name == "" {
+					parent, err = u.repoCustomer.GetDataBy(ctx, "id", child.ParentId.String())
+					if err != nil {
+						return nil, err
+					}
+				}
 
 				child, err := u.repoCustomer.GetDataBy(ctx, "id", val.CustomerId.String())
 				if err != nil {

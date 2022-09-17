@@ -1,6 +1,7 @@
 package useoutlets
 
 import (
+	iholidays "app/interface/holidays"
 	ioutletDetail "app/interface/outlet_detail"
 	ioutlets "app/interface/outlets"
 	iroleoutlet "app/interface/role_outlet"
@@ -25,6 +26,7 @@ type useOutlets struct {
 	repoOutletDetail ioutletDetail.Repository
 	repoRoleOutlet   iroleoutlet.Repository
 	repoTrx          itrx.Repository
+	useHolidays      iholidays.Usecase
 	contextTimeOut   time.Duration
 }
 
@@ -32,12 +34,14 @@ func NewUseOutlets(a ioutlets.Repository,
 	b ioutletDetail.Repository,
 	c iroleoutlet.Repository,
 	trx itrx.Repository,
+	useHolidays iholidays.Usecase,
 	timeout time.Duration) ioutlets.Usecase {
 	return &useOutlets{
 		repoOutlets:      a,
 		repoOutletDetail: b,
 		repoRoleOutlet:   c,
 		repoTrx:          trx,
+		useHolidays:      useHolidays,
 		contextTimeOut:   timeout,
 	}
 }
@@ -348,6 +352,51 @@ func (u *useOutlets) GetListLookUpPrice(ctx context.Context, Claims util.Claims,
 
 	result.LastPage = int64(math.Ceil(float64(result.Total) / float64(queryparam.PerPage)))
 	result.Page = queryparam.Page
+
+	return result, nil
+}
+
+// GetListPrice implements ioutlets.Usecase
+func (u *useOutlets) GetListPrice(ctx context.Context, Claims util.Claims, req models.OutletPriceProductRequest) (result []*models.OutletPriceProductResponse, err error) {
+	// func (u *useOutlets) GetListPrice(ctx context.Context, Claims util.Claims, req models.OutletPriceProductRequest) (result []*models.OutletPriceProductResponse, err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	var (
+		queryparam = models.ParamList{}
+		isHoliday  bool
+	)
+
+	isHoliday, err = u.useHolidays.IsHoliday(ctx, req.TransactionDate)
+	if err != nil {
+		return nil, err
+	}
+
+	queryparam.InitSearch = fmt.Sprintf("o.id = '%s' ", req.OutletId)
+	queryparam.PerPage = 1000
+	queryparam.SortField = "is_bracelet desc,sku_name"
+
+	lookup, err := u.repoOutlets.GetListLookUp(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	// wg := sync.WaitGroup{}
+
+	for _, val := range lookup {
+		price := &models.OutletPriceProductResponse{}
+
+		price.IsBracelet = val.IsBracelet
+		price.Duration = val.Duration
+		price.ProductId = val.ProductId
+		price.SkuName = val.SkuName
+		price.Price = val.OutletPriceWeekday
+		if isHoliday {
+			price.Price = val.OutletPriceWeekend
+		}
+
+		result = append(result, price)
+	}
 
 	return result, nil
 }

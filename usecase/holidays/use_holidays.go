@@ -118,3 +118,42 @@ func (u *useHolidays) Delete(ctx context.Context, claims util.Claims, ID uuid.UU
 	}
 	return nil
 }
+
+func (u *useHolidays) IsHoliday(ctx context.Context, orderData time.Time) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+	var isHoliday = false
+	holiday, err := u.repoHolidays.GetDataBy(ctx, "date(holiday_date)", orderData.Format("2006-01-02"))
+	if err != nil && err != models.ErrNotFound {
+		return isHoliday, err
+	}
+	if holiday.Id != uuid.Nil {
+		return true, nil
+	}
+
+	//check weekend
+	return isWeekend(orderData), nil
+	// return isHoliday, nil
+}
+
+func isWeekend(t time.Time) bool {
+	t = t.UTC()
+	switch t.Weekday() {
+	case time.Friday:
+		h, _, _ := t.Clock()
+		if h >= 12+10 {
+			return true
+		}
+	case time.Saturday:
+		return true
+	case time.Sunday:
+		h, m, _ := t.Clock()
+		if h < 12+10 {
+			return true
+		}
+		if h == 12+10 && m <= 5 {
+			return true
+		}
+	}
+	return false
+}

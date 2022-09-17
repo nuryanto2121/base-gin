@@ -4,6 +4,7 @@ import (
 	"app/models"
 	util "app/pkg/util"
 	"context"
+	"time"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -23,4 +24,5 @@ type Usecase interface {
 	Create(ctx context.Context, Claims util.Claims, data *models.HolidayForm) (err error)
 	Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.HolidayForm) (err error)
 	Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error)
+	IsHoliday(ctx context.Context, orderData time.Time) (bool, error)
 }

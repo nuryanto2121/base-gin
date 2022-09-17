@@ -24,6 +24,7 @@ type Usecase interface {
 	GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (interface{}, error)
 	GetListLookUp(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
 	GetListLookUpPrice(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
+	GetListPrice(ctx context.Context, Claims util.Claims, queryparam models.OutletPriceProductRequest) (result []*models.OutletPriceProductResponse, err error)
 	GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
 	Create(ctx context.Context, Claims util.Claims, data *models.OutletForm) (err error)
 	Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.OutletForm) (err error)

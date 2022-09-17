@@ -378,6 +378,8 @@ func (r *repoOutlets) CountLookUp(ctx context.Context, queryparam models.ParamLi
 		 ,coalesce(i.qty,0) as qty
 		 ,sm.price_weekday 
 		 ,sm.price_weekend 
+		 ,sm.duration 
+		 ,sm.is_bracelet 
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		 from outlets o 

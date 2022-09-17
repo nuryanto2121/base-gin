@@ -36,6 +36,7 @@ func NewContOutlets(e *gin.Engine, a ioutlets.Usecase) {
 	r.DELETE("/cms/outlets/:id", controller.Delete)
 	r.GET("/cms/outlets/lookup", controller.GetDataLookUp)
 	r.GET("/outlets/lookup/price", controller.GetDataLookUpPrice)
+	r.GET("/outlets/price", controller.GetDataPrice)
 }
 
 // GetDataLookUp :
@@ -151,11 +152,10 @@ func (c *contOutlets) GetList(e *gin.Context) {
 	}
 
 	var (
-		logger       = logging.Logger{}
-		appE         = app.Gin{C: e}      // wajib
-		paramquery   = models.ParamList{} // ini untuk list
-		responseList = models.ResponseModelList{}
-		err          error
+		logger     = logging.Logger{}
+		appE       = app.Gin{C: e}      // wajib
+		paramquery = models.ParamList{} // ini untuk list
+		err        error
 	)
 
 	httpCode, errMsg := app.BindAndValidMulti(e, &paramquery)
@@ -170,7 +170,7 @@ func (c *contOutlets) GetList(e *gin.Context) {
 		return
 	}
 
-	responseList, err = c.useOutlets.GetList(ctx, claims, paramquery)
+	responseList, err := c.useOutlets.GetList(ctx, claims, paramquery)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
@@ -364,6 +364,52 @@ func (c *contOutlets) GetDataLookUpPrice(e *gin.Context) {
 	}
 
 	responseList, err = c.useOutlets.GetListLookUpPrice(ctx, claims, paramquery)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	appE.Response(http.StatusOK, "Ok", responseList)
+}
+
+// GetDataPrice :
+// @Summary GetData price Outlets
+// @Security ApiKeyAuth
+// @Tags Outlets
+// @Produce  json
+// @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
+// @Param Language header string true "Language Apps"
+// @Param outlet_id query string true "OutletId"
+// @Param transaction_date query string true "TransactionDate"
+// @Success 200 {object} models.ResponseModelList
+// @Router /v1/outlets/price [get]
+func (c *contOutlets) GetDataPrice(e *gin.Context) {
+	ctx := e.Request.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	var (
+		logger     = logging.Logger{}
+		appE       = app.Gin{C: e}                      // wajib
+		paramquery = models.OutletPriceProductRequest{} // ini untuk list
+		// responseList = models.OutletPriceProductResponse{}
+	)
+
+	httpCode, errMsg := app.BindAndValidMulti(e, &paramquery)
+	logger.Info(util.Stringify(paramquery))
+	if httpCode != 200 {
+		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
+		return
+	}
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	responseList, err := c.useOutlets.GetListPrice(ctx, claims, paramquery)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return

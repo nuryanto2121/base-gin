@@ -118,15 +118,15 @@ func (g *GinRoutes) Init() {
 	_contFileUpload.NewContFileUpload(g.G, useFileUpload)
 
 	repoHolidays := _repoHolidays.NewRepoHolidays(dbConn)
-	userHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
-	_contHolidays.NewContHolidays(g.G, userHolidays)
+	useHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)
+	_contHolidays.NewContHolidays(g.G, useHolidays)
 
 	repoSkuManagement := _repoSkumanagement.NewRepoSkuManagement(dbConn)
 	useSkuManagement := _useSkumanagement.NewSkuManagement(repoSkuManagement, timeoutContext)
 	_contSkumanagement.NewContSkuManagement(g.G, useSkuManagement)
 	repoOutlet := _repoOutlets.NewRepoOutlets(dbConn)
 	repoOutletDetail := _repoOutletDetail.NewRepoOutletDetail(dbConn)
-	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, repoRoleOutlet, repoTrx, timeoutContext)
+	useOutlet := _useOutlets.NewUseOutlets(repoOutlet, repoOutletDetail, repoRoleOutlet, repoTrx, useHolidays, timeoutContext)
 	_contOutlets.NewContOutlets(g.G, useOutlet)
 
 	repoTermAndConditional := _repoTermAndConditional.NewRepoTermAndConditioinal(dbConn)
