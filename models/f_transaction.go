@@ -37,17 +37,18 @@ type TransactionList struct {
 }
 
 type TransactionResponse struct {
-	TransactionId         string                       `json:"transaction_id"`
+	TransactionCode       string                       `json:"transaction_code"`
 	TransactionDate       time.Time                    `json:"transaction_date" `
 	OutletName            string                       `json:"outlet_name"`
 	OutletCity            string                       `json:"outlet_city"`
 	TotalTicket           int64                        `json:"total_ticket"`
 	TotalAmount           float64                      `json:"total_amount"`
-	StatusTransaction     StatusTransaction            `json:"status_transaction"`
-	StatusTransactionDesc string                       `json:"status_transaction_desc"`
-	StatusPayment         StatusPayment                `json:"status_payment"`
-	StatusPaymentDesc     string                       `json:"status_payment_desc"`
-	Details               []*TransactionDetailResponse `json:"details"`
+	StatusTransaction     StatusTransaction            `json:"status_transaction,omitempty"`
+	StatusTransactionDesc string                       `json:"status_transaction_desc,omitempty"`
+	StatusPayment         StatusPayment                `json:"status_payment,omitempty"`
+	StatusPaymentDesc     string                       `json:"status_payment_desc,omitempty"`
+	Status                string                       `json:"status,omitempty"`
+	Details               []*TransactionDetailResponse `json:"details,omitempty"`
 }
 
 type TransactionDetailResponse struct {
@@ -66,4 +67,15 @@ type TransactionPaymentForm struct {
 }
 
 type TransactionPaymentResponse struct {
+}
+
+type TransactionUserList struct {
+	Name              string            `json:"name" gorm:"name"`
+	PhoneNo           string            `json:"phone_no" gorm:"phone_no"`
+	IsParent          bool              `json:"is_parent" gorm:"is_parent"`
+	CheckIn           time.Time         `json:"check_in" gorm:"check_in"`
+	CheckOut          time.Time         `json:"check_out" gorm:"check_out"`
+	Duration          int64             `json:"duration" gorm:"duration"`
+	StatusTransaction StatusTransaction `json:"status_transaction" gorm:"status_transaction"`
+	StatusPayment     StatusPayment     `json:"status_payment" gorm:"status_payment"`
 }

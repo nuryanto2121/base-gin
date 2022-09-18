@@ -144,7 +144,7 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 	}
 
 	result := &models.TransactionResponse{
-		TransactionId:         transactionId,
+		TransactionCode:       transactionId,
 		TransactionDate:       trxHeader.TransactionDate,
 		OutletName:            outlet.OutletName,
 		OutletCity:            outlet.OutletCity,
@@ -176,6 +176,35 @@ func (u *useTransaction) GetList(ctx context.Context, Claims util.Claims, queryp
 	}
 
 	result.Total, err = u.repoTransaction.Count(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	result.LastPage = int64(math.Ceil(float64(result.Total) / float64(queryparam.PerPage)))
+	result.Page = queryparam.Page
+
+	return result, nil
+}
+
+func (u *useTransaction) GetListTicketUser(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	if queryparam.Search != "" {
+		queryparam.Search = strings.ToLower(fmt.Sprintf("%%%s%%", queryparam.Search))
+	}
+
+	if queryparam.InitSearch != "" {
+		queryparam.InitSearch += fmt.Sprintf(" AND t.customer_id = '%s'", Claims.UserID)
+	} else {
+		queryparam.InitSearch = fmt.Sprintf("t.customer_id = '%s'", Claims.UserID)
+	}
+	result.Data, err = u.repoTransaction.GetListTicketUser(ctx, queryparam)
+	if err != nil {
+		return result, err
+	}
+
+	result.Total, err = u.repoTransaction.CountUserList(ctx, queryparam)
 	if err != nil {
 		return result, err
 	}
@@ -304,7 +333,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 	result.TransactionDate = req.TransactionDate
 	result.TotalAmount = totalAmount
 	result.Details = dtl
-	result.TransactionId = tsCode
+	result.TransactionCode = tsCode
 	result.OutletCity = outlet.OutletCity
 	result.OutletName = outlet.OutletName
 

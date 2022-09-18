@@ -199,3 +199,146 @@ func (r *repoTransaction) Count(ctx context.Context, queryparam models.ParamList
 
 	return rest, nil
 }
+
+func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam models.ParamList) ([]*models.TransactionResponse, error) {
+
+	var (
+		pageNum  = 0
+		pageSize = setting.AppSetting.PageSize
+		sWhere   = ""
+		logger   = logging.Logger{}
+		orderBy  = queryparam.SortField
+		conn     = r.db.Get(ctx)
+		result   = []*models.TransactionResponse{}
+		err      error
+	)
+	// pagination
+	if queryparam.Page > 0 {
+		pageNum = (queryparam.Page - 1) * queryparam.PerPage
+	}
+	if queryparam.PerPage > 0 {
+		pageSize = queryparam.PerPage
+	}
+	//end pagination
+
+	// Order
+	if queryparam.SortField != "" {
+		orderBy = queryparam.SortField
+	}
+	//end Order by
+
+	// WHERE
+	if queryparam.InitSearch != "" {
+		sWhere = queryparam.InitSearch
+	}
+
+	if queryparam.Search != "" {
+		if sWhere != "" {
+			sWhere += " and (lower(ua.name) LIKE ?)"
+		} else {
+			sWhere += "(lower(ua.name) LIKE ?)"
+		}
+		// err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Table(`"transaction" t`).Select(`
+			t.id, t.transaction_code , t.transaction_date
+			,t.outlet_id ,o.outlet_name ,o.outlet_city 
+			,t.total_ticket ,total_amount ,t.status_transaction 
+			,case 
+				when t.status_transaction = 2000001 then 'Booked' 
+				when t.status_transaction = 2000002 then 'Active'
+				else 'Selesai'
+			end as status
+		`).
+			Joins(`join outlets o on t.outlet_id = o.id`).
+			Where(sWhere, queryparam.Search).Offset(pageNum).
+			Limit(pageSize).
+			Order(orderBy).
+			Find(&result).Error
+	} else {
+		// err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Table(`"transaction" t`).Select(`
+			t.id, t.transaction_code , t.transaction_date
+			,t.outlet_id ,o.outlet_name ,o.outlet_city 
+			,t.total_ticket ,total_amount ,t.status_transaction 
+			,case 
+				when t.status_transaction = 2000001 then 'Booked' 
+				when t.status_transaction = 2000002 then 'Active'
+				else 'Selesai'
+			end as status
+		`).
+			Joins(`join outlets o on t.outlet_id = o.id`).
+			Where(sWhere).Offset(pageNum).
+			Limit(pageSize).
+			Order(orderBy).
+			Find(&result).Error
+	}
+
+	if err != nil {
+		logger.Error("repo transaction GetList user ", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, err
+		}
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *repoTransaction) CountUserList(ctx context.Context, queryparam models.ParamList) (int64, error) {
+	var (
+		sWhere         = ""
+		logger         = logging.Logger{}
+		rest   (int64) = 0
+		conn           = r.db.Get(ctx)
+		err    error
+	)
+
+	// WHERE
+	if queryparam.InitSearch != "" {
+		sWhere = queryparam.InitSearch
+	}
+
+	if queryparam.Search != "" {
+		if sWhere != "" {
+			sWhere += " and (lower(ua.name) LIKE ? )" //+ queryparam.Search
+		} else {
+			sWhere += "(lower(ua.name) LIKE ? )" //queryparam.Search
+		}
+
+		err = conn.Table(`"transaction" t`).Select(`
+			t.id, t.transaction_code , t.transaction_date
+			,t.outlet_id ,o.outlet_name ,o.outlet_city 
+			,t.total_ticket ,total_amount ,t.status_transaction 
+			,case 
+				when t.status_transaction = 2000001 then 'Booked' 
+				when t.status_transaction = 2000002 then 'Active'
+				else 'Selesai'
+			end as status
+		`).
+			Joins(`join outlets o on t.outlet_id = o.id`).
+			Where(sWhere, queryparam.Search).
+			Count(&rest).Error
+	} else {
+		// err = conn.Model(&models.Transaction{}).Where(sWhere).Count(&rest).Error
+		err = conn.Table(`"transaction" t`).Select(`
+			t.id, t.transaction_code , t.transaction_date
+			,t.outlet_id ,o.outlet_name ,o.outlet_city 
+			,t.total_ticket ,total_amount ,t.status_transaction 
+			,case 
+				when t.status_transaction = 2000001 then 'Booked' 
+				when t.status_transaction = 2000002 then 'Active'
+				else 'Selesai'
+			end as status
+		`).
+			Joins(`join outlets o on t.outlet_id = o.id`).
+			Where(sWhere).
+			Count(&rest).Error
+	}
+	// end where
+
+	if err != nil {
+		logger.Error("repo transaction Count ", err)
+		return 0, err
+	}
+
+	return rest, nil
+}

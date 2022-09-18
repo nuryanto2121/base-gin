@@ -37,6 +37,7 @@ func NewContTransaction(e *gin.Engine, a itransaction.Usecase) {
 	r.DELETE("/:id", controller.Delete)
 	r.POST("/payment", controller.Payment)
 	r.GET("/print-ticket", controller.GetTicket)
+	r.GET("/tickets", controller.GetListTicket)
 }
 
 // GetDataByID :
@@ -47,7 +48,7 @@ func NewContTransaction(e *gin.Engine, a itransaction.Usecase) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param transactionId query string true "transactionId"
+// @Param transactionCode query string true "transactionCode"
 // @Success 200 {object} app.Response
 // @Router /v1/transaction/scan [get]
 func (c *contTransaction) GetDataBy(e *gin.Context) {
@@ -57,18 +58,18 @@ func (c *contTransaction) GetDataBy(e *gin.Context) {
 	}
 
 	var (
-		logger        = logging.Logger{}
-		appE          = app.Gin{C: e}            // wajib
-		transactionId = e.Query("transactionId") //e.Param("transactionId") //kalo bukan int => 0
+		logger          = logging.Logger{}
+		appE            = app.Gin{C: e} // wajib
+		transactionCode = e.Query("transactionCode")
 	)
-	logger.Info(transactionId)
+	logger.Info(transactionCode)
 
 	claims, err := app.GetClaims(e)
 	if err != nil {
 		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
 		return
 	}
-	data, err := c.useTransaction.GetDataBy(ctx, claims, transactionId)
+	data, err := c.useTransaction.GetDataBy(ctx, claims, transactionCode)
 	if err != nil {
 		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
 		return
@@ -158,6 +159,56 @@ func (c *contTransaction) GetList(e *gin.Context) {
 	}
 
 	responseList, err = c.useTransaction.GetList(ctx, claims, paramquery)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	appE.Response(http.StatusOK, "", responseList)
+}
+
+// GetListTicket :
+// @Summary GetListTicket Transaction
+// @Security ApiKeyAuth
+// @Tags Transaction
+// @Produce  json
+// @Param Device-Type header string true "Device Type"
+// @Param Version header string true "Version Apps"
+// @Param Language header string true "Language Apps"
+// @Param page query int true "Page"
+// @Param perpage query int true "PerPage"
+// @Param search query string false "Search"
+// @Param initsearch query string false "InitSearch"
+// @Param sortfield query string false "SortField"
+// @Success 200 {object} models.ResponseModelList
+// @Router /v1/transaction/tickets [get]
+func (c *contTransaction) GetListTicket(e *gin.Context) {
+	ctx := e.Request.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	var (
+		logger       = logging.Logger{}
+		appE         = app.Gin{C: e}      // wajib
+		paramquery   = models.ParamList{} // ini untuk list
+		responseList = models.ResponseModelList{}
+		err          error
+	)
+
+	httpCode, errMsg := app.BindAndValidMulti(e, &paramquery)
+	logger.Info(util.Stringify(paramquery))
+	if httpCode != 200 {
+		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
+		return
+	}
+	claims, err := app.GetClaims(e)
+	if err != nil {
+		appE.ResponseError(tool.GetStatusCode(err), err)
+		return
+	}
+
+	responseList, err = c.useTransaction.GetListTicketUser(ctx, claims, paramquery)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
