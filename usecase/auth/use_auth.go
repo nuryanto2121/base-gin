@@ -288,7 +288,7 @@ func (u *useAuht) Register(ctx context.Context, req models.RegisterForm) (err er
 					ParentId: parent.Id,
 					IsParent: false,
 					JoinDate: now,
-					DOB:      val.BOD,
+					DOB:      val.DOB,
 				},
 			}
 

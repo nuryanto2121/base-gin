@@ -128,7 +128,7 @@ func (r *repoUserApps) Update(ctx context.Context, ID uuid.UUID, data interface{
 		conn   = r.db.Get(ctx)
 	)
 
-	err := conn.Model(models.UserApps{}).Where("userapps_id = ?", ID).Updates(data).Error
+	err := conn.Model(models.UserApps{}).Where("id = ?", ID).Updates(data).Error
 	if err != nil {
 		logger.Error("repo user_apps Update ", err)
 		return err
@@ -142,7 +142,7 @@ func (r *repoUserApps) Delete(ctx context.Context, ID uuid.UUID) error {
 		conn   = r.db.Get(ctx)
 	)
 
-	err := conn.Where("user_apps_id = ?", ID).Delete(&models.UserApps{}).Error
+	err := conn.Where("id = ?", ID).Delete(&models.UserApps{}).Error
 	if err != nil {
 		logger.Error("repo user_apps Delete ", err)
 		return err

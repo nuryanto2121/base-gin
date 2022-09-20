@@ -21,7 +21,7 @@ type RegisterForm struct {
 
 type RegisterChild struct {
 	Name string    `json:"name"`
-	BOD  time.Time `json:"bod"`
+	DOB  time.Time `json:"dob"`
 }
 
 // ForgotForm :

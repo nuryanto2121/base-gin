@@ -37,6 +37,7 @@ type TransactionList struct {
 }
 
 type TransactionResponse struct {
+	ID                    uuid.UUID                    `json:"id,omitempty"`
 	TransactionCode       string                       `json:"transaction_code"`
 	TransactionDate       time.Time                    `json:"transaction_date" `
 	OutletName            string                       `json:"outlet_name"`
@@ -78,4 +79,10 @@ type TransactionUserList struct {
 	Duration          int64             `json:"duration" gorm:"duration"`
 	StatusTransaction StatusTransaction `json:"status_transaction" gorm:"status_transaction"`
 	StatusPayment     StatusPayment     `json:"status_payment" gorm:"status_payment"`
+}
+
+type CheckInCheckOutForm struct {
+	TicketNo string    `json:"ticket_no" valid:"Required"`
+	CheckIn  time.Time `json:"check_in,omitempty"`
+	CheckOut time.Time `json:"check_out,omitempty"`
 }

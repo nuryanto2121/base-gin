@@ -21,7 +21,8 @@ type Repository interface {
 type Usecase interface {
 	GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.UserApps, err error)
 	GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
-	Create(ctx context.Context, Claims util.Claims, data *models.AddUserApps) (err error)
+	Create(ctx context.Context, Claims util.Claims, data *models.UserApps) (err error)
+	UpsertChild(ctx context.Context, Claims util.Claims, data models.ChildForm) (result models.ChildForm, err error)
 	Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.AddUserApps) (err error)
 	Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error)
 }

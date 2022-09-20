@@ -40,6 +40,24 @@ func (r *repoTransaction) GetDataBy(ctx context.Context, key, value string) (*mo
 	return mTransaction, nil
 }
 
+// IsExist implements itransaction.Repository
+func (r *repoTransaction) IsExist(ctx context.Context, sWhere string) (bool, error) {
+	var (
+		logger       = logging.Logger{}
+		mTransaction = &models.Transaction{}
+		conn         = r.db.Get(ctx)
+	)
+
+	err := conn.Where(sWhere).WithContext(ctx).Find(mTransaction).Error
+	if err != nil {
+		logger.Error("repo transaction GetDataBy ", err)
+		if err == gorm.ErrRecordNotFound {
+			return false, models.ErrNotFound
+		}
+		return false, err
+	}
+	return mTransaction.Id != uuid.Nil, nil
+}
 func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamList) ([]*models.TransactionList, error) {
 
 	var (
@@ -246,7 +264,9 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 			,case 
 				when t.status_transaction = 2000001 then 'Booked' 
 				when t.status_transaction = 2000002 then 'Active'
-				else 'Selesai'
+				when t.status_transaction = 2000003 then 'Selesai'
+				when t.status_transaction = 2000004 then 'Draf'
+				else ''
 			end as status
 		`).
 			Joins(`join outlets o on t.outlet_id = o.id`).
@@ -263,7 +283,9 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 			,case 
 				when t.status_transaction = 2000001 then 'Booked' 
 				when t.status_transaction = 2000002 then 'Active'
-				else 'Selesai'
+				when t.status_transaction = 2000003 then 'Selesai'
+				when t.status_transaction = 2000004 then 'Draf'
+				else ''
 			end as status
 		`).
 			Joins(`join outlets o on t.outlet_id = o.id`).

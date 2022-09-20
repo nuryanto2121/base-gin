@@ -42,5 +42,7 @@
     },
     "request_access_token": "Access Token tidak boleh kosong",
     "invalid_old_password": "Password lama anda salah",
-    "conflict_phone_no":"No Handphone sudah terdaftar"
+    "conflict_phone_no":"No Handphone sudah terdaftar",
+    "not_paid_payment":"belum membayar pembayaran",
+    "still_have_draf":"masih ada order ticket dengan status draf, tolong lengkapi atau hapus"
 }

@@ -120,6 +120,31 @@ definitions:
       username:
         type: string
     type: object
+  models.CheckInCheckOutForm:
+    properties:
+      check_in:
+        type: string
+      check_out:
+        type: string
+      ticket_no:
+        type: string
+    type: object
+  models.Child:
+    properties:
+      children_id:
+        type: string
+      dob:
+        type: string
+      name:
+        type: string
+    type: object
+  models.ChildForm:
+    properties:
+      child:
+        items:
+          $ref: '#/definitions/models.Child'
+        type: array
+    type: object
   models.EditUserCms:
     properties:
       confirm_password:
@@ -203,7 +228,7 @@ definitions:
     type: object
   models.RegisterChild:
     properties:
-      bod:
+      dob:
         type: string
       name:
         type: string
@@ -1883,6 +1908,239 @@ paths:
       summary: Create TermAndConditional
       tags:
       - TermAndConditional
+  /v1/cms/transaction:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: PerPage
+        in: query
+        name: perpage
+        required: true
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: InitSearch | status_transaction => STATUS_ORDER=2000001 |STATUS_CHECKIN=2000002|STATUS_CHECKOUT=2000003
+        in: query
+        name: initsearch
+        type: string
+      - description: SortField
+        in: query
+        name: sortfield
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseModelList'
+      security:
+      - ApiKeyAuth: []
+      summary: GetList Transaction
+      tags:
+      - Transaction
+  /v1/cms/transaction/check-in:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.CheckInCheckOutForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Check in transaction
+      tags:
+      - Transaction
+  /v1/cms/transaction/check-out:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.CheckInCheckOutForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Check out transaction
+      tags:
+      - Transaction
+  /v1/cms/transaction/payment:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.TransactionPaymentForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Add Payment CMS
+      tags:
+      - Transaction
+  /v1/cms/transaction/print-ticket:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: transactionId
+        in: query
+        name: transactionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: GetById for scan ticket / detail transaction
+      tags:
+      - Transaction
+  /v1/cms/transaction/scan:
+    get:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: transactionCode
+        in: query
+        name: transactionCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: GetById for scan ticket / detail transaction
+      tags:
+      - Transaction
   /v1/cms/users:
     get:
       parameters:
@@ -2131,7 +2389,8 @@ paths:
       summary: GetList Costumers
       tags:
       - Costumers
-    post:
+  /v1/customer/{id}:
+    delete:
       parameters:
       - description: Device Type
         in: header
@@ -2148,12 +2407,11 @@ paths:
         name: Language
         required: true
         type: string
-      - description: this model set from firebase
-        in: body
-        name: req
+      - description: ID from children id
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/models.AddUserApps'
+        type: string
       produces:
       - application/json
       responses:
@@ -2163,10 +2421,9 @@ paths:
             $ref: '#/definitions/app.Response'
       security:
       - ApiKeyAuth: []
-      summary: Create Costumers
+      summary: Delete Costumers
       tags:
       - Costumers
-  /v1/customer/{id}:
     get:
       parameters:
       - description: Device Type
@@ -2239,6 +2496,42 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update Costumers
+      tags:
+      - Costumers
+  /v1/customer/child:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: this model set from firebase
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChildForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Create child
       tags:
       - Costumers
   /v1/login:
@@ -2432,57 +2725,6 @@ paths:
       tags:
       - TermAndConditional
   /v1/transaction:
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: Page
-        in: query
-        name: page
-        required: true
-        type: integer
-      - description: PerPage
-        in: query
-        name: perpage
-        required: true
-        type: integer
-      - description: Search
-        in: query
-        name: search
-        type: string
-      - description: InitSearch | status_transaction => STATUS_ORDER=2000001 |STATUS_CHECKIN=2000002|STATUS_CHECKOUT=2000003
-        in: query
-        name: initsearch
-        type: string
-      - description: SortField
-        in: query
-        name: sortfield
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ResponseModelList'
-      security:
-      - ApiKeyAuth: []
-      summary: GetList Transaction
-      tags:
-      - Transaction
     post:
       parameters:
       - description: Device Type
@@ -2593,113 +2835,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Rubah Transaction
-      tags:
-      - Transaction
-  /v1/transaction/payment:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: 'req param #changes are possible to adjust the form of the registration
-          form from frontend'
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.TransactionPaymentForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: Add Transaction
-      tags:
-      - Transaction
-  /v1/transaction/print-ticket:
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: transactionId
-        in: query
-        name: transactionId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: GetById for scan ticket / detail transaction
-      tags:
-      - Transaction
-  /v1/transaction/scan:
-    get:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: transactionCode
-        in: query
-        name: transactionCode
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: GetById for scan ticket / detail transaction
       tags:
       - Transaction
   /v1/transaction/tickets:

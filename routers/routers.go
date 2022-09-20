@@ -150,6 +150,6 @@ func (g *GinRoutes) Init() {
 	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, repoTransactionDetail, repoOutlet, repoSkuManagement, repoUserApps, repoTrx, timeoutContext)
 	_contTransaction.NewContTransaction(g.G, useTransaction)
 
-	useUserApps := _useUserApps.NewUseUserApps(repoUserApps, timeoutContext)
+	useUserApps := _useUserApps.NewUseUserApps(repoUserApps, repoTrx, timeoutContext)
 	_contCustomers.NewContCostumers(g.G, useUserApps)
 }

@@ -38,4 +38,6 @@ var (
 	ErrRequestAccessToken        = errors.New("request_access_token")
 	ErrPushNotificationFailed    = errors.New("push_notification_failed")
 	ErrClaimsDecode              = errors.New("claims_decode")
+	ErrNotPaidPayment            = errors.New("not_paid_payment")
+	ErrStillHaveDraf             = errors.New("still_have_draf")
 )

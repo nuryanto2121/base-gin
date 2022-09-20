@@ -27,25 +27,26 @@ func NewContCostumers(e *gin.Engine, useUserApps iuserapps.Usecase) {
 	r := e.Group("/v1/customer")
 	r.Use(middleware.Authorize())
 	r.Use(middleware.Versioning())
-	r.POST("", cont.Create)
 	r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)
 	r.GET("", cont.GetList)
 	r.DELETE("/:id", cont.Delete)
+	r.POST("/child", cont.UpsertChilds)
+	r.DELETE("/child", cont.Delete)
 }
 
 // Create :
-// @Summary Create Costumers
+// @Summary Create child
 // @Tags Costumers
 // @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.AddUserApps true "this model set from firebase"
+// @Param req body models.ChildForm true "this model set from firebase"
 // @Success 200 {object} app.Response
-// @Router /v1/customer [post]
-func (c *ContCostumers) Create(e *gin.Context) {
+// @Router /v1/customer/child [post]
+func (c *ContCostumers) UpsertChilds(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -54,7 +55,7 @@ func (c *ContCostumers) Create(e *gin.Context) {
 	var (
 		logger = logging.Logger{}
 		appE   = app.Gin{C: e}
-		form   = models.AddUserApps{}
+		form   = models.ChildForm{}
 	)
 
 	// validasi and bind to struct
@@ -71,13 +72,13 @@ func (c *ContCostumers) Create(e *gin.Context) {
 		return
 	}
 
-	err = c.useUserApps.Create(ctx, claims, &form)
+	result, err := c.useUserApps.UpsertChild(ctx, claims, form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
-	appE.Response(http.StatusCreated, "Ok", nil)
+	appE.Response(http.StatusCreated, "Ok", result)
 }
 
 // Update :
@@ -221,16 +222,16 @@ func (c *ContCostumers) GetList(e *gin.Context) {
 }
 
 // Delete :
-// @Summary Delete Holidays
-// @Tags Holidays
+// @Summary Delete Costumers
+// @Tags Costumers
 // @Security ApiKeyAuth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param id path string true "ID"
+// @Param id path string true "ID from children id"
 // @Success 200 {object} app.Response
-// @Router /v1/cms/holidays/{id} [delete]
+// @Router /v1/customer/{id} [delete]
 func (c *ContCostumers) Delete(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {

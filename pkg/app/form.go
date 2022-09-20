@@ -50,7 +50,7 @@ func BindAndValidMulti(c *gin.Context, form interface{}) (int, interface{}) {
 	valid := validation.Validation{}
 	check, err := valid.Valid(form)
 	if err != nil {
-		return http.StatusInternalServerError, models.ErrInternalServerError.Error()
+		return http.StatusInternalServerError, err
 	}
 	if !check {
 		for _, err := range valid.Errors {

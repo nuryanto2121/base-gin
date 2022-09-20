@@ -37,6 +37,7 @@ const (
 	STATUS_ORDER    StatusTransaction = 2000001
 	STATUS_CHECKIN  StatusTransaction = 2000002
 	STATUS_CHECKOUT StatusTransaction = 2000003
+	STATUS_DRAF     StatusTransaction = 2000004
 )
 
 func (s StatusTransaction) String() string {
@@ -48,6 +49,8 @@ func (s StatusTransaction) String() string {
 		result = "Check In"
 	case STATUS_CHECKOUT:
 		result = "Check Out"
+	case STATUS_DRAF:
+		result = "Draf"
 
 	}
 
@@ -57,11 +60,11 @@ func (s StatusTransaction) String() string {
 type PaymentCode int64
 
 const (
-	PAYMENT_BCA   PaymentCode = 3000001
-	PAYMENT_CC    PaymentCode = 3000002
-	PAYMENT_CASH  PaymentCode = 3000003
-	PAYMENT_QRIS  PaymentCode = 3000004
-	PAYMENT_OTHER PaymentCode = 3000005
+	PAYMENT_BCA     PaymentCode = 3000001
+	PAYMENT_CC      PaymentCode = 3000002
+	PAYMENT_CASH    PaymentCode = 3000003
+	PAYMENT_CASHIER PaymentCode = 3000004
+	PAYMENT_OTHER   PaymentCode = 3000005
 )
 
 func (s PaymentCode) String() string {
@@ -73,8 +76,8 @@ func (s PaymentCode) String() string {
 		result = "Kartu Kredit"
 	case PAYMENT_CASH:
 		result = "Tunai"
-	case PAYMENT_QRIS:
-		result = "QRIS"
+	case PAYMENT_CASHIER:
+		result = "Cashier"
 	case PAYMENT_OTHER:
 		result = "Other"
 

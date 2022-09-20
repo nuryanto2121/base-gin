@@ -1,8 +1,10 @@
 package useuserapps
 
 import (
+	itrx "app/interface/trx"
 	iuserapps "app/interface/user_apps"
 	"app/models"
+	"app/pkg/logging"
 	"app/pkg/util"
 	"context"
 	"fmt"
@@ -11,18 +13,18 @@ import (
 	"time"
 
 	"github.com/fatih/structs"
-	"github.com/mitchellh/mapstructure"
 
 	uuid "github.com/satori/go.uuid"
 )
 
 type useUserApps struct {
 	repoUserApps   iuserapps.Repository
+	repoTrx        itrx.Repository
 	contextTimeOut time.Duration
 }
 
-func NewUseUserApps(a iuserapps.Repository, timeout time.Duration) iuserapps.Usecase {
-	return &useUserApps{repoUserApps: a, contextTimeOut: timeout}
+func NewUseUserApps(a iuserapps.Repository, trx itrx.Repository, timeout time.Duration) iuserapps.Usecase {
+	return &useUserApps{repoUserApps: a, repoTrx: trx, contextTimeOut: timeout}
 }
 
 func (u *useUserApps) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.UserApps, err error) {
@@ -63,23 +65,23 @@ func (u *useUserApps) GetList(ctx context.Context, Claims util.Claims, querypara
 	return result, nil
 }
 
-func (u *useUserApps) Create(ctx context.Context, Claims util.Claims, data *models.AddUserApps) (err error) {
+func (u *useUserApps) Create(ctx context.Context, Claims util.Claims, data *models.UserApps) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
-	var (
-		mUserApps = models.UserApps{}
-	)
+	// var (
+	// 	mUserApps = models.UserApps{}
+	// )
 
-	// mapping to struct model saRole
-	err = mapstructure.Decode(data, &mUserApps.AddUserApps)
-	if err != nil {
-		return err
-	}
+	// // mapping to struct model saRole
+	// err = mapstructure.Decode(data, &mUserApps.AddUserApps)
+	// if err != nil {
+	// 	return err
+	// }
 
-	mUserApps.CreatedBy = uuid.FromStringOrNil(Claims.Id)
-	mUserApps.UpdatedBy = uuid.FromStringOrNil(Claims.Id)
+	data.CreatedBy = uuid.FromStringOrNil(Claims.UserID)
+	data.UpdatedBy = uuid.FromStringOrNil(Claims.UserID)
 
-	err = u.repoUserApps.Create(ctx, &mUserApps)
+	err = u.repoUserApps.Create(ctx, data)
 	if err != nil {
 		return err
 	}
@@ -92,8 +94,8 @@ func (u *useUserApps) Update(ctx context.Context, Claims util.Claims, ID uuid.UU
 	defer cancel()
 
 	myMap := structs.Map(data)
-	myMap["user_edit"] = Claims.UserID
-	fmt.Println(myMap)
+	myMap["created_by"] = Claims.UserID
+	// fmt.Println(myMap)
 	err = u.repoUserApps.Update(ctx, ID, myMap)
 	if err != nil {
 		return err
@@ -110,4 +112,58 @@ func (u *useUserApps) Delete(ctx context.Context, Claims util.Claims, ID uuid.UU
 		return err
 	}
 	return nil
+}
+
+// CreateChild implements iuserapps.Usecase
+func (u *useUserApps) UpsertChild(ctx context.Context, Claims util.Claims, data models.ChildForm) (models.ChildForm, error) {
+	ctxb, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	var (
+		// wg     sync.WaitGroup
+		logger = logging.Logger{}
+		// ctxb = context.Background()
+	)
+	userID := uuid.FromStringOrNil(Claims.UserID)
+	errTx := u.repoTrx.Run(ctxb, func(trxCtx context.Context) error {
+		for _, val := range data.Childs {
+
+			if val.ChildrenId == "" {
+				//create
+				Child := models.UserApps{
+					AddUserApps: models.AddUserApps{
+						Name:     val.Name,
+						IsParent: false,
+						ParentId: userID,
+						DOB:      val.DOB,
+					},
+				}
+				err := u.Create(ctxb, Claims, &Child)
+				if err != nil {
+					logger.Error("failed create child ", err)
+					return err
+				}
+				val.ChildrenId = Child.Id.String()
+			} else {
+				//update
+				ID := uuid.FromStringOrNil(val.ChildrenId)
+				err := u.Update(ctxb, Claims, ID, &models.AddUserApps{
+					Name:     val.Name,
+					IsParent: false,
+					ParentId: userID,
+					DOB:      val.DOB,
+				})
+				if err != nil {
+					logger.Error("failed update child ", err)
+					return err
+				}
+
+			}
+
+		}
+
+		return nil
+	})
+
+	return data, errTx
 }

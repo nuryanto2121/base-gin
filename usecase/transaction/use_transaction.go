@@ -126,7 +126,7 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 
 				endTime := now.Add(time.Hour * time.Duration(val.Duration))
 				qr := map[string]interface{}{
-					"child_name":  child.Name,
+					"name":        child.Name,
 					"parent_name": parent.Name,
 					"phone_no":    parent.PhoneNo,
 					"end_time":    endTime,
@@ -226,6 +226,16 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 		dtl                 = []*models.TransactionDetailResponse{}
 		totalAmount float64 = 0
 	)
+
+	//check has have staus draf
+	pWhere := fmt.Sprintf("customer_id = '%s' and status_transaction = %d", Claims.UserID, models.STATUS_DRAF)
+	fctExist, err := u.repoTransaction.IsExist(ctx, pWhere)
+	if err != nil && err != models.ErrNotFound {
+		return nil, err
+	}
+	if fctExist {
+		return nil, models.ErrStillHaveDraf
+	}
 	//get Outlet
 	outlet, err := u.repoOutlet.GetDataBy(ctx, "id", req.OutletId.String())
 	if err != nil {
@@ -241,7 +251,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			TransactionDate:   req.TransactionDate,
 			OutletId:          req.OutletId,
 			StatusPayment:     models.STATUS_WAITINGPAYMENT,
-			StatusTransaction: models.STATUS_ORDER,
+			StatusTransaction: models.STATUS_DRAF,
 			TransactionCode:   tsCode,
 			TotalAmount:       0,
 			CustomerId:        uuid.FromStringOrNil(Claims.UserID),
@@ -359,11 +369,20 @@ func (u *useTransaction) Delete(ctx context.Context, Claims util.Claims, ID uuid
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	err = u.repoTransaction.Delete(ctx, ID)
-	if err != nil {
-		return err
-	}
-	return nil
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+		err = u.repoTransaction.Delete(trxCtx, ID)
+		if err != nil {
+			return err
+		}
+
+		err = u.repoTransDetail.Delete(trxCtx, ID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return errTx
 }
 
 // Payment implements itransaction.Usecase
@@ -379,10 +398,18 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 	if err != nil {
 		return err
 	}
+
 	transaction.PaymentCode = req.PaymentCode
 	transaction.Description = req.Description
 
-	transaction.StatusPayment = models.STATUS_PAYMENTSUCCESS
+	if req.PaymentCode == models.PAYMENT_CASH {
+		transaction.StatusPayment = models.STATUS_PAYMENTSUCCESS
+	} else {
+		transaction.StatusPayment = models.STATUS_WAITINGPAYMENT
+	}
+
+	transaction.StatusTransaction = models.STATUS_ORDER
+
 	transaction.UpdatedAt = now
 	transaction.UpdatedBy = userId
 
@@ -394,12 +421,65 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 	return nil
 }
 
-func (u *useTransaction) genTicket() string {
-	var result = ""
-	// 	Child Name:
-	// Parents Name :
-	// Phone Number :
-	// End Time :
-	// No tiket :
-	return result
+// CheckIn implements itransaction.Usecase
+func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *models.CheckInCheckOutForm) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	facilityDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
+	if err != nil {
+		return err
+	}
+
+	//getHeader
+	facility, err := u.repoTransaction.GetDataBy(ctx, "id", facilityDetail.AddTransactionDetail.TransactionId.String())
+	if err != nil {
+		return err
+	}
+
+	if facility.StatusPayment != models.STATUS_PAYMENTSUCCESS {
+		return models.ErrBadParamInput
+	}
+
+	facilityDetail.CheckIn = req.CheckIn
+	err = u.repoTransDetail.Update(ctx, facilityDetail.Id, facilityDetail)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// CheckOut implements itransaction.Usecase
+func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *models.CheckInCheckOutForm) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	facilityDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
+	if err != nil {
+		return err
+	}
+
+	//getHeader
+	facility, err := u.repoTransaction.GetDataBy(ctx, "id", facilityDetail.AddTransactionDetail.TransactionId.String())
+	if err != nil {
+		return err
+	}
+
+	if facility.StatusPayment != models.STATUS_PAYMENTSUCCESS {
+		return models.ErrBadParamInput
+	}
+
+	facilityDetail.CheckOut = req.CheckOut
+	err = u.repoTransDetail.Update(ctx, facilityDetail.Id, facilityDetail)
+	if err != nil {
+		return err
+	}
+
+	facility.StatusTransaction = models.STATUS_CHECKOUT
+	err = u.repoTransaction.Update(ctx, facility.Id, facility)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -17,6 +17,7 @@ type Repository interface {
 	Delete(ctx context.Context, ID uuid.UUID) (err error)
 	Count(ctx context.Context, queryparam models.ParamList) (result int64, err error)
 	CountUserList(ctx context.Context, queryparam models.ParamList) (result int64, err error)
+	IsExist(ctx context.Context, sWhere string) (bool, error)
 }
 
 type Usecase interface {
@@ -27,4 +28,6 @@ type Usecase interface {
 	Payment(ctx context.Context, Claims util.Claims, data *models.TransactionPaymentForm) (err error)
 	Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.TransactionForm) (err error)
 	Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error)
+	CheckIn(ctx context.Context, Claims util.Claims, data *models.CheckInCheckOutForm) (err error)
+	CheckOut(ctx context.Context, Claims util.Claims, data *models.CheckInCheckOutForm) (err error)
 }
