@@ -5,6 +5,7 @@ import (
 
 	_ "app/docs"
 	"app/pkg/db"
+	_midtransGateway "app/pkg/midtrans"
 	"app/pkg/setting"
 
 	"github.com/gin-gonic/gin"
@@ -76,6 +77,9 @@ import (
 	_contCustomers "app/controllers/customers"
 	_repoUserApps "app/repository/user_apps"
 	_useUserApps "app/usecase/user_apps"
+
+	_contPayment "app/controllers/payment"
+	_usePayment "app/usecase/payment"
 )
 
 type GinRoutes struct {
@@ -89,6 +93,8 @@ func (g *GinRoutes) Init() {
 	go dbConn.AutoMigrates()
 	r := g.G
 	r.GET("/v1//swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	midtransGateway := _midtransGateway.NewGateway(*setting.MidtransCredential)
 
 	repoTrx := _repoTrx.NewRepoTrx(dbConn)
 	repoUserSession := _repoUserSession.NewRepoUserSession(dbConn)
@@ -147,9 +153,12 @@ func (g *GinRoutes) Init() {
 
 	repoTransactionDetail := _repoTransactionDetail.NewRepoTransactionDetail(dbConn)
 	repoTransaction := _repoTransaction.NewRepoTransaction(dbConn)
-	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, repoTransactionDetail, repoOutlet, repoSkuManagement, repoUserApps, repoTrx, timeoutContext)
+	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, repoTransactionDetail, repoOutlet, repoSkuManagement, repoUserApps, repoTrx, midtransGateway, timeoutContext)
 	_contTransaction.NewContTransaction(g.G, useTransaction)
 
 	useUserApps := _useUserApps.NewUseUserApps(repoUserApps, repoTrx, timeoutContext)
 	_contCustomers.NewContCostumers(g.G, useUserApps)
+
+	usePayment := _usePayment.NewUsePayment(useTransaction, midtransGateway, repoTransaction, timeoutContext)
+	_contPayment.NewContPayment(g.G, usePayment)
 }

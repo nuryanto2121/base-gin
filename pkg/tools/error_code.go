@@ -17,12 +17,14 @@ func GetStatusCode(err error) int {
 	switch err {
 	case models.ErrInternalServerError:
 		return http.StatusInternalServerError
-	case models.ErrNotFound, models.ErrEmailNotFound, models.ErrOtpNotFound, models.ErrEmailNotFound, models.ErrVersioningNotFound, models.ErrAccountNotFound:
+	case models.ErrNotFound, models.ErrEmailNotFound, models.ErrOtpNotFound, models.ErrEmailNotFound, models.ErrVersioningNotFound, models.ErrAccountNotFound, models.ErrTransactionNotFound:
 		return http.StatusNotFound
 	case models.ErrConflict, models.ErrAccountConflict, models.ErrAccountAlreadyExist, models.ErrDataAlreadyExist:
 		return http.StatusConflict
 	case models.ErrUnauthorized, models.ErrInvalidLogin, models.ErrInvalidPassword, models.ErrClaimsDecode:
 		return http.StatusUnauthorized
+	case models.ErrPaymentNeeded:
+		return http.StatusPaymentRequired
 	default:
 		return http.StatusInternalServerError
 	}

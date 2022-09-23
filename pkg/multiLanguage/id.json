@@ -44,5 +44,7 @@
     "invalid_old_password": "Password lama anda salah",
     "conflict_phone_no":"No Handphone sudah terdaftar",
     "not_paid_payment":"belum membayar pembayaran",
-    "still_have_draf":"masih ada order ticket dengan status draf, tolong lengkapi atau hapus"
+    "still_have_draf":"masih ada order ticket dengan status draf, tolong lengkapi atau hapus",
+    "transaction_not_found":"transaksi tidak ditemukan",
+    "payment_needed":"tolong lakukan pembayaran terlebih dahulu"
 }

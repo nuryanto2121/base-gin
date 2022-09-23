@@ -98,7 +98,7 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 		}
 		// err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 		err = conn.Table(`"transaction" t`).Select(`
-			ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
+			t.id ,t.transaction_code,ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
@@ -109,7 +109,7 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 	} else {
 		// err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 		err = conn.Table(`"transaction" t`).Select(`
-			ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
+			t.id ,t.transaction_code,ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).

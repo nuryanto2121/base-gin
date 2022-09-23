@@ -20,7 +20,7 @@ SaltKey =
 
 
 [server]
-#debug or release
+#debug or prod
 RunMode = debug
 HttpPort = 8000
 GrpcPort = 9000

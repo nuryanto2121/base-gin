@@ -25,3 +25,8 @@ type AddTransactionDetail struct {
 	Amount        float64   `json:"amount" valid:"Required" gorm:"type:numeric(20,2)"`
 	Price         float64   `json:"price"  gorm:"type:numeric(20,2)"`
 }
+
+type TransactionDetailRaw struct {
+	TransactionDetail
+	SkuName string `json:"sku_name"`
+}

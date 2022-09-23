@@ -26,14 +26,18 @@ type TransactionDetailForm struct {
 }
 
 type TransactionList struct {
-	Name              string            `json:"name" gorm:"name"`
-	PhoneNo           string            `json:"phone_no" gorm:"phone_no"`
-	IsParent          bool              `json:"is_parent" gorm:"is_parent"`
-	CheckIn           time.Time         `json:"check_in" gorm:"check_in"`
-	CheckOut          time.Time         `json:"check_out" gorm:"check_out"`
-	Duration          int64             `json:"duration" gorm:"duration"`
-	StatusTransaction StatusTransaction `json:"status_transaction" gorm:"status_transaction"`
-	StatusPayment     StatusPayment     `json:"status_payment" gorm:"status_payment"`
+	ID                    uuid.UUID         `json:"id"`
+	TransactionCode       string            `json:"transaction_code"`
+	Name                  string            `json:"name" gorm:"name"`
+	PhoneNo               string            `json:"phone_no" gorm:"phone_no"`
+	IsParent              bool              `json:"is_parent" gorm:"is_parent"`
+	CheckIn               time.Time         `json:"check_in" gorm:"check_in"`
+	CheckOut              time.Time         `json:"check_out" gorm:"check_out"`
+	Duration              int64             `json:"duration" gorm:"duration"`
+	StatusTransaction     StatusTransaction `json:"status_transaction" gorm:"status_transaction"`
+	StatusTransactionDesc string            `json:"status_transaction_desc,omitempty"`
+	StatusPayment         StatusPayment     `json:"status_payment" gorm:"status_payment"`
+	StatusPaymentDesc     string            `json:"status_payment_desc,omitempty"`
 }
 
 type TransactionResponse struct {

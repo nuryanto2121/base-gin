@@ -8,6 +8,8 @@ import (
 	itrx "app/interface/trx"
 	iuserapps "app/interface/user_apps"
 	"app/models"
+	"app/pkg/logging"
+	_midtransGateway "app/pkg/midtrans"
 	"app/pkg/util"
 	"context"
 	"errors"
@@ -17,6 +19,7 @@ import (
 	"time"
 
 	"github.com/fatih/structs"
+	"github.com/mitchellh/mapstructure"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -29,7 +32,8 @@ type useTransaction struct {
 	repoCustomer      iuserapps.Repository
 	repoTrx           itrx.Repository
 	// repuUserApps iuserapps.Repository
-	contextTimeOut time.Duration
+	midtransGateway *_midtransGateway.Gateway
+	contextTimeOut  time.Duration
 }
 
 func NewUseTransaction(
@@ -38,7 +42,9 @@ func NewUseTransaction(
 	b ioutlets.Repository,
 	c iskumanagement.Repository,
 	d iuserapps.Repository,
-	e itrx.Repository, timeout time.Duration,
+	e itrx.Repository,
+	f *_midtransGateway.Gateway,
+	timeout time.Duration,
 ) itransaction.Usecase {
 	return &useTransaction{
 		repoTransaction:   a,
@@ -47,6 +53,7 @@ func NewUseTransaction(
 		repoSkuManagement: c,
 		repoCustomer:      d,
 		repoTrx:           e,
+		midtransGateway:   f,
 		contextTimeOut:    timeout,
 	}
 }
@@ -68,10 +75,17 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 	// 		return nil, err
 	// 	}
 	// }
+	sField := "id"
+	if Claims.Id == "transactionCode" {
+		sField = "transaction_code"
+	}
 
-	trxHeader, err := u.repoTransaction.GetDataBy(ctx, "transaction_code", transactionId)
+	trxHeader, err := u.repoTransaction.GetDataBy(ctx, sField, transactionId)
 	if err != nil {
 		return nil, err
+	}
+	if trxHeader.Id == uuid.Nil {
+		return nil, models.ErrTransactionNotFound
 	}
 	//get outlet
 	outlet, err := u.repoOutlet.GetDataBy(ctx, "id", trxHeader.OutletId.String())
@@ -144,7 +158,8 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 	}
 
 	result := &models.TransactionResponse{
-		TransactionCode:       transactionId,
+		ID:                    trxHeader.Id,
+		TransactionCode:       trxHeader.TransactionCode,
 		TransactionDate:       trxHeader.TransactionDate,
 		OutletName:            outlet.OutletName,
 		OutletCity:            outlet.OutletCity,
@@ -170,10 +185,17 @@ func (u *useTransaction) GetList(ctx context.Context, Claims util.Claims, queryp
 	if queryparam.InitSearch != "" {
 
 	}
-	result.Data, err = u.repoTransaction.GetList(ctx, queryparam)
+	dataList, err := u.repoTransaction.GetList(ctx, queryparam)
 	if err != nil {
 		return result, err
 	}
+
+	for _, val := range dataList {
+		val.StatusPaymentDesc = val.StatusPayment.String()
+		val.StatusTransactionDesc = val.StatusTransaction.String()
+	}
+
+	result.Data = dataList
 
 	result.Total, err = u.repoTransaction.Count(ctx, queryparam)
 	if err != nil {
@@ -246,7 +268,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 	t := &models.TmpCode{Prefix: trxPrefix}
 	tsCode = util.GenCode(t)
 
-	mTransaction := &models.Transaction{
+	mTransaction := models.Transaction{
 		AddTransaction: models.AddTransaction{
 			TransactionDate:   req.TransactionDate,
 			OutletId:          req.OutletId,
@@ -263,11 +285,12 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 	}
 
 	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
-		err := u.repoTransaction.Create(trxCtx, mTransaction)
+		err := u.repoTransaction.Create(trxCtx, &mTransaction)
 		if err != nil {
 			return err
 		}
-
+		//set id transaction
+		result.ID = mTransaction.Id
 		for _, val := range req.Details {
 			isChild := false
 			customerName := ""
@@ -290,8 +313,8 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			var desc = fmt.Sprintf("%d x %s", val.ProductQty, Product.SkuName)
 			var TicketNo = ""
 			if Product.IsBracelet {
-				// t.Prefix = fmt.Sprintf("%s",)
-				t.Prefix = fmt.Sprintf("TRC-%s", strings.ToUpper(outlet.OutletName[0:3]))
+				Prefix := fmt.Sprintf("TRC-%s", strings.ToUpper(outlet.OutletName[0:3]))
+				t := &models.TmpCode{Prefix: Prefix}
 				TicketNo = util.GenCode(t)
 				jmlTicket++
 				isChild = true
@@ -339,6 +362,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 	if errTx != nil {
 		return result, errTx
 	}
+	// result.ID
 	result.TotalTicket = jmlTicket
 	result.TransactionDate = req.TransactionDate
 	result.TotalAmount = totalAmount
@@ -386,17 +410,23 @@ func (u *useTransaction) Delete(ctx context.Context, Claims util.Claims, ID uuid
 }
 
 // Payment implements itransaction.Usecase
-func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *models.TransactionPaymentForm) (err error) {
+func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *models.TransactionPaymentForm) (result *models.MidtransResponse, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
 		now    = time.Now()
+		logger = logging.Logger{}
 		userId = uuid.FromStringOrNil(Claims.UserID)
 	)
 
-	transaction, err := u.repoTransaction.GetDataBy(ctx, "transaction_code", req.TransactionId)
+	//get data transaction
+	transaction, err := u.repoTransaction.GetDataBy(ctx, "id", req.TransactionId)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	if transaction.Id == uuid.Nil {
+		return nil, models.ErrTransactionNotFound
 	}
 
 	transaction.PaymentCode = req.PaymentCode
@@ -415,10 +445,35 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 
 	err = u.repoTransaction.Update(ctx, transaction.Id, transaction)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	if req.PaymentCode != models.PAYMENT_CASH && req.PaymentCode != models.PAYMENT_CASHIER {
+		// generate request midtrans
+		invBuilder, err := u.BuildMidtrans(ctx, transaction)
+		if err != nil {
+			return nil, err
+		}
+
+		reqSnap, err := invBuilder.Build()
+		if err != nil {
+			return nil, err
+		}
+
+		//hit payment midtrans
+		res, err := u.midtransGateway.SnapV2Gateway.CreateTransaction(reqSnap)
+		if err != nil {
+			// errMidtrans, _ := errd.(*midtrans.Error)
+			logger.Error("error hit to midranst ", err)
+			return nil, err
+		}
+		err = mapstructure.Decode(res, &result)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
 }
 
 // CheckIn implements itransaction.Usecase
@@ -436,9 +491,12 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 	if err != nil {
 		return err
 	}
+	if facility.Id == uuid.Nil {
+		return models.ErrTransactionNotFound
+	}
 
 	if facility.StatusPayment != models.STATUS_PAYMENTSUCCESS {
-		return models.ErrBadParamInput
+		return models.ErrPaymentNeeded
 	}
 
 	facilityDetail.CheckIn = req.CheckIn
@@ -465,6 +523,10 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 		return err
 	}
 
+	if facility.Id == uuid.Nil {
+		return models.ErrTransactionNotFound
+	}
+
 	if facility.StatusPayment != models.STATUS_PAYMENTSUCCESS {
 		return models.ErrBadParamInput
 	}
@@ -481,5 +543,42 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 		return err
 	}
 
+	return nil
+}
+
+// GetById implements itransaction.Usecase
+func (u *useTransaction) GetById(ctx context.Context, Claims util.Claims, transactionId string) (result *models.Transaction, err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+	var logger = logging.Logger{}
+
+	result, err = u.repoTransaction.GetDataBy(ctx, "id", transactionId)
+	if err != nil {
+		logger.Error("error can't find transaction by id ", transactionId)
+		return nil, err
+	}
+	return result, nil
+}
+
+// UpdateHeader implements itransaction.Usecase
+func (u *useTransaction) UpdateHeader(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.Transaction) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	//check data is exist
+	isExist, err := u.repoTransaction.IsExist(ctx, fmt.Sprintf("id = '%s'", data.Id))
+	if err != nil {
+		return models.ErrNotFound
+	}
+
+	if !isExist {
+		return models.ErrDataAlreadyExist
+	}
+
+	data.UpdatedBy = uuid.FromStringOrNil(Claims.UserID)
+	err = u.repoTransaction.Update(ctx, ID, &data)
+	if err != nil {
+		return err
+	}
 	return nil
 }

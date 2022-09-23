@@ -44,5 +44,7 @@
     "invalid_old_password": "Your Password old is wrong",
     "conflict_phone_no":"Phone Number already exist.",
     "not_paid_payment":"have not paid payment",
-    "still_have_draf":"still have order with draf, please complete or delete it"
+    "still_have_draf":"still have order with draf, please complete or delete it",
+    "transaction_not_found":"transaction not found",
+    "payment_needed":"please make payment fisrt"
 }

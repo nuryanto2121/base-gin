@@ -75,6 +75,7 @@ func (c *contTransaction) GetDataBy(e *gin.Context) {
 		appE.Response(http.StatusBadRequest, fmt.Sprintf("%v", err), nil)
 		return
 	}
+	claims.Id = "transactionCode"
 	data, err := c.useTransaction.GetDataBy(ctx, claims, transactionCode)
 	if err != nil {
 		appE.Response(http.StatusInternalServerError, fmt.Sprintf("%v", err), nil)
@@ -403,13 +404,13 @@ func (c *contTransaction) Payment(e *gin.Context) {
 		return
 	}
 
-	err = c.useTransaction.Payment(ctx, claims, &form)
+	rest, err := c.useTransaction.Payment(ctx, claims, &form)
 	if err != nil {
 		appE.ResponseError(tool.GetStatusCode(err), err)
 		return
 	}
 
-	appE.Response(http.StatusCreated, "payment success", nil)
+	appE.Response(http.StatusCreated, "payment success", rest)
 }
 
 // CheckInTransaction :

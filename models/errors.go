@@ -40,4 +40,6 @@ var (
 	ErrClaimsDecode              = errors.New("claims_decode")
 	ErrNotPaidPayment            = errors.New("not_paid_payment")
 	ErrStillHaveDraf             = errors.New("still_have_draf")
+	ErrTransactionNotFound       = errors.New("transaction_not_found")
+	ErrPaymentNeeded             = errors.New("payment_needed")
 )

@@ -14,6 +14,7 @@ const (
 	STATUS_WAITINGPAYMENT StatusPayment = 1000001
 	STATUS_PAYMENTSUCCESS StatusPayment = 1000002
 	STATUS_EXPIRED        StatusPayment = 1000003
+	STATUS_FAILED         StatusPayment = 1000004
 )
 
 func (s StatusPayment) String() string {
@@ -25,6 +26,8 @@ func (s StatusPayment) String() string {
 		result = "Payment Success"
 	case STATUS_EXPIRED:
 		result = "Payment Expired"
+	case STATUS_FAILED:
+		result = "Payment Failed"
 
 	}
 
@@ -60,24 +63,27 @@ func (s StatusTransaction) String() string {
 type PaymentCode int64
 
 const (
-	PAYMENT_BCA     PaymentCode = 3000001
-	PAYMENT_CC      PaymentCode = 3000002
+	PAYMENT_GOPAY   PaymentCode = 3000001
+	PAYMENT_ATM     PaymentCode = 3000002
 	PAYMENT_CASH    PaymentCode = 3000003
 	PAYMENT_CASHIER PaymentCode = 3000004
-	PAYMENT_OTHER   PaymentCode = 3000005
+	PAYMENT_BCA_VA  PaymentCode = 3000005
+	PAYMENT_OTHER   PaymentCode = 3000006
 )
 
 func (s PaymentCode) String() string {
 	var result string = ""
 	switch s {
-	case PAYMENT_BCA:
-		result = "BCA"
-	case PAYMENT_CC:
-		result = "Kartu Kredit"
+	case PAYMENT_GOPAY:
+		result = "gopay"
+	case PAYMENT_ATM:
+		result = "bank_transfer"
 	case PAYMENT_CASH:
-		result = "Tunai"
+		result = "tunai"
 	case PAYMENT_CASHIER:
-		result = "Cashier"
+		result = "cashier"
+	case PAYMENT_BCA_VA:
+		result = "bca_va"
 	case PAYMENT_OTHER:
 		result = "Other"
 

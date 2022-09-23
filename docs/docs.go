@@ -3579,6 +3579,97 @@ var doc = `{
                 }
             }
         },
+        "/v1/payment": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Add Payment from mobile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TransactionPaymentForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payment/receive": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Receive Payment",
+                "parameters": [
+                    {
+                        "description": "req param #changes are possible to adjust the form of the registration form from frontend",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.MidtransNotification"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/register": {
             "post": {
                 "produces": [
@@ -4260,6 +4351,71 @@ var doc = `{
                 }
             }
         },
+        "models.MidtransNotification": {
+            "type": "object",
+            "properties": {
+                "acquirer": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "fraud_status": {
+                    "type": "string"
+                },
+                "gross_amount": {
+                    "type": "string"
+                },
+                "issuer": {
+                    "type": "string"
+                },
+                "merchant_id": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "payment_amounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PaymentAmount"
+                    }
+                },
+                "payment_type": {
+                    "type": "string"
+                },
+                "settlement_time": {
+                    "type": "string"
+                },
+                "signature_key": {
+                    "type": "string"
+                },
+                "status_code": {
+                    "type": "string"
+                },
+                "status_message": {
+                    "type": "string"
+                },
+                "store": {
+                    "type": "string"
+                },
+                "transaction_id": {
+                    "type": "string"
+                },
+                "transaction_status": {
+                    "type": "string"
+                },
+                "transaction_time": {
+                    "type": "string"
+                },
+                "va_numbers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VaNumber"
+                    }
+                }
+            }
+        },
         "models.OutletForm": {
             "type": "object",
             "properties": {
@@ -4273,6 +4429,17 @@ var doc = `{
                     }
                 },
                 "outlet_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PaymentAmount": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "paid_at": {
                     "type": "string"
                 }
             }
@@ -4419,6 +4586,17 @@ var doc = `{
                     "type": "integer"
                 },
                 "transaction_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.VaNumber": {
+            "type": "object",
+            "properties": {
+                "bank": {
+                    "type": "string"
+                },
+                "va_number": {
                     "type": "string"
                 }
             }

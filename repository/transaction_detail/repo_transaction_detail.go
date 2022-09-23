@@ -40,7 +40,7 @@ func (r *repoTransactionDetail) GetDataBy(ctx context.Context, key, value string
 	return mTransactionDetail, nil
 }
 
-func (r *repoTransactionDetail) GetList(ctx context.Context, queryparam models.ParamList) ([]*models.TransactionDetail, error) {
+func (r *repoTransactionDetail) GetList(ctx context.Context, queryparam models.ParamList) ([]*models.TransactionDetailRaw, error) {
 
 	var (
 		pageNum  = 0
@@ -49,7 +49,7 @@ func (r *repoTransactionDetail) GetList(ctx context.Context, queryparam models.P
 		logger   = logging.Logger{}
 		orderBy  = queryparam.SortField
 		conn     = r.db.Get(ctx)
-		result   = []*models.TransactionDetail{}
+		result   = []*models.TransactionDetailRaw{}
 		err      error
 	)
 	// pagination
@@ -78,9 +78,19 @@ func (r *repoTransactionDetail) GetList(ctx context.Context, queryparam models.P
 		} else {
 			sWhere += "(lower() LIKE ?)"
 		}
-		err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Model([]*models.TransactionDetail{}).
+			Select(`transaction_detail.*,sku_management.sku_name`).
+			Joins(`join sku_management sku_management on sku_management.id = transaction_detail.product_id`).
+			Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		// Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+
+		// err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
-		err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		// err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+		err = conn.Model([]*models.TransactionDetail{}).
+			Select(`transaction_detail.*,sku_management.sku_name`).
+			Joins(`join sku_management sku_management on sku_management.id = transaction_detail.product_id`).
+			Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	}
 
 	if err != nil {

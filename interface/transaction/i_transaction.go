@@ -2,6 +2,7 @@ package itransaction
 
 import (
 	"app/models"
+	"app/pkg/midtrans/snap"
 	"app/pkg/util"
 	"context"
 
@@ -22,12 +23,15 @@ type Repository interface {
 
 type Usecase interface {
 	GetDataBy(ctx context.Context, Claims util.Claims, transactionId string) (result *models.TransactionResponse, err error)
+	GetById(ctx context.Context, Claims util.Claims, transactionId string) (result *models.Transaction, err error)
 	GetList(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
 	GetListTicketUser(ctx context.Context, Claims util.Claims, queryparam models.ParamList) (result models.ResponseModelList, err error)
 	Create(ctx context.Context, Claims util.Claims, data *models.TransactionForm) (result *models.TransactionResponse, err error)
-	Payment(ctx context.Context, Claims util.Claims, data *models.TransactionPaymentForm) (err error)
+	Payment(ctx context.Context, Claims util.Claims, data *models.TransactionPaymentForm) (result *models.MidtransResponse, err error)
 	Update(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.TransactionForm) (err error)
+	UpdateHeader(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.Transaction) (err error)
 	Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error)
 	CheckIn(ctx context.Context, Claims util.Claims, data *models.CheckInCheckOutForm) (err error)
 	CheckOut(ctx context.Context, Claims util.Claims, data *models.CheckInCheckOutForm) (err error)
+	BuildMidtrans(ctx context.Context, trx *models.Transaction) (*snap.Builder, error)
 }

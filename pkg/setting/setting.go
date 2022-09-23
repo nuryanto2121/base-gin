@@ -100,6 +100,15 @@ type ElasticSearch struct {
 
 var ElasticSearchSetting = &ElasticSearch{}
 
+type Midtrans struct {
+	ClientID      string
+	ClientKey     string
+	SecretKey     string
+	CallbackToken string
+}
+
+var MidtransCredential = &Midtrans{}
+
 var cfg *ini.File
 
 // Setup initialize the configuration instance
@@ -118,6 +127,7 @@ func Setup() {
 	mapTo("S3", S3Setting)
 	mapTo("Agora", AgoraSetting)
 	mapTo("Elastic", ElasticSearchSetting)
+	mapTo("Midtrans", MidtransCredential)
 
 	AppSetting.ImageMaxSize = AppSetting.ImageMaxSize * 1024 * 1024
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second

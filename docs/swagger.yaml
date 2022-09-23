@@ -215,6 +215,49 @@ definitions:
       pwd:
         type: string
     type: object
+  models.MidtransNotification:
+    properties:
+      acquirer:
+        type: string
+      currency:
+        type: string
+      fraud_status:
+        type: string
+      gross_amount:
+        type: string
+      issuer:
+        type: string
+      merchant_id:
+        type: string
+      order_id:
+        type: string
+      payment_amounts:
+        items:
+          $ref: '#/definitions/models.PaymentAmount'
+        type: array
+      payment_type:
+        type: string
+      settlement_time:
+        type: string
+      signature_key:
+        type: string
+      status_code:
+        type: string
+      status_message:
+        type: string
+      store:
+        type: string
+      transaction_id:
+        type: string
+      transaction_status:
+        type: string
+      transaction_time:
+        type: string
+      va_numbers:
+        items:
+          $ref: '#/definitions/models.VaNumber'
+        type: array
+    type: object
   models.OutletForm:
     properties:
       outlet_city:
@@ -224,6 +267,13 @@ definitions:
           $ref: '#/definitions/models.AddOutletDetail'
         type: array
       outlet_name:
+        type: string
+    type: object
+  models.PaymentAmount:
+    properties:
+      amount:
+        type: string
+      paid_at:
         type: string
     type: object
   models.RegisterChild:
@@ -319,6 +369,13 @@ definitions:
       payment_code:
         type: integer
       transaction_id:
+        type: string
+    type: object
+  models.VaNumber:
+    properties:
+      bank:
+        type: string
+      va_number:
         type: string
     type: object
 info:
@@ -2660,6 +2717,65 @@ paths:
       summary: GetData price Outlets
       tags:
       - Outlets
+  /v1/payment:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.TransactionPaymentForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Add Payment from mobile
+      tags:
+      - Payment
+  /v1/payment/receive:
+    post:
+      parameters:
+      - description: 'req param #changes are possible to adjust the form of the registration
+          form from frontend'
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.MidtransNotification'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Receive Payment
+      tags:
+      - Payment
   /v1/register:
     post:
       parameters:
