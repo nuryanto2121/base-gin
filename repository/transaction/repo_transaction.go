@@ -267,7 +267,18 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 				when t.status_transaction = 2000003 then 'Selesai'
 				when t.status_transaction = 2000004 then 'Draf'
 				else ''
-			end as status
+			end as status_transaction_desc
+			,case 
+				when t.status_payment = 1000001 then 'Waiting Payment' 
+				when t.status_payment = 1000002 then 'Payment Success'
+				when t.status_payment = 1000003 then 'Expired'
+				when t.status_payment = 1000004 then 'Failed'
+				else ''
+			end as "status_payment_desc"
+			,t.description as payment_type
+			,t.payment_id
+			,t.payment_token
+			,t.payment_status_desc
 		`).
 			Joins(`join outlets o on t.outlet_id = o.id`).
 			Where(sWhere, queryparam.Search).Offset(pageNum).
@@ -286,7 +297,18 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 				when t.status_transaction = 2000003 then 'Selesai'
 				when t.status_transaction = 2000004 then 'Draf'
 				else ''
-			end as status
+			end as status_transaction_desc
+			,case 
+				when t.status_payment = 1000001 then 'Waiting Payment' 
+				when t.status_payment = 1000002 then 'Payment Success'
+				when t.status_payment = 1000003 then 'Expired'
+				when t.status_payment = 1000004 then 'Failed'
+				else ''
+			end as "status_payment_desc"
+			,t.description as payment_type
+			,t.payment_id
+			,t.payment_token
+			,t.payment_status_desc
 		`).
 			Joins(`join outlets o on t.outlet_id = o.id`).
 			Where(sWhere).Offset(pageNum).
@@ -334,7 +356,7 @@ func (r *repoTransaction) CountUserList(ctx context.Context, queryparam models.P
 				when t.status_transaction = 2000001 then 'Booked' 
 				when t.status_transaction = 2000002 then 'Active'
 				else 'Selesai'
-			end as status
+			end as status_transaction_desc
 		`).
 			Joins(`join outlets o on t.outlet_id = o.id`).
 			Where(sWhere, queryparam.Search).
@@ -349,7 +371,7 @@ func (r *repoTransaction) CountUserList(ctx context.Context, queryparam models.P
 				when t.status_transaction = 2000001 then 'Booked' 
 				when t.status_transaction = 2000002 then 'Active'
 				else 'Selesai'
-			end as status
+			end as status_transaction_desc
 		`).
 			Joins(`join outlets o on t.outlet_id = o.id`).
 			Where(sWhere).

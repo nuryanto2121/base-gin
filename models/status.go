@@ -68,7 +68,7 @@ const (
 	PAYMENT_CASH    PaymentCode = 3000003
 	PAYMENT_CASHIER PaymentCode = 3000004
 	PAYMENT_BCA_VA  PaymentCode = 3000005
-	PAYMENT_OTHER   PaymentCode = 3000006
+	PAYMENT_ONLINE  PaymentCode = 3000006
 )
 
 func (s PaymentCode) String() string {
@@ -84,8 +84,8 @@ func (s PaymentCode) String() string {
 		result = "cashier"
 	case PAYMENT_BCA_VA:
 		result = "bca_va"
-	case PAYMENT_OTHER:
-		result = "Other"
+	case PAYMENT_ONLINE:
+		result = "Online Payment"
 
 	}
 

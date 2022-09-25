@@ -42,4 +42,5 @@ var (
 	ErrStillHaveDraf             = errors.New("still_have_draf")
 	ErrTransactionNotFound       = errors.New("transaction_not_found")
 	ErrPaymentNeeded             = errors.New("payment_needed")
+	ErrPaymentTokenExpired       = errors.New("payment_token_expired")
 )

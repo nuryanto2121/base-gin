@@ -1,15 +1,20 @@
 package usepayment
 
 import (
+	imidtrans "app/interface/midtrans"
 	ipayment "app/interface/payment"
+	ipaymentnotificationlogs "app/interface/payment_notification_logs"
 	itransaction "app/interface/transaction"
 	"app/models"
 	"app/pkg/logging"
 	"app/pkg/util"
 	"context"
+	"fmt"
 	"time"
 
 	_midtransGateway "app/pkg/midtrans"
+
+	// "github.com/midtrans/midtrans-go"
 
 	"github.com/midtrans/midtrans-go"
 	"github.com/mitchellh/mapstructure"
@@ -17,18 +22,23 @@ import (
 )
 
 type usePayment struct {
-	useTransaction  itransaction.Usecase
-	repoTransaction itransaction.Repository
-	contextTimeOut  time.Duration
-	midtransGateway *_midtransGateway.Gateway
+	useTransaction      itransaction.Usecase
+	repoTransaction     itransaction.Repository
+	repoPaymentNotifLog ipaymentnotificationlogs.Repository
+	midtransGateway     *_midtransGateway.Gateway
+	// coreGateway         *_coreGateway.Gateway
+	coreGateway    imidtrans.Repository
+	contextTimeOut time.Duration
 }
 
-func NewUsePayment(a itransaction.Usecase, b *_midtransGateway.Gateway, c itransaction.Repository, timeout time.Duration) ipayment.Usecase {
+func NewUsePayment(a itransaction.Usecase, b *_midtransGateway.Gateway, c itransaction.Repository, d ipaymentnotificationlogs.Repository, e imidtrans.Repository, timeout time.Duration) ipayment.Usecase {
 	return &usePayment{
-		useTransaction:  a,
-		midtransGateway: b,
-		repoTransaction: c,
-		contextTimeOut:  timeout,
+		useTransaction:      a,
+		midtransGateway:     b,
+		repoTransaction:     c,
+		repoPaymentNotifLog: d,
+		coreGateway:         e,
+		contextTimeOut:      timeout,
 	}
 }
 
@@ -63,14 +73,6 @@ func (u *usePayment) Payment(ctx context.Context, Claims util.Claims, req *model
 
 	transaction.StatusTransaction = models.STATUS_ORDER
 
-	transaction.UpdatedAt = now
-	transaction.UpdatedBy = userId
-
-	err = u.useTransaction.UpdateHeader(ctx, Claims, transaction.Id, transaction)
-	if err != nil {
-		return nil, err
-	}
-
 	if req.PaymentCode != models.PAYMENT_CASH && req.PaymentCode != models.PAYMENT_CASHIER {
 		// generate request midtrans
 		invBuilder, err := u.useTransaction.BuildMidtrans(ctx, transaction)
@@ -95,6 +97,18 @@ func (u *usePayment) Payment(ctx context.Context, Claims util.Claims, req *model
 		if err != nil {
 			return nil, err
 		}
+
+		//update payment token header trx
+		transaction.PaymentToken = uuid.FromStringOrNil(res.Token)
+		// u.midtransGateway.
+	}
+
+	transaction.UpdatedAt = now
+	transaction.UpdatedBy = userId
+
+	err = u.useTransaction.UpdateHeader(ctx, Claims, transaction.Id, transaction)
+	if err != nil {
+		return nil, err
 	}
 	return result, nil
 }
@@ -113,7 +127,7 @@ func (u *usePayment) Receive(ctx context.Context, request *models.MidtransNotifi
 	case "capture":
 		if request.PaymentType == "credit_card" && request.FraudStatus == "accept" {
 			//
-			err := u.PayTransaction(ctx, request.TransactionID, request.OrderID, request.TransactionStatus, request.StatusMessage)
+			err := u.PayTransaction(ctx, request)
 			if err != nil {
 				return err
 			}
@@ -123,7 +137,7 @@ func (u *usePayment) Receive(ctx context.Context, request *models.MidtransNotifi
 			return nil
 		}
 	case "settlement", "deny", "cancel", "expire", "pending":
-		err := u.PayTransaction(ctx, request.TransactionID, request.OrderID, request.TransactionStatus, request.StatusMessage)
+		err := u.PayTransaction(ctx, request)
 		if err != nil {
 			return err
 		}
@@ -131,10 +145,25 @@ func (u *usePayment) Receive(ctx context.Context, request *models.MidtransNotifi
 		logger.Warn("payment status type is unidentified")
 		return nil
 	}
+
+	//save request to log
+	var reqLog = models.MidtransNotificationLog{}
+	err := mapstructure.Decode(request, &reqLog)
+	if err != nil {
+		logger.Error("error mapp decode request midtrans ", err)
+	}
+
+	reqLog.VaNumbers = fmt.Sprintf("%#v", request.VaNumbers)
+	reqLog.PaymentAmounts = fmt.Sprintf("%#v", request.PaymentAmounts)
+	err = u.repoPaymentNotifLog.Create(ctx, &reqLog)
+	if err != nil {
+		logger.Error("error save request midtrans ", err)
+	}
+
 	return nil
 }
 
-func (u *usePayment) PayTransaction(ctx context.Context, req ...string) error {
+func (u *usePayment) PayTransaction(ctx context.Context, req *models.MidtransNotification) error {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -142,19 +171,23 @@ func (u *usePayment) PayTransaction(ctx context.Context, req ...string) error {
 		logger = logging.Logger{}
 	)
 
-	trx, err := u.repoTransaction.GetDataBy(ctx, "transaction_code", req[1]) //u.useTransaction.GetById(ctx, claim, req[0])
+	trx, err := u.repoTransaction.GetDataBy(ctx, "transaction_code", req.OrderID) //u.useTransaction.GetById(ctx, claim, req[0])
 	if err != nil {
 		logger.Error("payment.notification get transaction ", err)
 		return err
 	}
 
-	trx.StatusPayment = paymentStatus(req[2])
-	trx.Description = req[3]
-	trx.PaymentId = uuid.FromStringOrNil(req[0])
-	err = u.repoTransaction.Update(ctx, trx.Id, trx)
-	if err != nil {
-		return err
+	if trx.StatusPayment != models.STATUS_PAYMENTSUCCESS {
+		trx.StatusPayment = paymentStatus(req.TransactionStatus)
+		trx.Description = req.PaymentType
+		trx.PaymentStatusDesc = req.TransactionStatus
+		trx.PaymentId = uuid.FromStringOrNil(req.TransactionID)
+		err = u.repoTransaction.Update(ctx, trx.Id, trx)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -162,13 +195,31 @@ func paymentStatus(status string) models.StatusPayment {
 	switch status {
 	case "capture", "settlement":
 		return models.STATUS_PAYMENTSUCCESS
-	case "deny", "cancel", "pending":
+	case "deny", "cancel":
 		return models.STATUS_FAILED
+	case "pending":
+		return models.STATUS_WAITINGPAYMENT
 	case "expire":
 		return models.STATUS_EXPIRED
 		// case "pending":
 	}
 	return 0
+}
+
+// Status implements ipayment.Usecase
+func (u *usePayment) Status(ctx context.Context, Claims util.Claims, trxCode string) (interface{}, error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+	var (
+		logger = logging.Logger{}
+	)
+	data, err := u.coreGateway.CheckTransaction(trxCode)
+	if err != nil {
+		logger.Error("Failed check transaction midtrans ", err)
+		return nil, err
+	}
+	return data, nil
+
 }
 
 // send notif

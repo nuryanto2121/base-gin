@@ -122,7 +122,7 @@ func (r *repoTransactionDetail) Update(ctx context.Context, ID uuid.UUID, data i
 		conn   = r.db.Get(ctx)
 	)
 
-	err := conn.Model(models.TransactionDetail{}).Where("transactiondetail_id = ?", ID).Updates(data).Error
+	err := conn.Model(models.TransactionDetail{}).Where("id = ?", ID).Updates(data).Error
 	if err != nil {
 		logger.Error("repo transaction_detail Update ", err)
 		return err

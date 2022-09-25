@@ -3,6 +3,7 @@ package usetransaction
 import (
 	"app/models"
 	"app/pkg/midtrans/snap"
+	"app/pkg/util"
 	"context"
 	"fmt"
 	"time"
@@ -49,8 +50,8 @@ func (u *useTransaction) BuildMidtrans(ctx context.Context, trx *models.Transact
 
 	invRequest := &models.InvoiceRequest{
 		TransactionCode: trx.TransactionCode,
-		TransactionDate: trx.TransactionDate,
-		Duration:        13 * time.Minute,
+		TransactionDate: util.GetTimeNow(),
+		Duration:        35 * time.Minute,
 		TotalAmount:     trx.TotalAmount,
 		Payment:         models.PaymentType(trx.PaymentCode.String()),
 		Customer: models.Customer{
@@ -61,6 +62,7 @@ func (u *useTransaction) BuildMidtrans(ctx context.Context, trx *models.Transact
 		Items:    items,
 		Callback: &models.Callback{},
 	}
+	fmt.Println(invRequest.TransactionDate)
 	// response, err :=
 	return snap.NewBuilder(invRequest), nil
 }

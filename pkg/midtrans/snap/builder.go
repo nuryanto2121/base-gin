@@ -2,9 +2,9 @@ package snap
 
 import (
 	"app/models"
+	"app/pkg/setting"
 	"fmt"
 	"math"
-	"os"
 	"time"
 
 	"github.com/midtrans/midtrans-go"
@@ -14,12 +14,14 @@ import (
 func NewBuilder(inv *models.InvoiceRequest) *Builder {
 
 	var callback *snap.Callbacks
-	defaultRedirectUrl := os.Getenv("INVOICE_SUCCESS_REDIRECT_URL")
+	defaultRedirectUrl := setting.AppSetting.UrlSucessPayment //os.Getenv("INVOICE_SUCCESS_REDIRECT_URL")
 	if defaultRedirectUrl != "" {
 		callback = &snap.Callbacks{Finish: defaultRedirectUrl}
 	}
 	if inv.Callback.SuccessRedirectURL != "" {
-		callback = &snap.Callbacks{Finish: inv.Callback.SuccessRedirectURL}
+		callback = &snap.Callbacks{
+			Finish: inv.Callback.SuccessRedirectURL,
+		}
 	}
 
 	srb := &Builder{
@@ -49,11 +51,11 @@ func (b *Builder) setItemDetails(inv *models.InvoiceRequest) *Builder {
 		name := item.Name
 		if len(item.Name) > 50 {
 			runes := []rune(name)
-			name = fmt.Sprintf("%s", string(runes[0:50]))
+			name = string(runes[0:50])
 		}
 
 		out = append(out, midtrans.ItemDetails{
-			ID:           fmt.Sprintf("%d", item.ID),
+			ID:           item.ID,
 			Name:         name,
 			Price:        int64(item.Price),
 			Qty:          int32(item.Qty),
@@ -90,6 +92,7 @@ func (b *Builder) setExpiration(inv *models.InvoiceRequest) *Builder {
 		Unit:      "minute",
 		Duration:  int64(math.Round(duration.Minutes())),
 	}
+	fmt.Println(b.req.Expiry)
 	return b
 }
 

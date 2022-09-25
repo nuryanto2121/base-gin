@@ -61,3 +61,7 @@ type MidtransNotificationLog struct {
 	Issuer            string    `json:"issuer"`
 	Store             string    `json:"store"`
 }
+
+type StatusRequest struct {
+	TransactionCode string `json:"transaction_code"`
+}

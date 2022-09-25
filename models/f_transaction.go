@@ -52,7 +52,11 @@ type TransactionResponse struct {
 	StatusTransactionDesc string                       `json:"status_transaction_desc,omitempty"`
 	StatusPayment         StatusPayment                `json:"status_payment,omitempty"`
 	StatusPaymentDesc     string                       `json:"status_payment_desc,omitempty"`
-	Status                string                       `json:"status,omitempty"`
+	PaymentType           string                       `json:"payment_type,omitempty"`
+	PaymentId             uuid.UUID                    `json:"payment_id,omitempty"` //update from online payment
+	PaymentCode           PaymentCode                  `json:"payment_code,omitempty"`
+	PaymentToken          uuid.UUID                    `json:"payment_token,omitempty"`
+	PaymentStatusDesc     string                       `json:"payment_status_desc,omitempty" `
 	Details               []*TransactionDetailResponse `json:"details,omitempty"`
 }
 

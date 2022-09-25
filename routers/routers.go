@@ -80,6 +80,9 @@ import (
 
 	_contPayment "app/controllers/payment"
 	_usePayment "app/usecase/payment"
+
+	_repoCoreGateway "app/repository/midtrans"
+	_repoPaymentNotificationLogs "app/repository/payment_notification_logs"
 )
 
 type GinRoutes struct {
@@ -95,6 +98,7 @@ func (g *GinRoutes) Init() {
 	r.GET("/v1//swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	midtransGateway := _midtransGateway.NewGateway(*setting.MidtransCredential)
+	midtransCoreGateway := _repoCoreGateway.NewRepoGateway(*setting.MidtransCredential)
 
 	repoTrx := _repoTrx.NewRepoTrx(dbConn)
 	repoUserSession := _repoUserSession.NewRepoUserSession(dbConn)
@@ -159,6 +163,7 @@ func (g *GinRoutes) Init() {
 	useUserApps := _useUserApps.NewUseUserApps(repoUserApps, repoTrx, timeoutContext)
 	_contCustomers.NewContCostumers(g.G, useUserApps)
 
-	usePayment := _usePayment.NewUsePayment(useTransaction, midtransGateway, repoTransaction, timeoutContext)
+	repoPayNotifLog := _repoPaymentNotificationLogs.NewRepoMidtransNotificationLog(dbConn)
+	usePayment := _usePayment.NewUsePayment(useTransaction, midtransGateway, repoTransaction, repoPayNotifLog, midtransCoreGateway, timeoutContext)
 	_contPayment.NewContPayment(g.G, usePayment)
 }

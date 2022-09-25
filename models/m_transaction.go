@@ -23,5 +23,7 @@ type AddTransaction struct {
 	StatusTransaction StatusTransaction `json:"status_transaction" gorm:"type:integer;not null"`
 	PaymentId         uuid.UUID         `json:"payment_id" gorm:"type:uuid"` //update from online payment
 	PaymentCode       PaymentCode       `json:"payment_code" gorm:"type:integer"`
+	PaymentToken      uuid.UUID         `json:"payment_token" gorm:"type:uuid"`
+	PaymentStatusDesc string            `json:"payment_status_desc" gorm:"type:varchar(250)"`
 	Description       string            `json:"description"  gorm:"type:varchar(250)"`
 }

@@ -169,6 +169,10 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 		StatusTransactionDesc: trxHeader.StatusTransaction.String(),
 		StatusPayment:         trxHeader.StatusPayment,
 		StatusPaymentDesc:     trxHeader.StatusPayment.String(),
+		PaymentId:             trxHeader.PaymentId,
+		PaymentToken:          trxHeader.PaymentToken,
+		PaymentStatusDesc:     trxHeader.PaymentStatusDesc,
+		PaymentType:           trxHeader.Description,
 		Details:               details,
 	}
 	return result, nil

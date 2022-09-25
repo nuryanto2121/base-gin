@@ -46,5 +46,6 @@
     "not_paid_payment":"have not paid payment",
     "still_have_draf":"still have order with draf, please complete or delete it",
     "transaction_not_found":"transaction not found",
-    "payment_needed":"please make payment fisrt"
+    "payment_needed":"please make payment fisrt",
+    "payment_token_expired":"token payment is expired"
 }
