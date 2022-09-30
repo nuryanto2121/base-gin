@@ -177,3 +177,18 @@ func (r *repoTransactionDetail) Count(ctx context.Context, queryparam models.Par
 
 	return rest, nil
 }
+
+// UpdateBy implements itransactiondetail.Repository
+func (r *repoTransactionDetail) UpdateBy(ctx context.Context, query string, data interface{}) (err error) {
+	var (
+		logger = logging.Logger{}
+		conn   = r.db.Get(ctx)
+	)
+
+	err = conn.Model(&models.TransactionDetail{}).Where(query).Updates(data).Error //Delete(&models.TransactionDetail{}).Error
+	if err != nil {
+		logger.Error("repo transaction_detail Updates ", err)
+		return err
+	}
+	return nil
+}

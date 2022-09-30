@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/fatih/structs"
-	"github.com/mitchellh/mapstructure"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -68,13 +67,6 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 		err    error
 	)
 
-	// if Claims.Role == "user" {
-	// 	//get data parent
-	// 	parent, err = u.repoCustomer.GetDataBy(ctx, "id", Claims.UserID)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 	sField := "id"
 	if Claims.Id == "transactionCode" {
 		sField = "transaction_code"
@@ -173,6 +165,8 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 		PaymentToken:          trxHeader.PaymentToken,
 		PaymentStatusDesc:     trxHeader.PaymentStatusDesc,
 		PaymentType:           trxHeader.Description,
+		PaymentCode:           trxHeader.PaymentCode,
+		PaymentCodeDesc:       trxHeader.PaymentCode.String(),
 		Details:               details,
 	}
 	return result, nil
@@ -187,7 +181,7 @@ func (u *useTransaction) GetList(ctx context.Context, Claims util.Claims, queryp
 	}
 
 	if queryparam.InitSearch != "" {
-
+		queryparam.InitSearch += " and date(check_in) <> '0001-01-01'"
 	}
 	dataList, err := u.repoTransaction.GetList(ctx, queryparam)
 	if err != nil {
@@ -195,8 +189,39 @@ func (u *useTransaction) GetList(ctx context.Context, Claims util.Claims, queryp
 	}
 
 	for _, val := range dataList {
+
 		val.StatusPaymentDesc = val.StatusPayment.String()
 		val.StatusTransactionDesc = val.StatusTransaction.String()
+		// if val.StatusTransaction == models.STATUS_CHECKIN { //!val.CheckIn.IsZero() {
+		// 	// fmt.Println(val.CheckIn.In(util.GetLocation()))
+		// 	// fmt.Println("=======================")
+		// 	// fmt.Println(val.CheckIn)
+		// 	// fmt.Println("")
+		// fmt.Println(util.GetTimeNow())
+		// 	// fmt.Println("")
+		// 	if val.CheckIn.Before(util.GetTimeNow()) {
+		// 		fmt.Println(val.CheckIn)
+		// 		fmt.Println("sebelum")
+		// 		fmt.Println(util.GetTimeNow())
+		// 		fmt.Println("-----------")
+		// 	}
+
+		// 	if val.CheckIn.After(util.GetTimeNow()) {
+		// 		fmt.Println(val.CheckIn)
+		// 		fmt.Println("Sesudah")
+		// 		fmt.Println(util.GetTimeNow())
+		// 		fmt.Println("=============")
+		// 	}
+		// upt := map[string]interface{}{
+		// 	"check_in": util.GetTimeNow(),
+		// }
+
+		// err := u.repoTransDetail.UpdateBy(ctx, fmt.Sprintf("ticket_no = '%s'", val.TicketNo), upt)
+		// if err != nil {
+		// 	fmt.Printf("%v", err)
+		// }
+		// }
+
 	}
 
 	result.Data = dataList
@@ -418,8 +443,8 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
-		now    = time.Now()
-		logger = logging.Logger{}
+		now = time.Now()
+		// logger = logging.Logger{}
 		userId = uuid.FromStringOrNil(Claims.UserID)
 	)
 
@@ -436,11 +461,11 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 	transaction.PaymentCode = req.PaymentCode
 	transaction.Description = req.Description
 
-	if req.PaymentCode == models.PAYMENT_CASH {
-		transaction.StatusPayment = models.STATUS_PAYMENTSUCCESS
-	} else {
-		transaction.StatusPayment = models.STATUS_WAITINGPAYMENT
-	}
+	// if req.PaymentCode == models.PAYMENT_CASH {
+	transaction.StatusPayment = models.STATUS_PAYMENTSUCCESS
+	// } else {
+	// 	transaction.StatusPayment = models.STATUS_WAITINGPAYMENT
+	// }
 
 	transaction.StatusTransaction = models.STATUS_ORDER
 
@@ -452,31 +477,6 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 		return nil, err
 	}
 
-	if req.PaymentCode != models.PAYMENT_CASH && req.PaymentCode != models.PAYMENT_CASHIER {
-		// generate request midtrans
-		invBuilder, err := u.BuildMidtrans(ctx, transaction)
-		if err != nil {
-			return nil, err
-		}
-
-		reqSnap, err := invBuilder.Build()
-		if err != nil {
-			return nil, err
-		}
-
-		//hit payment midtrans
-		res, err := u.midtransGateway.SnapV2Gateway.CreateTransaction(reqSnap)
-		if err != nil {
-			// errMidtrans, _ := errd.(*midtrans.Error)
-			logger.Error("error hit to midranst ", err)
-			return nil, err
-		}
-		err = mapstructure.Decode(res, &result)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return result, nil
 }
 
@@ -485,30 +485,66 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	facilityDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
+	transactionDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
 	if err != nil {
 		return err
 	}
 
 	//getHeader
-	facility, err := u.repoTransaction.GetDataBy(ctx, "id", facilityDetail.AddTransactionDetail.TransactionId.String())
+	transaction, err := u.repoTransaction.GetDataBy(ctx, "id", transactionDetail.AddTransactionDetail.TransactionId.String())
 	if err != nil {
 		return err
 	}
-	if facility.Id == uuid.Nil {
+	if transaction.Id == uuid.Nil {
 		return models.ErrTransactionNotFound
 	}
 
-	if facility.StatusPayment != models.STATUS_PAYMENTSUCCESS {
+	if transaction.StatusPayment != models.STATUS_PAYMENTSUCCESS {
 		return models.ErrPaymentNeeded
 	}
 
-	facilityDetail.CheckIn = req.CheckIn
-	err = u.repoTransDetail.Update(ctx, facilityDetail.Id, facilityDetail)
-	if err != nil {
-		return err
+	if transaction.StatusTransaction != models.STATUS_ORDER {
+		return models.ErrNoStatusOrder
 	}
-	return nil
+
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+
+		trxDtl, err := u.repoTransDetail.GetList(ctx, models.ParamList{
+			Page:       1,
+			PerPage:    10,
+			InitSearch: fmt.Sprintf("parent_id='%s' and is_child = true", transaction.Id),
+		})
+		if err != nil {
+			return err
+		}
+
+		isCheckin := true
+
+		for _, val := range trxDtl {
+			if val.CheckIn.IsZero() {
+				isCheckin = false
+			}
+		}
+
+		if isCheckin {
+			transactionDetail.CheckIn = req.CheckIn.In(util.GetLocation())
+			err = u.repoTransDetail.Update(trxCtx, transactionDetail.Id, transactionDetail)
+			if err != nil {
+				return err
+			}
+		}
+
+		if transaction.StatusTransaction != models.STATUS_CHECKIN {
+			transaction.StatusTransaction = models.STATUS_CHECKIN
+			u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	return errTx
 }
 
 // CheckOut implements itransaction.Usecase
@@ -516,38 +552,69 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	facilityDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
+	transactionDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
 	if err != nil {
 		return err
 	}
 
 	//getHeader
-	facility, err := u.repoTransaction.GetDataBy(ctx, "id", facilityDetail.AddTransactionDetail.TransactionId.String())
+	transaction, err := u.repoTransaction.GetDataBy(ctx, "id", transactionDetail.AddTransactionDetail.TransactionId.String())
 	if err != nil {
 		return err
 	}
 
-	if facility.Id == uuid.Nil {
+	if transaction.Id == uuid.Nil {
 		return models.ErrTransactionNotFound
 	}
 
-	if facility.StatusPayment != models.STATUS_PAYMENTSUCCESS {
+	if transaction.StatusPayment != models.STATUS_PAYMENTSUCCESS {
 		return models.ErrBadParamInput
 	}
 
-	facilityDetail.CheckOut = req.CheckOut
-	err = u.repoTransDetail.Update(ctx, facilityDetail.Id, facilityDetail)
-	if err != nil {
-		return err
+	// if transaction.StatusTransaction != models.STATUS_CHECKIN {
+	// 	return models.ErrNoStatusCheckIn
+	// }
+	if !transactionDetail.CheckOut.IsZero() {
+		return models.ErrNoStatusCheckIn
 	}
 
-	facility.StatusTransaction = models.STATUS_CHECKOUT
-	err = u.repoTransaction.Update(ctx, facility.Id, facility)
-	if err != nil {
-		return err
-	}
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+		trxDtl, err := u.repoTransDetail.GetList(ctx, models.ParamList{
+			Page:       1,
+			PerPage:    10,
+			InitSearch: fmt.Sprintf("parent_id='%s' and is_child = true", transaction.Id),
+		})
+		if err != nil {
+			return err
+		}
 
-	return nil
+		isCheckOut := true
+
+		for _, val := range trxDtl {
+			if val.CheckOut.IsZero() {
+				isCheckOut = false
+			}
+		}
+
+		if isCheckOut {
+			transactionDetail.CheckOut = req.CheckOut.In(util.GetLocation())
+			err = u.repoTransDetail.Update(ctx, transactionDetail.Id, transactionDetail)
+			if err != nil {
+				return err
+			}
+		}
+
+		if transaction.StatusTransaction != models.STATUS_CHECKOUT {
+			transaction.StatusTransaction = models.STATUS_CHECKOUT
+			u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	return errTx
 }
 
 // GetById implements itransaction.Usecase

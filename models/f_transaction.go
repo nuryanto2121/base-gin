@@ -28,6 +28,7 @@ type TransactionDetailForm struct {
 type TransactionList struct {
 	ID                    uuid.UUID         `json:"id"`
 	TransactionCode       string            `json:"transaction_code"`
+	TicketNo              string            `json:"ticket_no"`
 	Name                  string            `json:"name" gorm:"name"`
 	PhoneNo               string            `json:"phone_no" gorm:"phone_no"`
 	IsParent              bool              `json:"is_parent" gorm:"is_parent"`
@@ -54,7 +55,8 @@ type TransactionResponse struct {
 	StatusPaymentDesc     string                       `json:"status_payment_desc,omitempty"`
 	PaymentType           string                       `json:"payment_type,omitempty"`
 	PaymentId             uuid.UUID                    `json:"payment_id,omitempty"` //update from online payment
-	PaymentCode           PaymentCode                  `json:"payment_code,omitempty"`
+	PaymentCode           PaymentCode                  `json:"payment_code"`
+	PaymentCodeDesc       string                       `json:"payment_code_desc"`
 	PaymentToken          uuid.UUID                    `json:"payment_token,omitempty"`
 	PaymentStatusDesc     string                       `json:"payment_status_desc,omitempty" `
 	Details               []*TransactionDetailResponse `json:"details,omitempty"`

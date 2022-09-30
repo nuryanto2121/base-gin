@@ -47,5 +47,8 @@
     "still_have_draf":"still have order with draf, please complete or delete it",
     "transaction_not_found":"transaction not found",
     "payment_needed":"please make payment fisrt",
-    "payment_token_expired":"token payment is expired"
+    "payment_token_expired":"token payment is expired",
+    "no_status_order":"only allowed the Order status",
+    "no_status_check_in":"only allowed the check in status",
+    "no_status_check_out":"only allowed the check out status"
 }

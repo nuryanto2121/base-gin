@@ -25,6 +25,8 @@ func GetStatusCode(err error) int {
 		return http.StatusUnauthorized
 	case models.ErrPaymentNeeded:
 		return http.StatusPaymentRequired
+	case models.ErrNoStatusCheckIn, models.ErrNoStatusOrder, models.ErrNoStatusCheckOut:
+		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
 	}

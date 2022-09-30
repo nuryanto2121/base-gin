@@ -20,6 +20,7 @@ func init() {
 	logging.Setup()
 	// postgres.Setup()
 	s3gateway.Setup()
+
 }
 
 // @title Base Playtopia

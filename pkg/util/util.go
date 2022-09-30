@@ -1,6 +1,7 @@
 package util
 
 import (
+	"app/pkg/logging"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -27,7 +28,13 @@ func GetTimeNow() time.Time {
 
 // GetLocation - get location wib
 func GetLocation() *time.Location {
-	return time.FixedZone(WIB, 7*3600)
+	var logger = logging.Logger{}
+	// return time.FixedZone(WIB, 7*3600)
+	loc, err := time.LoadLocation(UTC)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	return loc
 }
 
 // GetUnixTimeNow :

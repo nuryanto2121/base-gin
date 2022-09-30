@@ -83,6 +83,10 @@ import (
 
 	_repoCoreGateway "app/repository/midtrans"
 	_repoPaymentNotificationLogs "app/repository/payment_notification_logs"
+
+	_repoSMS "app/repository/sms"
+	_useJob "app/usecase/job"
+	_useSMS "app/usecase/sms"
 )
 
 type GinRoutes struct {
@@ -166,4 +170,15 @@ func (g *GinRoutes) Init() {
 	repoPayNotifLog := _repoPaymentNotificationLogs.NewRepoMidtransNotificationLog(dbConn)
 	usePayment := _usePayment.NewUsePayment(useTransaction, midtransGateway, repoTransaction, repoPayNotifLog, midtransCoreGateway, timeoutContext)
 	_contPayment.NewContPayment(g.G, usePayment)
+
+	repoSMS := _repoSMS.NewRepoSMS("", dbConn)
+	useSMS := _useSMS.NewSMS(repoSMS, timeoutContext)
+	// err := useSMS.Send(context.Background(), "+6285777374040", "test SMS dari server", "")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
+	_ = _useJob.NewUseJob(repoTransaction, repoTransactionDetail, useSMS, repoTrx, timeoutContext)
+	// useJob.NotificationSms(context.Background())
+
 }

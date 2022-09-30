@@ -43,4 +43,7 @@ var (
 	ErrTransactionNotFound       = errors.New("transaction_not_found")
 	ErrPaymentNeeded             = errors.New("payment_needed")
 	ErrPaymentTokenExpired       = errors.New("payment_token_expired")
+	ErrNoStatusOrder             = errors.New("no_status_order")
+	ErrNoStatusCheckIn           = errors.New("no_status_check_in")
+	ErrNoStatusCheckOut          = errors.New("no_status_check_out")
 )

@@ -47,5 +47,8 @@
     "still_have_draf":"masih ada order ticket dengan status draf, tolong lengkapi atau hapus",
     "transaction_not_found":"transaksi tidak ditemukan",
     "payment_needed":"tolong lakukan pembayaran terlebih dahulu",
-    "payment_token_expired":"token payment sudah kadaluarsa"
+    "payment_token_expired":"token payment sudah kadaluarsa",
+    "no_status_order":"hanya diizinkan yang status Order",
+    "no_status_check_in":"hanya diizinkan yang status  check in",
+    "no_status_check_out":"hanya diizinkan yang status  check out"
 }

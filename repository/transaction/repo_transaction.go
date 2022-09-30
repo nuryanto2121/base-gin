@@ -98,10 +98,14 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 		}
 		// err = conn.Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 		err = conn.Table(`"transaction" t`).Select(`
-			t.id ,t.transaction_code,ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
+			t.id ,t.transaction_code,ua."name" ,parent.phone_no 
+			,ua.is_parent ,td.check_in ,td.check_out 
+			,td.duration ,t.status_transaction ,t.status_payment
+			,td.ticket_no 
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
+			Joins(`inner join user_apps parent on parent.id = ua.parent_id`).
 			Where(sWhere, queryparam.Search).Offset(pageNum).
 			Limit(pageSize).
 			Order(orderBy).
@@ -109,10 +113,14 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 	} else {
 		// err = conn.Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 		err = conn.Table(`"transaction" t`).Select(`
-			t.id ,t.transaction_code,ua."name" ,ua.phone_no ,ua.is_parent ,td.check_in,td.check_out , td.duration ,t.status_transaction ,t.status_payment
+			t.id ,t.transaction_code,ua."name" ,parent.phone_no 
+			,ua.is_parent ,td.check_in ,td.check_out 
+			,td.duration ,t.status_transaction ,t.status_payment
+			,td.ticket_no
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
+			Joins(`inner join user_apps parent on parent.id = ua.parent_id`).
 			Where(sWhere).Offset(pageNum).
 			Limit(pageSize).
 			Order(orderBy).
@@ -268,6 +276,7 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 				when t.status_transaction = 2000004 then 'Draf'
 				else ''
 			end as status_transaction_desc
+			,t.status_payment
 			,case 
 				when t.status_payment = 1000001 then 'Waiting Payment' 
 				when t.status_payment = 1000002 then 'Payment Success'
@@ -279,6 +288,12 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 			,t.payment_id
 			,t.payment_token
 			,t.payment_status_desc
+			,t.payment_code
+			,case 
+				when t.payment_code = 3000003 then 'Tunai'
+				when t.payment_code = 3000004 then 'Cashier'
+				when t.payment_code = 3000006 then 'Online Payment'
+			end as payment_code_desc
 		`).
 			Joins(`join outlets o on t.outlet_id = o.id`).
 			Where(sWhere, queryparam.Search).Offset(pageNum).
@@ -298,6 +313,7 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 				when t.status_transaction = 2000004 then 'Draf'
 				else ''
 			end as status_transaction_desc
+			,t.status_payment
 			,case 
 				when t.status_payment = 1000001 then 'Waiting Payment' 
 				when t.status_payment = 1000002 then 'Payment Success'
@@ -309,6 +325,12 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 			,t.payment_id
 			,t.payment_token
 			,t.payment_status_desc
+			,t.payment_code
+			,case 
+				when t.payment_code = 3000003 then 'Tunai'
+				when t.payment_code = 3000004 then 'Cashier'
+				when t.payment_code = 3000006 then 'Online Payment'
+			end as payment_code_desc
 		`).
 			Joins(`join outlets o on t.outlet_id = o.id`).
 			Where(sWhere).Offset(pageNum).

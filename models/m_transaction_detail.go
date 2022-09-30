@@ -24,6 +24,7 @@ type AddTransactionDetail struct {
 	CheckOut      time.Time `json:"check_out" gorm:"type:timestamp"`
 	Amount        float64   `json:"amount" valid:"Required" gorm:"type:numeric(20,2)"`
 	Price         float64   `json:"price"  gorm:"type:numeric(20,2)"`
+	FlagNotifSend int64     `json:"flag_notif_send" gorm:"type:integer;default:0"`
 }
 
 type TransactionDetailRaw struct {

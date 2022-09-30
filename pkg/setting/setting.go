@@ -26,6 +26,7 @@ type App struct {
 	Issuer           string
 	SaltKey          string
 	UrlSucessPayment string
+	MinSendNotif     int
 }
 
 var AppSetting = &App{}
@@ -110,6 +111,17 @@ type Midtrans struct {
 
 var MidtransCredential = &Midtrans{}
 
+type Twilio struct {
+	Url   string
+	Sid   string
+	Token string
+	From  string
+	To    string
+	Mode  string
+}
+
+var TwilioCredential = &Twilio{}
+
 var cfg *ini.File
 
 // Setup initialize the configuration instance
@@ -129,6 +141,7 @@ func Setup() {
 	mapTo("Agora", AgoraSetting)
 	mapTo("Elastic", ElasticSearchSetting)
 	mapTo("Midtrans", MidtransCredential)
+	mapTo("Twilio", TwilioCredential)
 
 	AppSetting.ImageMaxSize = AppSetting.ImageMaxSize * 1024 * 1024
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second

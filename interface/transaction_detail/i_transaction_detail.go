@@ -12,6 +12,7 @@ type Repository interface {
 	GetList(ctx context.Context, queryparam models.ParamList) (result []*models.TransactionDetailRaw, err error)
 	Create(ctx context.Context, data *models.TransactionDetail) (err error)
 	Update(ctx context.Context, ID uuid.UUID, data interface{}) (err error)
+	UpdateBy(ctx context.Context, query string, data interface{}) (err error)
 	Delete(ctx context.Context, ID uuid.UUID) (err error)
 	Count(ctx context.Context, queryparam models.ParamList) (result int64, err error)
 }
