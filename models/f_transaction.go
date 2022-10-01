@@ -32,6 +32,7 @@ type TransactionList struct {
 	Name                  string            `json:"name" gorm:"name"`
 	PhoneNo               string            `json:"phone_no" gorm:"phone_no"`
 	IsParent              bool              `json:"is_parent" gorm:"is_parent"`
+	ParentId              uuid.UUID         `json:"-" gorm:"parent_id"`
 	CheckIn               time.Time         `json:"check_in" gorm:"check_in"`
 	CheckOut              time.Time         `json:"check_out" gorm:"check_out"`
 	Duration              int64             `json:"duration" gorm:"duration"`

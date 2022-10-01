@@ -60,13 +60,13 @@ func (g repoGateway) NotificationValidationKey() string {
 	return g.serverKey
 }
 
-func (c repoGateway) CheckTransaction(param string) (*coreapi.TransactionStatusResponse, error) {
+func (c repoGateway) CheckTransaction(paymentToken string) (*coreapi.TransactionStatusResponse, error) {
 
 	var (
 		result = &coreapi.TransactionStatusResponse{}
 		logger = logging.Logger{}
 	)
-	url := fmt.Sprintf("%s/snap/v1/transactions/%s/status", c.url, param)
+	url := fmt.Sprintf("%s/snap/v1/transactions/%s/status", c.url, paymentToken)
 	fmt.Println(url)
 	response, err := http.Get(url)
 	if err != nil {

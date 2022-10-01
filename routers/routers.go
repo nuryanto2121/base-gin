@@ -4,6 +4,7 @@ import (
 	"time"
 
 	_ "app/docs"
+	inotification "app/interface/notification"
 	"app/pkg/db"
 	_midtransGateway "app/pkg/midtrans"
 	"app/pkg/setting"
@@ -85,8 +86,12 @@ import (
 	_repoPaymentNotificationLogs "app/repository/payment_notification_logs"
 
 	_repoSMS "app/repository/sms"
-	_useJob "app/usecase/job"
+	_useJob "app/usecase/notification"
 	_useSMS "app/usecase/sms"
+)
+
+var (
+	UseNotification inotification.Usecase
 )
 
 type GinRoutes struct {
@@ -173,12 +178,12 @@ func (g *GinRoutes) Init() {
 
 	repoSMS := _repoSMS.NewRepoSMS("", dbConn)
 	useSMS := _useSMS.NewSMS(repoSMS, timeoutContext)
-	// err := useSMS.Send(context.Background(), "+6285777374040", "test SMS dari server", "")
+	// err := useSMS.Send(context.Background(), uuid.FromStringOrNil(""), "+6285777374040", "test SMS dari server", "")
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
 
-	_ = _useJob.NewUseJob(repoTransaction, repoTransactionDetail, useSMS, repoTrx, timeoutContext)
+	UseNotification = _useJob.NewUseNotification(repoTransaction, repoTransactionDetail, useSMS, repoTrx, timeoutContext)
 	// useJob.NotificationSms(context.Background())
 
 }

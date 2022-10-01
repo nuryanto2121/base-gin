@@ -1,7 +1,7 @@
-package usejob
+package usenotification
 
 import (
-	ijob "app/interface/job"
+	inotification "app/interface/notification"
 	isms "app/interface/sms"
 	itransaction "app/interface/transaction"
 	itransactiondetail "app/interface/transaction_detail"
@@ -13,10 +13,11 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 )
 
-type useJob struct {
+type useNotification struct {
 	repoTransaction itransaction.Repository
 	repoTransDetail itransactiondetail.Repository
 	repoTrx         itrx.Repository
@@ -24,14 +25,14 @@ type useJob struct {
 	contextTimeOut  time.Duration
 }
 
-func NewUseJob(
+func NewUseNotification(
 	a itransaction.Repository,
 	a1 itransactiondetail.Repository,
 	b isms.Usecase,
 	c itrx.Repository,
 	timeout time.Duration,
-) ijob.Usecase {
-	return &useJob{
+) inotification.Usecase {
+	return &useNotification{
 		repoTransaction: a,
 		repoTransDetail: a1,
 		useSMS:          b,
@@ -40,8 +41,8 @@ func NewUseJob(
 	}
 }
 
-// NotificationSms implements ijob.Usecase
-func (u *useJob) NotificationSms(ctx context.Context) error {
+// NotificationSms implements inotification.Usecase
+func (u *useNotification) NotificationSms(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
@@ -70,13 +71,13 @@ func (u *useJob) NotificationSms(ctx context.Context) error {
 		"flag_notif_send": 1, //prosess
 	}
 
-	// sQuery = strings.ReplaceAll(sQuery, "td.", "")
+	sQuery = strings.ReplaceAll(sQuery, "td.", "")
 
-	// err = u.repoTransDetail.UpdateBy(ctx, sQuery, dataUpdate)
-	// if err != nil {
-	// 	logger.Error("cron error update transaction detail ", err)
-	// 	return err
-	// }
+	err = u.repoTransDetail.UpdateBy(ctx, sQuery, dataUpdate)
+	if err != nil {
+		logger.Error("cron error update transaction detail ", err)
+		return err
+	}
 
 	for _, val := range facilityDetail {
 		// wg.Add(1)
@@ -100,12 +101,14 @@ func (u *useJob) NotificationSms(ctx context.Context) error {
 		if timeLeft <= float64(setting.AppSetting.MinSendNotif) {
 			//send sms
 			message := fmt.Sprintf("Pelanggan yang terhormat, waktu bermain ananda %s tersisa %f menit ", val.Name, timeLeft)
-			err = u.useSMS.Send(ctx, val.PhoneNo, message, "")
+			err = u.useSMS.Send(ctx, val.ParentId, val.PhoneNo, message, "")
 			if err != nil {
 				// ret
+				logger.Error("failed send sms ", err)
 				dataUpdate["flag_notif_send"] = 2 //error or failed send sms
 			} else {
 				dataUpdate["flag_notif_send"] = 3 //terkirim
+
 			}
 		} else {
 			dataUpdate["flag_notif_send"] = 0 //belum terkirim

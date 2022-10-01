@@ -5,5 +5,5 @@ import (
 )
 
 type Repository interface {
-	CheckTransaction(param string) (*coreapi.TransactionStatusResponse, error)
+	CheckTransaction(paymentToken string) (*coreapi.TransactionStatusResponse, error)
 }

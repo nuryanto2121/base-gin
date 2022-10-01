@@ -509,10 +509,10 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 
 	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
 
-		trxDtl, err := u.repoTransDetail.GetList(ctx, models.ParamList{
+		trxDtl, err := u.repoTransaction.GetList(ctx, models.ParamList{
 			Page:       1,
 			PerPage:    10,
-			InitSearch: fmt.Sprintf("parent_id='%s' and is_child = true", transaction.Id),
+			InitSearch: fmt.Sprintf("t.id='%s' and td.is_children = true", transaction.Id),
 		})
 		if err != nil {
 			return err
@@ -522,25 +522,29 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 
 		for _, val := range trxDtl {
 			if val.CheckIn.IsZero() {
-				isCheckin = false
+				if val.TicketNo != req.TicketNo {
+					isCheckin = false
+				}
+
 			}
+		}
+
+		transactionDetail.CheckIn = req.CheckIn
+		err = u.repoTransDetail.Update(trxCtx, transactionDetail.Id, transactionDetail)
+		if err != nil {
+			return err
 		}
 
 		if isCheckin {
-			transactionDetail.CheckIn = req.CheckIn.In(util.GetLocation())
-			err = u.repoTransDetail.Update(trxCtx, transactionDetail.Id, transactionDetail)
-			if err != nil {
-				return err
+			if transaction.StatusTransaction != models.STATUS_CHECKIN {
+				transaction.StatusTransaction = models.STATUS_CHECKIN
+				err = u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
-		if transaction.StatusTransaction != models.STATUS_CHECKIN {
-			transaction.StatusTransaction = models.STATUS_CHECKIN
-			u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
-			if err != nil {
-				return err
-			}
-		}
 		return nil
 	})
 
@@ -579,10 +583,10 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 	}
 
 	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
-		trxDtl, err := u.repoTransDetail.GetList(ctx, models.ParamList{
+		trxDtl, err := u.repoTransaction.GetList(ctx, models.ParamList{
 			Page:       1,
 			PerPage:    10,
-			InitSearch: fmt.Sprintf("parent_id='%s' and is_child = true", transaction.Id),
+			InitSearch: fmt.Sprintf("t.id='%s' and td.is_children = true", transaction.Id),
 		})
 		if err != nil {
 			return err
@@ -592,25 +596,29 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 
 		for _, val := range trxDtl {
 			if val.CheckOut.IsZero() {
-				isCheckOut = false
+				if val.TicketNo != req.TicketNo {
+					isCheckOut = false
+				}
+
 			}
+		}
+
+		transactionDetail.CheckOut = req.CheckOut //.In(util.GetLocation())
+		err = u.repoTransDetail.Update(ctx, transactionDetail.Id, transactionDetail)
+		if err != nil {
+			return err
 		}
 
 		if isCheckOut {
-			transactionDetail.CheckOut = req.CheckOut.In(util.GetLocation())
-			err = u.repoTransDetail.Update(ctx, transactionDetail.Id, transactionDetail)
-			if err != nil {
-				return err
+			if transaction.StatusTransaction != models.STATUS_CHECKOUT {
+				transaction.StatusTransaction = models.STATUS_CHECKOUT
+				u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
-		if transaction.StatusTransaction != models.STATUS_CHECKOUT {
-			transaction.StatusTransaction = models.STATUS_CHECKOUT
-			u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
-			if err != nil {
-				return err
-			}
-		}
 		return nil
 	})
 

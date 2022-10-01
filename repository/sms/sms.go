@@ -8,6 +8,7 @@ import (
 	"app/pkg/setting"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -31,7 +32,7 @@ func NewRepoSMS(key string, Conn db.DBGormDelegate) isms.Repository {
 }
 
 // Send implements isms.Repository
-func (r *repoSms) Send(ctx context.Context, to string, message string, smsType string) error {
+func (r *repoSms) Send(ctx context.Context, to string, message string, smsType string) (interface{}, error) {
 
 	var (
 		// Set initial variables
@@ -39,9 +40,11 @@ func (r *repoSms) Send(ctx context.Context, to string, message string, smsType s
 		accountSid = setting.TwilioCredential.Sid
 		authToken  = setting.TwilioCredential.Token
 		from       = setting.TwilioCredential.From
-		urlString  = fmt.Sprintf("%s/%s/Message.json", setting.TwilioCredential.Url, accountSid)
-		//   urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"
-
+		urlString  = fmt.Sprintf("%s/%s/Messages.json", setting.TwilioCredential.Url, accountSid)
+		respError  = models.TwillioResponseError{
+			Code:   500,
+			Status: 500,
+		}
 	)
 	if setting.TwilioCredential.Mode == "debug" {
 		to = setting.TwilioCredential.To
@@ -66,25 +69,34 @@ func (r *repoSms) Send(ctx context.Context, to string, message string, smsType s
 	resp, err := client.Do(req)
 	if err != nil {
 		logger.Error("failed send sms ", err)
-		return err
+		respError.Message = "error client do :" + err.Error()
+		return respError, err
 	}
-	fmt.Println(resp.Status)
-	var data map[string]interface{}
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	err = json.Unmarshal(bodyBytes, &data)
-	if err == nil {
-		fmt.Println(data["sid"])
-	}
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 
-		fmt.Println(data)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var data = models.TwillioResponse{}
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		err = json.Unmarshal(bodyBytes, &data)
+		if err != nil {
+			respError.Message = "error sms Unmarshal :" + err.Error()
+			return respError, err
+		}
 		logger.Info("sms terkirim")
+		return data, nil
 	} else {
+		fmt.Println(resp.Status)
+		var data = models.TwillioResponseError{}
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		err = json.Unmarshal(bodyBytes, &data)
+		if err != nil {
+			return respError, err
+		}
+
 		fmt.Println(data)
 		logger.Info("sms gagal")
+		return data, errors.New(data.Message)
 	}
 
-	return nil
 }
 
 // Create implements isms.Repository

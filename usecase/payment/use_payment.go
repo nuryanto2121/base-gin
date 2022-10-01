@@ -207,16 +207,32 @@ func paymentStatus(status string) models.StatusPayment {
 }
 
 // Status implements ipayment.Usecase
-func (u *usePayment) Status(ctx context.Context, Claims util.Claims, trxCode string) (interface{}, error) {
+func (u *usePayment) Status(ctx context.Context, Claims util.Claims, paymentToken string) (interface{}, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
 		logger = logging.Logger{}
 	)
-	data, err := u.coreGateway.CheckTransaction(trxCode)
-	if err != nil {
+	data, err := u.coreGateway.CheckTransaction(paymentToken)
+	if err != nil && err != models.ErrPaymentTokenExpired {
 		logger.Error("Failed check transaction midtrans ", err)
 		return nil, err
+	}
+
+	if err == models.ErrPaymentTokenExpired {
+		trx, err := u.repoTransaction.GetDataBy(ctx, "payment_token", paymentToken)
+		if err != nil {
+			logger.Error("payment.Status get transaction ", err)
+			return nil, err
+		}
+		trx.StatusPayment = models.STATUS_EXPIRED
+		trx.PaymentStatusDesc = "expire"
+		trx.UpdatedAt = util.GetTimeNow()
+		err = u.repoTransaction.Update(ctx, trx.Id, trx)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 	return data, nil
 

@@ -1,4 +1,4 @@
-package ijob
+package inotification
 
 import "context"
 

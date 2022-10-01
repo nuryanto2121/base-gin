@@ -12,6 +12,7 @@ import (
 	s3gateway "app/pkg/s3"
 	"app/pkg/setting"
 	"app/routers"
+	usecron "app/usecase/cron"
 )
 
 func init() {
@@ -49,7 +50,11 @@ func main() {
 
 	R := routers.GinRoutes{G: r}
 	R.Init()
-	r.Run(endPoint)
+
 	fmt.Println("Server Run at ", setting.ServerSetting.HttpPort)
+
+	go usecron.RunCron()
+
+	r.Run(endPoint)
 
 }

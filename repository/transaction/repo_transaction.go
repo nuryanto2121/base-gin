@@ -101,7 +101,7 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 			t.id ,t.transaction_code,ua."name" ,parent.phone_no 
 			,ua.is_parent ,td.check_in ,td.check_out 
 			,td.duration ,t.status_transaction ,t.status_payment
-			,td.ticket_no 
+			,td.ticket_no ,parent.id as parent_id
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
