@@ -308,6 +308,15 @@ definitions:
       pwd:
         type: string
     type: object
+  models.ResetPasswdMobile:
+    properties:
+      access_token:
+        type: string
+      confirm_pwd:
+        type: string
+      pwd:
+        type: string
+    type: object
   models.ResponseModelList:
     properties:
       data: {}
@@ -376,6 +385,17 @@ definitions:
       bank:
         type: string
       va_number:
+        type: string
+    type: object
+  models.VerifyForgotForm:
+    properties:
+      access_token:
+        type: string
+      email:
+        type: string
+      otp:
+        type: string
+      phone_no:
         type: string
     type: object
 info:
@@ -455,6 +475,40 @@ paths:
       summary: File Upload
       tags:
       - FileUpload
+  /v1/change-password:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: access token set from verify forgot otp
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPasswdMobile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Change Password
+      tags:
+      - Auth Mobile
   /v1/cms/audit_logs:
     get:
       parameters:
@@ -684,42 +738,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/app.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Change Password
-      tags:
-      - Auth
-  /v1/cms/forgot:
-    post:
-      parameters:
-      - description: Device Type
-        in: header
-        name: Device-Type
-        required: true
-        type: string
-      - description: Version Apps
-        in: header
-        name: Version
-        required: true
-        type: string
-      - description: Language Apps
-        in: header
-        name: Language
-        required: true
-        type: string
-      - description: 'req param #changes are possible to adjust the form of the registration
-          form from frontend'
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/models.ForgotForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: Forgot Password
       tags:
       - Auth
   /v1/cms/holidays:
@@ -1997,7 +2018,8 @@ paths:
         in: query
         name: search
         type: string
-      - description: InitSearch | status_transaction => STATUS_ORDER=2000001 |STATUS_CHECKIN=2000002|STATUS_CHECKOUT=2000003
+      - description: 'InitSearch | status_transaction_dtl => STATUS_CHECKIN=2000002,STATUS_CHECKOUT=2000003
+          |status_transaction => STATUS_ORDER=2000001 '
         in: query
         name: initsearch
         type: string
@@ -2591,6 +2613,40 @@ paths:
       summary: Create child
       tags:
       - Costumers
+  /v1/forgot-password:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: account fill with phone no set from verify forgot otp
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.ForgotForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: 'Forgot Password : for generate otp and send to user then go to ''/v1/verify'''
+      tags:
+      - Auth Mobile
   /v1/login:
     post:
       parameters:
@@ -3040,6 +3096,40 @@ paths:
       summary: GetListTicket Transaction
       tags:
       - Transaction
+  /v1/verify:
+    post:
+      parameters:
+      - description: Device Type
+        in: header
+        name: Device-Type
+        required: true
+        type: string
+      - description: Version Apps
+        in: header
+        name: Version
+        required: true
+        type: string
+      - description: Language Apps
+        in: header
+        name: Language
+        required: true
+        type: string
+      - description: account fill with phone no set from verify forgot otp
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.VerifyForgotForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Verify otp if success go to change-password
+      tags:
+      - Auth Mobile
 securityDefinitions:
   ApiKeyAuth:
     in: header

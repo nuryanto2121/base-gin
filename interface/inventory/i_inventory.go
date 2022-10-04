@@ -23,4 +23,5 @@ type Usecase interface {
 	Create(ctx context.Context, Claims util.Claims, data *models.InventoryForm) (err error)
 	Save(ctx context.Context, Claims util.Claims, ID uuid.UUID, data *models.InventoryForm) (err error)
 	Delete(ctx context.Context, Claims util.Claims, ID uuid.UUID) (err error)
+	PatchStock(ctx context.Context, Claims util.Claims, param models.InvPatchStockRequest) (err error)
 }

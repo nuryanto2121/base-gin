@@ -135,7 +135,7 @@ func (c *contTransaction) GetTicket(e *gin.Context) {
 // @Param page query int true "Page"
 // @Param perpage query int true "PerPage"
 // @Param search query string false "Search"
-// @Param initsearch query string false "InitSearch | status_transaction => STATUS_ORDER=2000001 |STATUS_CHECKIN=2000002|STATUS_CHECKOUT=2000003"
+// @Param initsearch query string false "InitSearch | status_transaction_dtl => STATUS_CHECKIN=2000002,STATUS_CHECKOUT=2000003 |status_transaction => STATUS_ORDER=2000001 "
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
 // @Router /v1/cms/transaction [get]

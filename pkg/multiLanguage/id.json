@@ -22,7 +22,7 @@
     "no_email_cant_forgot_password": "Tidak ada email tidak bisa lupa kata sandi",
     "first_account_needed": "Diperlukan akun pertama",
     "email_not_found": "Email tidak ditemukan",
-    "expired_firebase_token": "Token Firebase Kadaluwarsa",
+    "expired_access_token": "Token akses kadaluwarsa",
     "invalid_otp": "OTP salah",
     "format_email": "Format email salah",
     "message_error_Required":{
@@ -50,5 +50,7 @@
     "payment_token_expired":"token payment sudah kadaluarsa",
     "no_status_order":"hanya diizinkan yang status Order",
     "no_status_check_in":"hanya diizinkan yang status  check in",
-    "no_status_check_out":"hanya diizinkan yang status  check out"
+    "no_status_check_out":"hanya diizinkan yang status  check out",
+    "inventory_not_found":"inventory tidak ditemukan",
+    "qty_exceed_stock":"quantity melebihi stock product"
 }

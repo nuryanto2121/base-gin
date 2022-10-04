@@ -8,6 +8,7 @@ import (
 	"app/pkg/logging"
 	"app/pkg/middleware"
 	multilanguage "app/pkg/multiLanguage"
+	"app/pkg/redisdb"
 
 	s3gateway "app/pkg/s3"
 	"app/pkg/setting"
@@ -19,7 +20,7 @@ func init() {
 	setting.Setup()
 	multilanguage.Setup()
 	logging.Setup()
-	// postgres.Setup()
+	redisdb.Setup()
 	s3gateway.Setup()
 
 }

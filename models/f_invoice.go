@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	uuid "github.com/satori/go.uuid"
+)
 
 type InvoiceRequest struct {
 	Duration        time.Duration `json:"duration"`
@@ -38,4 +42,10 @@ type InvoiceResponse struct {
 	TransactionID string
 	PaymentToken  string
 	PaymentURL    string
+}
+
+type InvPatchStockRequest struct {
+	OutletId  uuid.UUID `json:"outlet_id"`
+	ProductId uuid.UUID `json:"product_id"`
+	Qty       int64     `json:"qty"`
 }

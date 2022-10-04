@@ -36,6 +36,12 @@ type ResetPasswd struct {
 	ConfirmPasswd string `json:"confirm_pwd" valid:"Required"`
 }
 
+type ResetPasswdMobile struct {
+	AccessToken   string `json:"access_token" valid:"Required"`
+	Passwd        string `json:"pwd" valid:"Required"`
+	ConfirmPasswd string `json:"confirm_pwd" valid:"Required"`
+}
+
 type ResetPasswdProfile struct {
 	OldPasswd     string `json:"old_pwd" valid:"Required"`
 	Passwd        string `json:"pwd" valid:"Required"`
@@ -51,9 +57,9 @@ type VerifyForm struct {
 
 type VerifyForgotForm struct {
 	Email       string `json:"email,omitempty"`
-	PhoneNo     string `json:"phone_no"`
-	AccessToken string `json:"access_token"`
-	Otp         string `json:"otp"`
+	PhoneNo     string `json:"phone_no" valid:"Required"`
+	AccessToken string `json:"access_token" valid:"Required"`
+	Otp         string `json:"otp" valid:"Required"`
 }
 
 type SosmedForm struct {

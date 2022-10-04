@@ -102,6 +102,7 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 			,ua.is_parent ,td.check_in ,td.check_out 
 			,td.duration ,t.status_transaction ,t.status_payment
 			,td.ticket_no ,parent.id as parent_id
+			,td.status_transaction_dtl
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
@@ -116,7 +117,8 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 			t.id ,t.transaction_code,ua."name" ,parent.phone_no 
 			,ua.is_parent ,td.check_in ,td.check_out 
 			,td.duration ,t.status_transaction ,t.status_payment
-			,td.ticket_no
+			,td.ticket_no,parent.id as parent_id
+			,td.status_transaction_dtl
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
@@ -271,9 +273,11 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 			,t.total_ticket ,total_amount ,t.status_transaction 
 			,case 
 				when t.status_transaction = 2000001 then 'Booked' 
-				when t.status_transaction = 2000002 then 'Active'
-				when t.status_transaction = 2000003 then 'Selesai'
+				when t.status_transaction = 2000002 then 'Check In'
+				when t.status_transaction = 2000003 then 'Check Out'
 				when t.status_transaction = 2000004 then 'Draf'
+				when t.status_transaction = 2000005 then 'Active'
+				when t.status_transaction = 2000006 then 'Selesai'
 				else ''
 			end as status_transaction_desc
 			,t.status_payment
@@ -308,9 +312,11 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 			,t.total_ticket ,total_amount ,t.status_transaction 
 			,case 
 				when t.status_transaction = 2000001 then 'Booked' 
-				when t.status_transaction = 2000002 then 'Active'
-				when t.status_transaction = 2000003 then 'Selesai'
+				when t.status_transaction = 2000002 then 'Check In'
+				when t.status_transaction = 2000003 then 'Check Out'
 				when t.status_transaction = 2000004 then 'Draf'
+				when t.status_transaction = 2000005 then 'Active'
+				when t.status_transaction = 2000006 then 'Selesai'
 				else ''
 			end as status_transaction_desc
 			,t.status_payment

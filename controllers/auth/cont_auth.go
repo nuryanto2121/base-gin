@@ -29,19 +29,8 @@ func NewContAuth(e *gin.Engine, useAuth iauth.Usecase) {
 	r := e.Group("/v1/cms")
 	r.Use(middleware.Versioning())
 	r.POST("/login", cont.Login)
-	r.POST("/forgot", cont.ForgotPassword)
-	r.POST("/change-password", cont.ChangePassword)
 	r.POST("/logout", cont.Logout)
-
-	// L := e.Group("/v1/cms/logout")
-	// L.Use(middleware.Authorize())
-	// L.POST("", cont.Logout)
-
-	v1 := e.Group("/v1")
-	v1.POST("/login", cont.LoginSosmed)
-	v1.POST("/register", cont.Register)
-	v1.Use(middleware.Authorize())
-	v1.POST("/logout", cont.Logout)
+	r.Use(middleware.Authorize()).POST("/change-password", cont.ChangePassword)
 
 }
 
@@ -123,47 +112,9 @@ func (u *ContAuth) Login(e *gin.Context) {
 	appE.Response(http.StatusOK, "Ok", out)
 }
 
-// Login :
-// @Summary auth
-// @Tags Auth Mobile
-// @Produce json
-// @Param Device-Type header string true "Device Type"
-// @Param Version header string true "Version Apps"
-// @Param Language header string true "Language Apps"
-// @Param req body models.LoginForm true "this model set from firebase"
-// @Success 200 {object} app.Response
-// @Router /v1/login [post]
-func (u *ContAuth) LoginSosmed(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	var (
-		logger = logging.Logger{}
-		appE   = app.Gin{C: e}
-		form   = models.LoginForm{}
-	)
-
-	// validasi and bind to struct
-	httpCode, errMsg := app.BindAndValidMulti(e, &form)
-	logger.Info(util.Stringify(form))
-	if httpCode != 200 {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
-		return
-	}
-
-	out, err := u.useAuth.LoginMobile(ctx, &form)
-	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
-		return
-	}
-
-	appE.Response(http.StatusOK, "Ok", out)
-}
-
 // ChangePassword :
 // @Summary Change Password
+// @Security ApiKeyAuth
 // @Tags Auth
 // @Produce json
 // @Param Device-Type header string true "Device Type"
@@ -200,82 +151,4 @@ func (u *ContAuth) ChangePassword(e *gin.Context) {
 	}
 
 	appE.Response(http.StatusOK, "Please Login", nil)
-}
-
-// Register :
-// @Summary Register
-// @Tags Auth Mobile
-// @Produce json
-// @Param Device-Type header string true "Device Type"
-// @Param Version header string true "Version Apps"
-// @Param Language header string true "Language Apps"
-// @Param req body models.RegisterForm true "Body with file zip"
-// @Success 200 {object} app.Response
-// @Router /v1/register [post]
-func (u *ContAuth) Register(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	var (
-		logger = logging.Logger{}
-		appE   = app.Gin{C: e}
-		form   = models.RegisterForm{}
-	)
-
-	// validasi and bind to struct
-	httpCode, errMsg := app.BindAndValidMulti(e, &form)
-	logger.Info(util.Stringify(form))
-	if httpCode != 200 {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
-		return
-	}
-
-	err := u.useAuth.Register(ctx, form)
-	if err != nil {
-		appE.ResponseError(http.StatusBadRequest, err)
-		return
-	}
-
-	appE.Response(http.StatusOK, "Ok", nil)
-}
-
-// ForgotPassword :
-// @Summary Forgot Password
-// @Tags Auth
-// @Produce json
-// @Param Device-Type header string true "Device Type"
-// @Param Version header string true "Version Apps"
-// @Param Language header string true "Language Apps"
-// @Param req body models.ForgotForm true "req param #changes are possible to adjust the form of the registration form from frontend"
-// @Success 200 {object} app.Response
-// @Router /v1/cms/forgot [post]
-func (u *ContAuth) ForgotPassword(e *gin.Context) {
-	ctx := e.Request.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	var (
-		logger = logging.Logger{} // wajib
-		appE   = app.Gin{C: e}    // wajib
-
-		form = models.ForgotForm{}
-	)
-	// validasi and bind to struct
-	httpCode, errMsg := app.BindAndValidMulti(e, &form)
-	logger.Info(util.Stringify(form))
-	if httpCode != 200 {
-		appE.ResponseErrorMulti(http.StatusBadRequest, "Bad Parameter", errMsg)
-		return
-	}
-
-	err := u.useAuth.ForgotPassword(ctx, &form)
-	if err != nil {
-		appE.ResponseError(tool.GetStatusCode(err), err)
-		return
-	}
-
-	appE.Response(http.StatusOK, "Check Your Email", nil)
-
 }

@@ -10,11 +10,12 @@ import (
 type Usecase interface {
 	LoginCms(ctx context.Context, dataLogin *models.LoginForm) (output interface{}, err error)
 	LoginMobile(ctx context.Context, dataLogin *models.LoginForm) (output interface{}, err error)
-	ForgotPassword(ctx context.Context, dataForgot *models.ForgotForm) (err error)
+	ForgotPassword(ctx context.Context, dataForgot *models.ForgotForm) (output interface{}, err error)
 	ResetPassword(ctx context.Context, dataReset *models.ResetPasswd) (err error)
+	ResetPasswordMobile(ctx context.Context, dataReset *models.ResetPasswdMobile) (err error)
 	Register(ctx context.Context, dataRegister models.RegisterForm) (err error)
 	Verify(ctx context.Context, dataVeriry models.VerifyForm) (output interface{}, err error)
-	VerifyForgot(ctx context.Context, dataVeriry models.VerifyForgotForm) (output interface{}, err error)
+	VerifyForgot(ctx context.Context, dataVeriry *models.VerifyForgotForm) (interface{}, error)
 	Logout(ctx context.Context, claim util.Claims, Token string) (err error)
 	CheckPhoneNo(ctx context.Context, PhoneNo string) (err error)
 }

@@ -22,7 +22,7 @@
     "no_email_cant_forgot_password": "No email cant forgot password",
     "first_account_needed": "First account needed",
     "email_not_found": "Email not found",
-    "expired_firebase_token": "Expired firebase token",
+    "expired_access_token": "Expired access token",
     "invalid_otp": "Invalid otp",
     "format_email": "Wrong format email",
     "message_error_Required":{
@@ -50,5 +50,7 @@
     "payment_token_expired":"token payment is expired",
     "no_status_order":"only allowed the Order status",
     "no_status_check_in":"only allowed the check in status",
-    "no_status_check_out":"only allowed the check out status"
+    "no_status_check_out":"only allowed the check out status",
+    "inventory_not_found":"inventory not found",
+    "qty_exceed_stock":"qty exceed stock"
 }

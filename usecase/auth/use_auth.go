@@ -2,12 +2,15 @@ package useauth
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
 	iauth "app/interface/auth"
 	ifileupload "app/interface/fileupload"
 	iroleoutlet "app/interface/role_outlet"
+	isms "app/interface/sms"
 	itrx "app/interface/trx"
 	iusers "app/interface/user"
 	iuserapps "app/interface/user_apps"
@@ -16,8 +19,11 @@ import (
 	"app/models"
 
 	"app/pkg/logging"
+	"app/pkg/redisdb"
 	"app/pkg/setting"
 	util "app/pkg/util"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type useAuht struct {
@@ -28,6 +34,7 @@ type useAuht struct {
 	repoRoleOutlet  iroleoutlet.Repository
 	repoUserApps    iuserapps.Repository
 	repoTrx         itrx.Repository
+	svcSMS          isms.Usecase
 	contextTimeOut  time.Duration
 }
 
@@ -35,7 +42,7 @@ func NewUserAuth(
 	repoAuth iusers.Repository, repoFile ifileupload.Repository,
 	repoUserSession iusersession.Repository, repoUserRole iuserrole.Repository,
 	repoRoleOutlet iroleoutlet.Repository, repoUserApps iuserapps.Repository,
-	repoTrx itrx.Repository, timeout time.Duration,
+	repoTrx itrx.Repository, svcSMS isms.Usecase, timeout time.Duration,
 ) iauth.Usecase {
 	return &useAuht{
 		repoAuth:        repoAuth,
@@ -45,11 +52,12 @@ func NewUserAuth(
 		repoRoleOutlet:  repoRoleOutlet,
 		repoUserApps:    repoUserApps,
 		repoTrx:         repoTrx,
+		svcSMS:          svcSMS,
 		contextTimeOut:  timeout,
 	}
 }
 
-func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (output interface{}, err error) {
+func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (response interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
@@ -93,19 +101,23 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	}
 
 	//save to session
-	exDate := util.GetTimeNow().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour)
+	// exDate := util.GetTimeNow().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour)
 
-	dataSession := &models.UserSession{
-		UserId:      dataUser.Id,
-		Token:       token,
-		ExpiredDate: exDate,
-	}
-	err = u.repoUserSession.Create(ctx, dataSession)
+	// dataSession := &models.UserSession{
+	// 	UserId:      dataUser.Id,
+	// 	Token:       token,
+	// 	ExpiredDate: exDate,
+	// }
+	// err = u.repoUserSession.Create(ctx, dataSession)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	err = redisdb.AddSession(token, dataUser.Id, time.Duration(setting.AppSetting.ExpiredJwt)*time.Hour)
 	if err != nil {
 		return nil, err
 	}
 
-	response := map[string]interface{}{}
+	response = map[string]interface{}{}
 	if len(outlets) == 0 {
 		response = map[string]interface{}{
 			"users":   dataUser,
@@ -125,7 +137,7 @@ func (u *useAuht) LoginCms(ctx context.Context, dataLogin *models.LoginForm) (ou
 	return response, nil
 }
 
-func (u *useAuht) LoginMobile(ctx context.Context, req *models.LoginForm) (output interface{}, err error) {
+func (u *useAuht) LoginMobile(ctx context.Context, req *models.LoginForm) (response interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
@@ -151,18 +163,24 @@ func (u *useAuht) LoginMobile(ctx context.Context, req *models.LoginForm) (outpu
 	}
 
 	//save to session
-	exDate := util.GetTimeNow().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour)
-	dataSession := &models.UserSession{
-		UserId:      userApps.Id,
-		Token:       token,
-		ExpiredDate: exDate,
-	}
-	err = u.repoUserSession.Create(ctx, dataSession)
+	// exDate := util.GetTimeNow().Add(time.Duration(setting.AppSetting.ExpiredJwt) * time.Hour)
+	// dataSession := &models.UserSession{
+	// 	UserId:      userApps.Id,
+	// 	Token:       token,
+	// 	ExpiredDate: exDate,
+	// }
+
+	// err = u.repoUserSession.Create(ctx, dataSession)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	err = redisdb.AddSession(token, userApps.Id, time.Duration(setting.AppSetting.ExpiredJwt)*time.Hour)
 	if err != nil {
 		return nil, err
 	}
 
-	response := map[string]interface{}{
+	response = map[string]interface{}{
 		"user_id":  userApps.Id,
 		"token":    token,
 		"name":     userApps.Name,
@@ -173,37 +191,48 @@ func (u *useAuht) LoginMobile(ctx context.Context, req *models.LoginForm) (outpu
 
 }
 
-func (u *useAuht) ForgotPassword(ctx context.Context, dataForgot *models.ForgotForm) (err error) {
+func (u *useAuht) ForgotPassword(ctx context.Context, dataForgot *models.ForgotForm) (result interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 
 	defer cancel()
 
-	// dataUser, err := fb.GetUserByAccount(ctx, util.NameStruct(models.Users{}), dataForgot.Account)
-	// if err != nil {
-	// 	return err
+	dataCustomer, err := u.repoUserApps.GetByAccount(ctx, dataForgot.Account)
+	if err != nil {
+		if err == models.ErrNotFound {
+			return nil, models.ErrAccountNotFound
+		}
+		return nil, err
+	}
+
+	tokenTmp := util.Md5(dataCustomer.Id.String())
+	genCode := util.GenerateNumber(6)
+	genHast := util.Md5(genCode)
+
+	// data := map[string]interface{}{
+	// 	"user_id": dataCustomer.Id,
+	// 	"otp":     genHast,
 	// }
+	//send sms
+	message := fmt.Sprintf(`jaga kerahasian OTP : %s anda`, genCode)
+	err = u.svcSMS.Send(ctx, uuid.UUID{}, dataCustomer.PhoneNo, message, "")
+	if err != nil {
+		return nil, err
+	}
 
-	// GenCode := util.GenerateNumber(6)
-
-	// // send generate code
-	// mailService := &useemailauth.Register{
-	// 	Email:      dataUser.Email,
-	// 	Name:       dataUser.Name,
-	// 	GenerateNo: GenCode,
-	// }
-
-	// go mailService.SendRegister()
-	// // if err != nil {
-	// // 	return err
-	// // }
-
+	data, _ := json.Marshal(map[string]interface{}{
+		"user_id": dataCustomer.Id,
+		"otp":     genHast,
+	})
 	// //store to redis
-	// err = redisdb.AddSession(dataUser.Email, GenCode, 5*time.Minute)
-	// if err != nil {
-	// 	return err
-	// }
-
-	return nil
+	err = redisdb.AddSession(tokenTmp, data, 10*time.Minute)
+	if err != nil {
+		return nil, err
+	}
+	response := map[string]interface{}{
+		"otp":          genCode,
+		"access_token": tokenTmp,
+	}
+	return response, nil
 }
 
 func (u *useAuht) ResetPassword(ctx context.Context, dataReset *models.ResetPasswd) (err error) {
@@ -243,6 +272,43 @@ func (u *useAuht) ResetPassword(ctx context.Context, dataReset *models.ResetPass
 	return nil
 }
 
+func (u *useAuht) ResetPasswordMobile(ctx context.Context, dataReset *models.ResetPasswdMobile) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+
+	defer cancel()
+	var (
+		logger   = logging.Logger{}
+		dataUser = &models.UserApps{}
+		// dataMap  = map[string]interface{}{}
+	)
+
+	if dataReset.Passwd != dataReset.ConfirmPasswd {
+		return models.ErrWrongPasswordConfirm
+	}
+
+	userId := redisdb.GetSession(dataReset.AccessToken)
+	if userId == nil {
+		return models.ErrExpiredAccessToken
+	}
+
+	dataUser, err = u.repoUserApps.GetDataBy(ctx, "id", userId.(string))
+	if err != nil {
+		logger.Error("error usecase.LoginCms().GetByAccount ", err)
+		return err
+	}
+
+	dataUser.Password, _ = util.Hash(dataReset.Passwd)
+	dtUpdate := map[string]interface{}{
+		"password": dataUser.Password,
+	}
+
+	err = u.repoUserApps.Update(ctx, dataUser.Id, dtUpdate) //repoAuth.Update(ctx, dataUser.Id, dtUpdate)
+	if err != nil {
+		logger.Error("error usecase.ResetPassword().Update ", err)
+		return err
+	}
+	return nil
+}
 func (u *useAuht) Register(ctx context.Context, req models.RegisterForm) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
@@ -304,11 +370,11 @@ func (u *useAuht) Register(ctx context.Context, req models.RegisterForm) (err er
 	return errTx
 }
 
-func (u *useAuht) Verify(ctx context.Context, dataVerify models.VerifyForm) (output interface{}, err error) {
+func (u *useAuht) Verify(ctx context.Context, dataVerify models.VerifyForm) (response interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
-	response := map[string]interface{}{
+	response = map[string]interface{}{
 		"user_id": "dataUser.ID",
 		// "token":    token,
 		// "email":    dataUser.Email,
@@ -319,49 +385,40 @@ func (u *useAuht) Verify(ctx context.Context, dataVerify models.VerifyForm) (out
 
 	return response, nil
 }
-func (u *useAuht) VerifyForgot(ctx context.Context, dataVerify models.VerifyForgotForm) (output interface{}, err error) {
+func (u *useAuht) VerifyForgot(ctx context.Context, dataVerify *models.VerifyForgotForm) (response interface{}, err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 
 	defer cancel()
-	var dataUser = &models.Users{}
+	var dataMap = map[string]interface{}{}
 
-	if dataVerify.AccessToken != "" {
+	token := dataVerify.AccessToken
+	existOtp := redisdb.GetSession(token)
+	if existOtp == nil {
+		return nil, models.ErrExpiredAccessToken
+	}
+	dt, _ := existOtp.(string)
 
-		// dataToken, err := fb.VerifyIDToken(ctx, dataVerify.AccessToken)
-		// if err != nil {
-		// 	return nil, err
-		// }
-		// expiredDate := util.Int64ToTime(dataToken.Expires)
-		// if expiredDate.Before(util.GetTimeNow()) {
-		// 	return nil, models.ErrExpiredFirebaseToken
-		// }
-
-		// dataUser, err = fb.GetUserByAccount(ctx, util.NameStruct(models.Users{}), dataVerify.PhoneNo)
-		// if err != nil {
-		// 	return nil, err
-		// }
-
-	} else {
-		//validasi otp
-		// if dataVerify.Otp == "" {
-		// 	return nil, models.ErrOtpNotFound
-		// }
-		// existOTP := redisdb.GetSession(dataVerify.Email)
-
-		// if existOTP != dataVerify.Otp {
-		// 	return nil, models.ErrInvalidOTP
-		// }
-
-		// dataUser, err = fb.GetUserByAccount(ctx, util.NameStruct(models.Users{}), dataVerify.Email)
-		// if err != nil {
-		// 	return nil, err
-		// }
+	// str := string(existOtp)
+	err = json.Unmarshal([]byte(dt), &dataMap)
+	if err != nil {
+		return nil, err
+	}
+	otp := fmt.Sprintf("%v", dataMap["otp"])
+	if otp == "" {
+		return nil, models.ErrOtpNotFound
 	}
 
-	account, _ := util.EncryptMessage(dataUser.Email)
+	if otp != util.Md5(dataVerify.Otp) {
+		return nil, models.ErrInvalidOTP
+	}
 
-	response := map[string]interface{}{
-		"account": account,
+	// models.ErrQtyExceedStock
+	if err := redisdb.AddSession(token, dataMap["user_id"], 5*time.Minute); err != nil {
+		return nil, err
+	}
+
+	response = map[string]interface{}{
+		"access_token": token,
 	}
 
 	return response, nil

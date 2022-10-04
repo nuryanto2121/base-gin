@@ -10,12 +10,16 @@ import (
 	"app/pkg/util"
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	_midtransGateway "app/pkg/midtrans"
 
 	// "github.com/midtrans/midtrans-go"
+	iinventory "app/interface/inventory"
+	itrx "app/interface/trx"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/midtrans/midtrans-go"
 	"github.com/mitchellh/mapstructure"
 	uuid "github.com/satori/go.uuid"
@@ -28,16 +32,29 @@ type usePayment struct {
 	midtransGateway     *_midtransGateway.Gateway
 	// coreGateway         *_coreGateway.Gateway
 	coreGateway    imidtrans.Repository
+	repoTrx        itrx.Repository
+	useInventory   iinventory.Usecase
 	contextTimeOut time.Duration
 }
 
-func NewUsePayment(a itransaction.Usecase, b *_midtransGateway.Gateway, c itransaction.Repository, d ipaymentnotificationlogs.Repository, e imidtrans.Repository, timeout time.Duration) ipayment.Usecase {
+func NewUsePayment(
+	a itransaction.Usecase,
+	b *_midtransGateway.Gateway,
+	c itransaction.Repository,
+	d ipaymentnotificationlogs.Repository,
+	e imidtrans.Repository,
+	f itrx.Repository,
+	g iinventory.Usecase,
+	timeout time.Duration,
+) ipayment.Usecase {
 	return &usePayment{
 		useTransaction:      a,
 		midtransGateway:     b,
 		repoTransaction:     c,
 		repoPaymentNotifLog: d,
 		coreGateway:         e,
+		repoTrx:             f,
+		useInventory:        g,
 		contextTimeOut:      timeout,
 	}
 }
@@ -186,9 +203,61 @@ func (u *usePayment) PayTransaction(ctx context.Context, req *models.MidtransNot
 		if err != nil {
 			return err
 		}
+
+		switch req.TransactionStatus {
+		case "deny", "cancel", "expire":
+			u.RevertStockInventory(ctx, req.OrderID)
+		}
 	}
 
 	return nil
+}
+
+func (u *usePayment) RevertStockInventory(ctx context.Context, orderId string) error {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+		var (
+			Claims = util.Claims{StandardClaims: jwt.StandardClaims{Id: "transactionCode"}}
+			wg     sync.WaitGroup
+			errc   = make(chan error)
+		)
+
+		trxData, err := u.useTransaction.GetDataBy(trxCtx, Claims, orderId)
+		if err != nil {
+			return err
+		}
+
+		for _, val := range trxData.Details {
+			wg.Add(1)
+			// trxData.
+			//check stock then update inventory
+			go func(r *usePayment, wgr *sync.WaitGroup, trxCtxh context.Context, Claimsh util.Claims, outletId, productId uuid.UUID, qty int64, errch chan error) {
+				defer wgr.Done()
+				var loggr = logging.Logger{}
+				err := r.useInventory.PatchStock(trxCtxh, Claimsh, models.InvPatchStockRequest{
+					OutletId:  outletId,
+					ProductId: productId,
+					Qty:       qty,
+				})
+				if err != nil {
+					loggr.Error("error RevertStockInventory.PatchStock", err)
+					errch <- err
+				}
+			}(u, &wg, trxCtx, Claims, trxData.OutletID, val.ProductId, val.ProductQty, errc)
+
+		}
+
+		wg.Wait()
+		if len(errc) > 0 {
+			return <-errc
+		}
+
+		return nil
+	})
+
+	return errTx
 }
 
 func paymentStatus(status string) models.StatusPayment {
@@ -232,6 +301,7 @@ func (u *usePayment) Status(ctx context.Context, Claims util.Claims, paymentToke
 		if err != nil {
 			return nil, err
 		}
+		return nil, models.ErrPaymentTokenExpired
 
 	}
 	return data, nil

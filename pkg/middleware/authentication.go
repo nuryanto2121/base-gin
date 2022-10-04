@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -117,32 +116,10 @@ func Authorize() gin.HandlerFunc {
 			msg = "Auth Token Required"
 		} else {
 			// validasi Session And JWT
-
-			auth := authorize.Session{
-				Token: token,
-			}
-			dtSession, err := auth.GetSession(context.Background())
-			if err != nil {
+			existToken := redisdb.GetSession(token)
+			if existToken == "" {
 				code = http.StatusUnauthorized
 				msg = "Token Failed"
-				resp := app.Response{
-					Msg:   msg,
-					Data:  data,
-					Error: msg,
-				}
-				e.AbortWithStatusJSON(code, resp)
-				return
-			}
-			fmt.Println(dtSession.ExpiredDate)
-			fmt.Println(util.GetTimeNow())
-			if dtSession.ExpiredDate.Before(util.GetTimeNow()) {
-				resp := app.Response{
-					Msg:   "Token Expired",
-					Data:  data,
-					Error: "Token Expired",
-				}
-				e.AbortWithStatusJSON(http.StatusUnauthorized, resp)
-				return
 			}
 
 			//Validasi JWT

@@ -41,6 +41,8 @@ const (
 	STATUS_CHECKIN  StatusTransaction = 2000002
 	STATUS_CHECKOUT StatusTransaction = 2000003
 	STATUS_DRAF     StatusTransaction = 2000004
+	STATUS_ACTIVE   StatusTransaction = 2000005
+	STATUS_FINISH   StatusTransaction = 2000006
 )
 
 func (s StatusTransaction) String() string {
@@ -54,6 +56,10 @@ func (s StatusTransaction) String() string {
 		result = "Check Out"
 	case STATUS_DRAF:
 		result = "Draf"
+	case STATUS_ACTIVE:
+		result = "Active"
+	case STATUS_FINISH:
+		result = "finish"
 
 	}
 

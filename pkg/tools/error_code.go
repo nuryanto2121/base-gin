@@ -19,13 +19,13 @@ func GetStatusCode(err error) int {
 		return http.StatusInternalServerError
 	case models.ErrNotFound, models.ErrEmailNotFound, models.ErrOtpNotFound, models.ErrEmailNotFound, models.ErrVersioningNotFound, models.ErrAccountNotFound, models.ErrTransactionNotFound:
 		return http.StatusNotFound
-	case models.ErrConflict, models.ErrAccountConflict, models.ErrAccountAlreadyExist, models.ErrDataAlreadyExist:
+	case models.ErrConflict, models.ErrAccountConflict, models.ErrAccountAlreadyExist, models.ErrDataAlreadyExist, models.ErrInventoryNotFound:
 		return http.StatusConflict
-	case models.ErrUnauthorized, models.ErrInvalidLogin, models.ErrInvalidPassword, models.ErrClaimsDecode, models.ErrPaymentTokenExpired:
+	case models.ErrUnauthorized, models.ErrInvalidLogin, models.ErrInvalidPassword, models.ErrClaimsDecode, models.ErrPaymentTokenExpired, models.ErrExpiredAccessToken:
 		return http.StatusUnauthorized
 	case models.ErrPaymentNeeded:
 		return http.StatusPaymentRequired
-	case models.ErrNoStatusCheckIn, models.ErrNoStatusOrder, models.ErrNoStatusCheckOut:
+	case models.ErrNoStatusCheckIn, models.ErrNoStatusOrder, models.ErrNoStatusCheckOut, models.ErrQtyExceedStock:
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError

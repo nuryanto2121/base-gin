@@ -106,6 +106,10 @@ func (g *GinRoutes) Init() {
 	r := g.G
 	r.GET("/v1//swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	//sms
+	repoSMS := _repoSMS.NewRepoSMS("", dbConn)
+	useSMS := _useSMS.NewSMS(repoSMS, timeoutContext)
+
 	midtransGateway := _midtransGateway.NewGateway(*setting.MidtransCredential)
 	midtransCoreGateway := _repoCoreGateway.NewRepoGateway(*setting.MidtransCredential)
 
@@ -128,11 +132,12 @@ func (g *GinRoutes) Init() {
 	_ = _useRoleOutlet.NewUseRoleOutlet(repoRoleOutlet, timeoutContext)
 
 	repoUser := _repoUser.NewRepoSysUser(dbConn)
-	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, repoRoleOutlet, repoUserApps, repoTrx, timeoutContext)
+	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, repoRoleOutlet, repoUserApps, repoTrx, useSMS, timeoutContext)
 	useUser := _useUser.NewUserSysUser(repoUser, repoUserRole, repoRoleOutlet, timeoutContext)
 
 	_contUser.NewContUsers(g.G, useUser)
 	_contAuth.NewContAuth(g.G, useAuth)
+	_contAuth.NewContAuthMobile(g.G, useAuth)
 
 	_contFileUpload.NewContFileUpload(g.G, useFileUpload)
 
@@ -166,18 +171,16 @@ func (g *GinRoutes) Init() {
 
 	repoTransactionDetail := _repoTransactionDetail.NewRepoTransactionDetail(dbConn)
 	repoTransaction := _repoTransaction.NewRepoTransaction(dbConn)
-	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, repoTransactionDetail, repoOutlet, repoSkuManagement, repoUserApps, repoTrx, midtransGateway, timeoutContext)
+	useTransaction := _useTransaction.NewUseTransaction(repoTransaction, repoTransactionDetail, repoOutlet, repoSkuManagement, repoUserApps, repoTrx, midtransGateway, useInventory, timeoutContext)
 	_contTransaction.NewContTransaction(g.G, useTransaction)
 
 	useUserApps := _useUserApps.NewUseUserApps(repoUserApps, repoTrx, timeoutContext)
 	_contCustomers.NewContCostumers(g.G, useUserApps)
 
 	repoPayNotifLog := _repoPaymentNotificationLogs.NewRepoMidtransNotificationLog(dbConn)
-	usePayment := _usePayment.NewUsePayment(useTransaction, midtransGateway, repoTransaction, repoPayNotifLog, midtransCoreGateway, timeoutContext)
+	usePayment := _usePayment.NewUsePayment(useTransaction, midtransGateway, repoTransaction, repoPayNotifLog, midtransCoreGateway, repoTrx, useInventory, timeoutContext)
 	_contPayment.NewContPayment(g.G, usePayment)
 
-	repoSMS := _repoSMS.NewRepoSMS("", dbConn)
-	useSMS := _useSMS.NewSMS(repoSMS, timeoutContext)
 	// err := useSMS.Send(context.Background(), uuid.FromStringOrNil(""), "+6285777374040", "test SMS dari server", "")
 	// if err != nil {
 	// 	fmt.Println(err)

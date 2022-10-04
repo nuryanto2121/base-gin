@@ -26,26 +26,29 @@ type TransactionDetailForm struct {
 }
 
 type TransactionList struct {
-	ID                    uuid.UUID         `json:"id"`
-	TransactionCode       string            `json:"transaction_code"`
-	TicketNo              string            `json:"ticket_no"`
-	Name                  string            `json:"name" gorm:"name"`
-	PhoneNo               string            `json:"phone_no" gorm:"phone_no"`
-	IsParent              bool              `json:"is_parent" gorm:"is_parent"`
-	ParentId              uuid.UUID         `json:"-" gorm:"parent_id"`
-	CheckIn               time.Time         `json:"check_in" gorm:"check_in"`
-	CheckOut              time.Time         `json:"check_out" gorm:"check_out"`
-	Duration              int64             `json:"duration" gorm:"duration"`
-	StatusTransaction     StatusTransaction `json:"status_transaction" gorm:"status_transaction"`
-	StatusTransactionDesc string            `json:"status_transaction_desc,omitempty"`
-	StatusPayment         StatusPayment     `json:"status_payment" gorm:"status_payment"`
-	StatusPaymentDesc     string            `json:"status_payment_desc,omitempty"`
+	ID                       uuid.UUID         `json:"id"`
+	TransactionCode          string            `json:"transaction_code"`
+	TicketNo                 string            `json:"ticket_no"`
+	Name                     string            `json:"name" gorm:"name"`
+	PhoneNo                  string            `json:"phone_no" gorm:"phone_no"`
+	IsParent                 bool              `json:"is_parent" gorm:"is_parent"`
+	ParentId                 uuid.UUID         `json:"-" gorm:"parent_id"`
+	CheckIn                  time.Time         `json:"check_in" gorm:"check_in"`
+	CheckOut                 time.Time         `json:"check_out" gorm:"check_out"`
+	Duration                 int64             `json:"duration" gorm:"duration"`
+	StatusTransaction        StatusTransaction `json:"status_transaction" gorm:"status_transaction"`
+	StatusTransactionDesc    string            `json:"status_transaction_desc,omitempty"`
+	StatusTransactionDtl     StatusTransaction `json:"status_transaction_dtl" gorm:"status_transaction"`
+	StatusTransactionDtlDesc string            `json:"status_transaction_dtl_desc,omitempty"`
+	StatusPayment            StatusPayment     `json:"status_payment" gorm:"status_payment"`
+	StatusPaymentDesc        string            `json:"status_payment_desc,omitempty"`
 }
 
 type TransactionResponse struct {
 	ID                    uuid.UUID                    `json:"id,omitempty"`
 	TransactionCode       string                       `json:"transaction_code"`
 	TransactionDate       time.Time                    `json:"transaction_date" `
+	OutletID              uuid.UUID                    `json:"outlet_id,omitempty"`
 	OutletName            string                       `json:"outlet_name"`
 	OutletCity            string                       `json:"outlet_city"`
 	TotalTicket           int64                        `json:"total_ticket"`
@@ -66,6 +69,7 @@ type TransactionResponse struct {
 type TransactionDetailResponse struct {
 	CustomerName string      `json:"customer_name"`
 	Description  string      `json:"description"`
+	ProductId    uuid.UUID   `json:"product_id,omitempty"`
 	ProductQty   int64       `json:"product_qty"`
 	Duration     int64       `json:"duration"`
 	Amount       float64     `json:"amount"`

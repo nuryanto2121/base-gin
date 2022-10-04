@@ -1,6 +1,7 @@
 package usetransaction
 
 import (
+	iinventory "app/interface/inventory"
 	ioutlets "app/interface/outlets"
 	iskumanagement "app/interface/sku_management"
 	itransaction "app/interface/transaction"
@@ -32,6 +33,7 @@ type useTransaction struct {
 	repoTrx           itrx.Repository
 	// repuUserApps iuserapps.Repository
 	midtransGateway *_midtransGateway.Gateway
+	useInventory    iinventory.Usecase
 	contextTimeOut  time.Duration
 }
 
@@ -43,6 +45,7 @@ func NewUseTransaction(
 	d iuserapps.Repository,
 	e itrx.Repository,
 	f *_midtransGateway.Gateway,
+	g iinventory.Usecase,
 	timeout time.Duration,
 ) itransaction.Usecase {
 	return &useTransaction{
@@ -53,6 +56,7 @@ func NewUseTransaction(
 		repoCustomer:      d,
 		repoTrx:           e,
 		midtransGateway:   f,
+		useInventory:      g,
 		contextTimeOut:    timeout,
 	}
 }
@@ -144,6 +148,7 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 		}
 		dt.Amount = val.Amount
 		dt.Duration = val.Duration
+		dt.ProductId = val.ProductId
 		dt.ProductQty = val.ProductQty
 
 		details = append(details, dt)
@@ -153,6 +158,7 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 		ID:                    trxHeader.Id,
 		TransactionCode:       trxHeader.TransactionCode,
 		TransactionDate:       trxHeader.TransactionDate,
+		OutletID:              outlet.Id,
 		OutletName:            outlet.OutletName,
 		OutletCity:            outlet.OutletCity,
 		TotalTicket:           trxHeader.TotalTicket,
@@ -192,6 +198,7 @@ func (u *useTransaction) GetList(ctx context.Context, Claims util.Claims, queryp
 
 		val.StatusPaymentDesc = val.StatusPayment.String()
 		val.StatusTransactionDesc = val.StatusTransaction.String()
+		val.StatusTransactionDtlDesc = val.StatusTransactionDtl.String()
 		// if val.StatusTransaction == models.STATUS_CHECKIN { //!val.CheckIn.IsZero() {
 		// 	// fmt.Println(val.CheckIn.In(util.GetLocation()))
 		// 	// fmt.Println("=======================")
@@ -314,6 +321,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 	}
 
 	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+
 		err := u.repoTransaction.Create(trxCtx, &mTransaction)
 		if err != nil {
 			return err
@@ -321,6 +329,16 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 		//set id transaction
 		result.ID = mTransaction.Id
 		for _, val := range req.Details {
+			//check stock then update inventory
+			err := u.useInventory.PatchStock(trxCtx, Claims, models.InvPatchStockRequest{
+				OutletId:  req.OutletId,
+				ProductId: val.ProductId,
+				Qty:       -val.ProductQty,
+			})
+			if err != nil {
+				return err
+			}
+
 			isChild := false
 			customerName := ""
 			Product, err := u.repoSkuManagement.GetDataBy(trxCtx, "id", val.ProductId.String())
@@ -525,19 +543,19 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 				if val.TicketNo != req.TicketNo {
 					isCheckin = false
 				}
-
 			}
 		}
 
 		transactionDetail.CheckIn = req.CheckIn
+		transactionDetail.StatusTransactionDtl = models.STATUS_CHECKIN
 		err = u.repoTransDetail.Update(trxCtx, transactionDetail.Id, transactionDetail)
 		if err != nil {
 			return err
 		}
 
 		if isCheckin {
-			if transaction.StatusTransaction != models.STATUS_CHECKIN {
-				transaction.StatusTransaction = models.STATUS_CHECKIN
+			if transaction.StatusTransaction != models.STATUS_ACTIVE {
+				transaction.StatusTransaction = models.STATUS_ACTIVE
 				err = u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
 				if err != nil {
 					return err
@@ -604,14 +622,15 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 		}
 
 		transactionDetail.CheckOut = req.CheckOut //.In(util.GetLocation())
+		transactionDetail.StatusTransactionDtl = models.STATUS_CHECKOUT
 		err = u.repoTransDetail.Update(ctx, transactionDetail.Id, transactionDetail)
 		if err != nil {
 			return err
 		}
 
 		if isCheckOut {
-			if transaction.StatusTransaction != models.STATUS_CHECKOUT {
-				transaction.StatusTransaction = models.STATUS_CHECKOUT
+			if transaction.StatusTransaction != models.STATUS_FINISH {
+				transaction.StatusTransaction = models.STATUS_FINISH
 				u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
 				if err != nil {
 					return err

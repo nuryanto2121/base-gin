@@ -81,15 +81,17 @@ func (c repoGateway) CheckTransaction(paymentToken string) (*coreapi.Transaction
 		return nil, err
 	}
 	fmt.Println(string(responseData))
-	if response.StatusCode != http.StatusOK || response.StatusCode != http.StatusCreated {
+	// resp.StatusCode >= 200 && resp.StatusCode < 300
+	if response.StatusCode >= http.StatusOK && response.StatusCode < http.StatusMultipleChoices {
+		if err := json.Unmarshal(responseData, &result); err != nil {
+			// panic(err)
+			return nil, err
+		}
+		fmt.Println(result)
+	} else {
 		logger.Error("error status header not ok ")
 		return nil, models.ErrPaymentTokenExpired //status.Code()//errors.New("bad parameter")
 	}
 
-	if err := json.Unmarshal(responseData, &result); err != nil {
-		// panic(err)
-		return nil, err
-	}
-	fmt.Println(result)
 	return result, nil
 }

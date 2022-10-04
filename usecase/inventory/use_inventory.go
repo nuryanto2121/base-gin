@@ -133,3 +133,36 @@ func (u *useInventory) Delete(ctx context.Context, Claims util.Claims, ID uuid.U
 	}
 	return nil
 }
+
+// PatchStock implements iinventory.Usecase
+func (u *useInventory) PatchStock(ctx context.Context, Claims util.Claims, param models.InvPatchStockRequest) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
+	defer cancel()
+
+	invList, err := u.repoInventory.GetList(ctx,
+		models.ParamList{
+			InitSearch: fmt.Sprintf("outlet_id = '%s' and product_id = '%s'", param.OutletId, param.ProductId),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if len(invList) == 0 {
+		return models.ErrInventoryNotFound
+	}
+
+	inv := invList[0]
+
+	// if inv.Qty+param.Qty < 0 {
+	// 	return models.ErrQtyExceedStock
+	// }
+
+	inv.Qty += param.Qty
+
+	err = u.repoInventory.Update(ctx, inv.Id, inv)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

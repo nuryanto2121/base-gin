@@ -3,7 +3,9 @@ package util
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -102,4 +104,15 @@ func DecryptMessage(message string) (string, error) {
 	stream.XORKeyStream(cipherText, cipherText)
 
 	return string(cipherText), nil
+}
+
+func Md5(text string) string {
+	data := []byte(text)
+
+	return fmt.Sprintf("%x", md5.Sum(data))
+}
+
+func Sha256(text string) string {
+	data := []byte(text)
+	return fmt.Sprintf("%x", sha256.Sum256(data))
 }
