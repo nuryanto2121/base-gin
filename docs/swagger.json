@@ -1719,6 +1719,73 @@
                 }
             }
         },
+        "/v1/cms/report": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Report"
+                ],
+                "summary": "GetList Report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "StartDate",
+                        "name": "start_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "EndDate",
+                        "name": "end_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OutletId",
+                        "name": "outlet_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseModelList"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/cms/roles": {
             "get": {
                 "security": [
@@ -3210,6 +3277,60 @@
                 }
             }
         },
+        "/v1/customer/child/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Costumers"
+                ],
+                "summary": "Delete Costumers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Type",
+                        "name": "Device-Type",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version Apps",
+                        "name": "Version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language Apps",
+                        "name": "Language",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID from children id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/customer/{id}": {
             "get": {
                 "security": [
@@ -3313,58 +3434,6 @@
                         "schema": {
                             "$ref": "#/definitions/models.AddUserApps"
                         }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/app.Response"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Costumers"
-                ],
-                "summary": "Delete Costumers",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Device Type",
-                        "name": "Device-Type",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version Apps",
-                        "name": "Version",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Language Apps",
-                        "name": "Language",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "ID from children id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -4299,6 +4368,9 @@
                 "dob": {
                     "type": "string"
                 },
+                "is_delete": {
+                    "type": "boolean"
+                },
                 "is_parent": {
                     "type": "boolean"
                 },
@@ -4575,6 +4647,12 @@
                 },
                 "outlet_name": {
                     "type": "string"
+                },
+                "overtime_amount": {
+                    "type": "number"
+                },
+                "toleransi_time": {
+                    "type": "integer"
                 }
             }
         },

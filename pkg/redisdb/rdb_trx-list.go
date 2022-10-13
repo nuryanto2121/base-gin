@@ -7,13 +7,13 @@ import (
 
 // GetList :
 func GetList(key string) ([]string, error) {
-	list, err := rdb.SMembers(key).Result()
+	list, err := Rdb.SMembers(key).Result()
 	return list, err
 }
 
 // RemoveList :
 func RemoveList(key string, val interface{}) error {
-	_, err := rdb.SRem(key, val).Result()
+	_, err := Rdb.SRem(key, val).Result()
 	if err != nil {
 		return err
 	}
@@ -22,7 +22,7 @@ func RemoveList(key string, val interface{}) error {
 
 // AddList :
 func AddList(key, val string) error {
-	_, err := rdb.SAdd(key, val).Result()
+	_, err := Rdb.SAdd(key, val).Result()
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func AddList(key, val string) error {
 
 // TurncateList :
 func TurncateList(key string) error {
-	_, err := rdb.Del(key).Result()
+	_, err := Rdb.Del(key).Result()
 	if err != nil {
 		return err
 	}
@@ -50,12 +50,12 @@ func TurncateList(key string) error {
 // 	} else {
 // 		tm = 0
 // 	}
-// 	set := rdb.Set(key, val, tm)
+// 	set := Rdb.Set(key, val, tm)
 // 	fmt.Println(set)
 // 	return nil
 // }
 func AddSession(key string, val interface{}, mn time.Duration) error {
-	set, err := rdb.Set(key, val, mn).Result()
+	set, err := Rdb.Set(key, val, mn).Result()
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func AddSession(key string, val interface{}, mn time.Duration) error {
 
 // GetSession :
 func GetSession(key string) interface{} {
-	value := rdb.Get(key).Val()
+	value := Rdb.Get(key).Val()
 	fmt.Println(value)
 	return value
 }

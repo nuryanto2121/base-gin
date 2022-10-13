@@ -107,6 +107,15 @@ func (u *useUserApps) Delete(ctx context.Context, Claims util.Claims, ID uuid.UU
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	data, err := u.repoUserApps.GetDataBy(ctx, "id", ID.String())
+	if err != nil {
+		return err
+	}
+
+	if data.Id == uuid.Nil {
+		return models.ErrNotFound
+	}
+
 	err = u.repoUserApps.Delete(ctx, ID)
 	if err != nil {
 		return err

@@ -27,6 +27,8 @@ func GetStatusCode(err error) int {
 		return http.StatusPaymentRequired
 	case models.ErrNoStatusCheckIn, models.ErrNoStatusOrder, models.ErrNoStatusCheckOut, models.ErrQtyExceedStock:
 		return http.StatusBadRequest
+	case models.ErrOvertime:
+		return http.StatusUnprocessableEntity
 	default:
 		return http.StatusInternalServerError
 	}

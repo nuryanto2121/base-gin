@@ -7,9 +7,11 @@ import (
 )
 
 type OutletForm struct {
-	OutletName   string             `json:"outlet_name" valid:"Required"`
-	OutletCity   string             `json:"outlet_city" valid:"Required"`
-	OutletDetail []*AddOutletDetail `json:"outlet_detail"`
+	OutletName     string             `json:"outlet_name" valid:"Required"`
+	OutletCity     string             `json:"outlet_city" valid:"Required"`
+	OvertimeAmount float64            `json:"overtime_amount"`
+	ToleransiTime  int64              `json:"toleransi_time"`
+	OutletDetail   []*AddOutletDetail `json:"outlet_detail"`
 }
 
 type OutletList struct {
@@ -22,6 +24,7 @@ type OutletList struct {
 	OutletCity         string    `json:"outlet_city"`
 	SkuName            string    `json:"sku_name"`
 	Qty                int64     `json:"qty"`
+	Duration           int64     `json:"duration"`
 	PriceWeekday       float64   `json:"price_weekday"`
 	PriceWeekend       float64   `json:"price_weekend"`
 	OutletPriceWeekday float64   `json:"outlet_price_weekday"`

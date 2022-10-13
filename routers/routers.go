@@ -88,6 +88,10 @@ import (
 	_repoSMS "app/repository/sms"
 	_useJob "app/usecase/notification"
 	_useSMS "app/usecase/sms"
+
+	_contReport "app/controllers/report"
+	_repoReport "app/repository/report"
+	_useReport "app/usecase/report"
 )
 
 var (
@@ -189,4 +193,7 @@ func (g *GinRoutes) Init() {
 	UseNotification = _useJob.NewUseNotification(repoTransaction, repoTransactionDetail, useSMS, repoTrx, timeoutContext)
 	// useJob.NotificationSms(context.Background())
 
+	repoReport := _repoReport.NewRepoReport(dbConn)
+	useReport := _useReport.NewUseReport(repoReport, repoSkuManagement, timeoutContext)
+	_contReport.NewContReport(g.G, useReport)
 }

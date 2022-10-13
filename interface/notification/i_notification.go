@@ -3,5 +3,5 @@ package inotification
 import "context"
 
 type Usecase interface {
-	NotificationSms(ctx context.Context) error
+	NotificationSms(ctx context.Context)
 }

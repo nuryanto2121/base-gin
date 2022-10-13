@@ -83,13 +83,13 @@ func (r *repoRoleOutlet) GetList(ctx context.Context, queryparam models.ParamLis
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and (lower(o.outlet_name) LIKE ?)"
+			sWhere += " and (lower(o.outlet_name) LIKE ? OR lower(o.outlet_city) LIKE ?)"
 		} else {
-			sWhere += "(lower(o.outlet_name) LIKE ?)"
+			sWhere += "(lower(o.outlet_name) LIKE ? OR lower(o.outlet_city) LIKE ?)"
 		}
 		err = conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name,o.outlet_city`).
 			Joins(`inner join outlets o on o.id =a.outlet_id`).Group(`o.id,o.outlet_name,o.outlet_city`).
-			Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
+			Where(sWhere, queryparam.Search, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
 	} else {
 		err = conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name,o.outlet_city`).
 			Joins(`inner join outlets o on o.id =a.outlet_id`).Group(`o.id,o.outlet_name,o.outlet_city`).
@@ -168,13 +168,13 @@ func (r *repoRoleOutlet) Count(ctx context.Context, queryparam models.ParamList)
 
 	if queryparam.Search != "" {
 		if sWhere != "" {
-			sWhere += " and (lower(o.outlet_name) LIKE ?)"
+			sWhere += " and (lower(o.outlet_name) LIKE ? OR lower(o.outlet_city) LIKE ? )"
 		} else {
-			sWhere += "(lower(o.outlet_name) LIKE ?)"
+			sWhere += "(lower(o.outlet_name) LIKE ? OR lower(o.outlet_city) LIKE ?)"
 		}
 		err = conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
 			Joins(`inner join outlets o on o.id =a.outlet_id`).Group(`o.id,o.outlet_name,o.outlet_city`).
-			Where(sWhere, queryparam.Search).Count(&rest).Error
+			Where(sWhere, queryparam.Search, queryparam.Search).Count(&rest).Error
 	} else {
 		err = conn.Table(`role_outlet a`).Select(`o.id as outlet_id,o.outlet_name`).
 			Joins(`inner join outlets o on o.id =a.outlet_id`).Group(`o.id,o.outlet_name,o.outlet_city`).

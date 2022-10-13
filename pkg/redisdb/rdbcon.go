@@ -10,20 +10,20 @@ import (
 	"github.com/go-redis/redis"
 )
 
-var rdb *redis.Client
+var Rdb *redis.Client
 
 // Setup :
 func Setup() {
 	now := time.Now()
 	conString := fmt.Sprintf("%s:%d", setting.RedisDBSetting.Host, setting.RedisDBSetting.Port)
-	rdb = redis.NewClient(&redis.Options{
+	Rdb = redis.NewClient(&redis.Options{
 		Addr:     conString,
 		Password: setting.RedisDBSetting.Password,
 		DB:       setting.RedisDBSetting.DB,
 	})
 
 	fmt.Printf("\nconnection String redis : %s\n", conString)
-	_, err := rdb.Ping().Result()
+	_, err := Rdb.Ping().Result()
 	if err != nil {
 		fmt.Println(err)
 		panic(err)

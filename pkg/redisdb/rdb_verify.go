@@ -34,7 +34,7 @@ func StoreVerify(data interface{}) error {
 		return err
 	}
 
-	_, err = rdb.SAdd(setting.RedisDBSetting.Key, string(dVerify)).Result()
+	_, err = Rdb.SAdd(setting.RedisDBSetting.Key, string(dVerify)).Result()
 	if err != nil {
 		return err
 	}

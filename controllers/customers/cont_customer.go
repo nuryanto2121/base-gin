@@ -30,9 +30,9 @@ func NewContCostumers(e *gin.Engine, useUserApps iuserapps.Usecase) {
 	r.PUT("/:id", cont.Update)
 	r.GET("/:id", cont.GetById)
 	r.GET("", cont.GetList)
-	r.DELETE("/:id", cont.Delete)
+	r.DELETE("/child/:id", cont.Delete)
 	r.POST("/child", cont.UpsertChilds)
-	r.DELETE("/child", cont.Delete)
+	// r.DELETE("/child", cont.Delete)
 }
 
 // Create :
@@ -231,7 +231,7 @@ func (c *ContCostumers) GetList(e *gin.Context) {
 // @Param Language header string true "Language Apps"
 // @Param id path string true "ID from children id"
 // @Success 200 {object} app.Response
-// @Router /v1/customer/{id} [delete]
+// @Router /v1/customer/child/{id} [delete]
 func (c *ContCostumers) Delete(e *gin.Context) {
 	ctx := e.Request.Context()
 	if ctx == nil {

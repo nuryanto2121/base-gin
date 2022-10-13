@@ -40,7 +40,7 @@ func StoreRegister(data interface{}) error {
 		return err
 	}
 
-	_, err = rdb.SAdd(setting.RedisDBSetting.Key, string(dRegister)).Result()
+	_, err = Rdb.SAdd(setting.RedisDBSetting.Key, string(dRegister)).Result()
 	if err != nil {
 		return err
 	}

@@ -39,7 +39,7 @@ func StoreForgot(data interface{}) error {
 		return err
 	}
 
-	_, err = rdb.SAdd(setting.RedisDBSetting.Key, string(dForgot)).Result()
+	_, err = Rdb.SAdd(setting.RedisDBSetting.Key, string(dForgot)).Result()
 	if err != nil {
 		return err
 	}

@@ -97,3 +97,16 @@ func (s PaymentCode) String() string {
 
 	return result
 }
+
+type SmsStatus int64
+
+const (
+	//SMS Belum Terkirim
+	SMS_NOT_READY SmsStatus = iota
+	//SMS Di Prosess
+	SMS_PROCESS
+	//SMS Gagal Terkirim
+	SMS_FAILED
+	//SMS Berhasil Dikirim
+	SMS_SUCCESS
+)

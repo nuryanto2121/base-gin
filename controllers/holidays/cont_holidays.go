@@ -25,6 +25,7 @@ func NewContHolidays(e *gin.Engine, useHolidays iholidays.Usecase) {
 	}
 
 	r := e.Group("/v1/cms/holidays")
+	r.Use(middleware.Versioning())
 	r.Use(middleware.Authorize())
 	r.POST("", cont.Create)
 	r.PUT("/:id", cont.Update)

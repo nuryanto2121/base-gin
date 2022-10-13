@@ -142,9 +142,12 @@ func (r *repoUserApps) Delete(ctx context.Context, ID uuid.UUID) error {
 		conn   = r.db.Get(ctx)
 	)
 
-	err := conn.Where("id = ?", ID).Delete(&models.UserApps{}).Error
+	dtUpdate := map[string]interface{}{
+		"is_delete": true,
+	}
+	err := conn.Model(models.UserApps{}).Where("id = ?", ID).Updates(dtUpdate).Error
 	if err != nil {
-		logger.Error("repo user_apps Delete ", err)
+		logger.Error("repo user_apps Update ", err)
 		return err
 	}
 	return nil

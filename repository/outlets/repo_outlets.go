@@ -85,6 +85,7 @@ func (r *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) 
 		 ,o.outlet_name 
 		 ,o.outlet_city 
 		 ,sm.sku_name 
+		 ,sm.duration
 		 ,coalesce(i.qty,0) as qty
 		 ,sm.price_weekday 
 		 ,sm.price_weekend 
@@ -113,6 +114,7 @@ func (r *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) 
 		 ,o.outlet_name 
 		 ,o.outlet_city 
 		 ,sm.sku_name 
+		 ,sm.duration
 		 ,coalesce(i.qty,0) as qty
 		 ,sm.price_weekday 
 		 ,sm.price_weekend 
@@ -242,7 +244,10 @@ func (r *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (r
 		sQuery += fmt.Sprintf(" WHERE %s", sWhere)
 		err = conn.Raw(sQuery, queryparam.Search).Count(&rest).Error
 	} else {
-		sQuery += fmt.Sprintf(" WHERE %s", sWhere)
+		if sWhere != "" {
+			sQuery += fmt.Sprintf(" WHERE %s", sWhere)
+		}
+
 		err = conn.Raw(sQuery).Count(&rest).Error
 	}
 	// end where

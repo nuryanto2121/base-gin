@@ -574,6 +574,10 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	var (
+		now = util.GetTimeNow()
+	)
+
 	transactionDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
 	if err != nil {
 		return err
@@ -581,6 +585,12 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 
 	//getHeader
 	transaction, err := u.repoTransaction.GetDataBy(ctx, "id", transactionDetail.AddTransactionDetail.TransactionId.String())
+	if err != nil {
+		return err
+	}
+
+	//getOutlet for check overtime
+	outlet, err := u.repoOutlet.GetDataBy(ctx, "id", transaction.OutletId.String())
 	if err != nil {
 		return err
 	}
@@ -593,9 +603,6 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 		return models.ErrBadParamInput
 	}
 
-	// if transaction.StatusTransaction != models.STATUS_CHECKIN {
-	// 	return models.ErrNoStatusCheckIn
-	// }
 	if !transactionDetail.CheckOut.IsZero() {
 		return models.ErrNoStatusCheckIn
 	}
@@ -619,6 +626,14 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 				}
 
 			}
+		}
+
+		//check overtime
+		diff := now.Sub(req.CheckOut).Minutes() //req.CheckOut.Sub(now).Minutes()
+		timeOut := math.Round(diff)
+
+		if outlet.ToleransiTime > 0 && outlet.ToleransiTime < int64(timeOut) {
+			return models.ErrAccountAlreadyExist
 		}
 
 		transactionDetail.CheckOut = req.CheckOut //.In(util.GetLocation())

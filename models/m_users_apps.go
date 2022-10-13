@@ -20,7 +20,8 @@ type AddUserApps struct {
 	JoinDate time.Time `json:"join_date" gorm:"type:timestamp;default:now()"`
 	DOB      time.Time `json:"dob" gorm:"type:timestamp;default:now()"`
 	Password string    `json:"-" gorm:"type:varchar(250)"`
-	Avatar   string    `json:"avatar" gorm:"varchar(100)" `
+	Avatar   string    `json:"avatar" gorm:"varchar(100)"`
+	IsDelete bool      `json:"is_delete" gorm:"type:boolean;default:false"`
 }
 
 //OutletId    uuid.UUID   `json:"outlet_id" valid:"Required" gorm:"type:uuid;not null"`
