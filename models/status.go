@@ -43,6 +43,8 @@ const (
 	STATUS_DRAF     StatusTransaction = 2000004
 	STATUS_ACTIVE   StatusTransaction = 2000005
 	STATUS_FINISH   StatusTransaction = 2000006
+	STATUS_DELTA    StatusTransaction = 2000007
+	STATUS_OVERTIME StatusTransaction = 2000008
 )
 
 func (s StatusTransaction) String() string {
@@ -60,6 +62,10 @@ func (s StatusTransaction) String() string {
 		result = "Active"
 	case STATUS_FINISH:
 		result = "finish"
+	case STATUS_DELTA:
+		result = "Delta"
+	case STATUS_OVERTIME:
+		result = "Overtime"
 
 	}
 

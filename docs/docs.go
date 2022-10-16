@@ -4364,6 +4364,9 @@ var doc = `{
                 "is_bracelet": {
                     "type": "boolean"
                 },
+                "is_free": {
+                    "type": "boolean"
+                },
                 "price_weekday": {
                     "type": "number"
                 },
@@ -4801,6 +4804,9 @@ var doc = `{
                 "duration": {
                     "type": "integer"
                 },
+                "is_adult_free": {
+                    "type": "boolean"
+                },
                 "price": {
                     "type": "number"
                 },
@@ -4837,6 +4843,12 @@ var doc = `{
                 },
                 "payment_code": {
                     "type": "integer"
+                },
+                "ticket_overtime": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "transaction_id": {
                     "type": "string"

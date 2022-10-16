@@ -74,6 +74,8 @@ definitions:
         type: integer
       is_bracelet:
         type: boolean
+      is_free:
+        type: boolean
       price_weekday:
         type: number
       price_weekend:
@@ -359,6 +361,8 @@ definitions:
         type: string
       duration:
         type: integer
+      is_adult_free:
+        type: boolean
       price:
         type: number
       product_id:
@@ -383,6 +387,10 @@ definitions:
         type: string
       payment_code:
         type: integer
+      ticket_overtime:
+        items:
+          type: string
+        type: array
       transaction_id:
         type: string
     type: object

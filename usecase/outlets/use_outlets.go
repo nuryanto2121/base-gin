@@ -391,6 +391,7 @@ func (u *useOutlets) GetListPrice(ctx context.Context, Claims util.Claims, req m
 		price.ProductId = val.ProductId
 		price.SkuName = val.SkuName
 		price.Price = val.OutletPriceWeekday
+		price.IsFree = val.IsFree
 		if isHoliday {
 			price.Price = val.OutletPriceWeekend
 		}

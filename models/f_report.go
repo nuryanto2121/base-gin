@@ -29,4 +29,6 @@ type ReportResponse struct {
 	Qty                  int64     `json:"qty" gorm:"qty"`
 	Amount               float64   `json:"amount" gorm:"amount"`
 	TotalAmount          float64   `json:"totalAmount" gorm:"total_amount"`
+	IsOvertime           bool      `json:"isOvertime" gorm:"is_overtime"`
+	IsOvertimePaid       bool      `json:"isOvertimePaid" gorm:"is_overtime_paid"`
 }

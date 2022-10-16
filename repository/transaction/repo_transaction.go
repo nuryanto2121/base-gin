@@ -103,6 +103,8 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 			,td.duration ,t.status_transaction ,t.status_payment
 			,td.ticket_no ,parent.id as parent_id
 			,td.status_transaction_dtl
+			,td.is_overtime,td.is_overtime_paid
+			,td.is_children
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
@@ -119,6 +121,8 @@ func (r *repoTransaction) GetList(ctx context.Context, queryparam models.ParamLi
 			,td.duration ,t.status_transaction ,t.status_payment
 			,td.ticket_no,parent.id as parent_id
 			,td.status_transaction_dtl
+			,td.is_overtime,td.is_overtime_paid
+			,td.is_children
 		`).
 			Joins(`inner join transaction_detail td on t.id = td.transaction_id`).
 			Joins(`inner join user_apps ua on td.customer_id = ua.id`).
@@ -278,6 +282,8 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 				when t.status_transaction = 2000004 then 'Draf'
 				when t.status_transaction = 2000005 then 'Active'
 				when t.status_transaction = 2000006 then 'Selesai'
+				when t.status_transaction = 2000007 then 'Delta'
+				when t.status_transaction = 2000008 then 'Overtime'
 				else ''
 			end as status_transaction_desc
 			,t.status_payment
@@ -317,6 +323,8 @@ func (r *repoTransaction) GetListTicketUser(ctx context.Context, queryparam mode
 				when t.status_transaction = 2000004 then 'Draf'
 				when t.status_transaction = 2000005 then 'Active'
 				when t.status_transaction = 2000006 then 'Selesai'
+				when t.status_transaction = 2000007 then 'Delta'
+				when t.status_transaction = 2000008 then 'Overtime'
 				else ''
 			end as status_transaction_desc
 			,t.status_payment

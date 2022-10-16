@@ -46,7 +46,7 @@ func GenCode(t *models.TmpCode) string {
 	if isNewPrefix {
 		// generate new code, cause last code not found
 		t.SeqNo = 1
-		code = fmt.Sprintf("%s/%s/%s/%04d", t.Prefix, years, roman[month], t.SeqNo)
+		code = fmt.Sprintf("%s/%s/%s/%06d", t.Prefix, years, roman[month], t.SeqNo)
 		// t.Prefix = t.Prefix
 		t.Code = code
 
@@ -58,11 +58,11 @@ func GenCode(t *models.TmpCode) string {
 		// if code is different in year or month, suffix will be 001
 		if splitCode[2] != roman[month] || splitCode[1] != years {
 			t.SeqNo = 1
-			code = fmt.Sprintf("%s/%s/%s/%04d", t.Prefix, years, roman[month], t.SeqNo)
+			code = fmt.Sprintf("%s/%s/%s/%06d", t.Prefix, years, roman[month], t.SeqNo)
 		} else {
 			// increment suffix +1
 			t.SeqNo += 1
-			code = fmt.Sprintf("%s/%s/%s/%04d", t.Prefix, years, roman[month], t.SeqNo)
+			code = fmt.Sprintf("%s/%s/%s/%06d", t.Prefix, years, roman[month], t.SeqNo)
 		}
 		t.Code = code
 		if err := conn.Model(models.TmpCode{}).Where("id=?", t.ID).Updates(t).Error; err != nil {

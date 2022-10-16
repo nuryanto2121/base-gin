@@ -94,6 +94,7 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 		Page:       1,
 		PerPage:    100,
 		InitSearch: fmt.Sprintf("transaction_id = '%s'", trxHeader.Id),
+		SortField:  "ticket_no asc",
 	}) //GetDataBy(ctx, "transaction_id", trxHeader.Id.String())
 	if err != nil {
 		return nil, err
@@ -111,13 +112,18 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 		}
 
 		dt.Description = fmt.Sprintf("%d x %s", val.ProductQty, product.SkuName)
-		if val.IsChildren {
+		if val.IsChildren || product.IsFree {
 			child, err := u.repoCustomer.GetDataBy(ctx, "id", val.CustomerId.String())
 			if err != nil {
 				return nil, err
 			}
+
 			dt.CustomerName = child.Name
 			dt.Description = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, product.Duration)
+			if product.IsFree {
+				dt.CustomerName = product.SkuName
+				dt.Description = fmt.Sprintf("1 x %s", product.SkuName)
+			}
 			//gen ticket
 			if Claims.Role == "ticket" {
 
@@ -135,12 +141,23 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 				}
 
 				endTime := now.Add(time.Hour * time.Duration(val.Duration))
-				qr := map[string]interface{}{
-					"name":        child.Name,
-					"parent_name": parent.Name,
-					"phone_no":    parent.PhoneNo,
-					"end_time":    endTime,
-					"ticket_no":   val.TicketNo,
+				qr := map[string]interface{}{}
+				if product.IsFree {
+					qr = map[string]interface{}{
+						"name":        parent.Name,
+						"parent_name": product.SkuName,
+						"phone_no":    parent.PhoneNo,
+						"end_time":    endTime,
+						"ticket_no":   val.TicketNo,
+					}
+				} else {
+					qr = map[string]interface{}{
+						"name":        child.Name,
+						"parent_name": parent.Name,
+						"phone_no":    parent.PhoneNo,
+						"end_time":    endTime,
+						"ticket_no":   val.TicketNo,
+					}
 				}
 
 				dt.QR = qr
@@ -150,6 +167,11 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 		dt.Duration = val.Duration
 		dt.ProductId = val.ProductId
 		dt.ProductQty = val.ProductQty
+		dt.TicketNo = val.TicketNo
+		if val.IsOvertime {
+			dt.IsOvertime = val.IsOvertime
+			dt.IsOvertimePaid = val.IsOvertimePaid
+		}
 
 		details = append(details, dt)
 	}
@@ -187,7 +209,7 @@ func (u *useTransaction) GetList(ctx context.Context, Claims util.Claims, queryp
 	}
 
 	if queryparam.InitSearch != "" {
-		queryparam.InitSearch += " and date(check_in) <> '0001-01-01'"
+		// queryparam.InitSearch += " and date(check_in) <> '0001-01-01'"
 	}
 	dataList, err := u.repoTransaction.GetList(ctx, queryparam)
 	if err != nil {
@@ -321,7 +343,8 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 	}
 
 	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
-
+		var ProductAdultFree = &models.OutletList{}
+		//create trx header
 		err := u.repoTransaction.Create(trxCtx, &mTransaction)
 		if err != nil {
 			return err
@@ -329,6 +352,34 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 		//set id transaction
 		result.ID = mTransaction.Id
 		for _, val := range req.Details {
+			//get sku adult free
+			if val.IsAdultFree {
+				productAdultFree, err := u.repoOutlet.GetList(trxCtx, models.ParamList{
+					Page:    1,
+					PerPage: 1,
+					InitSearch: fmt.Sprintf(`
+					o.id='%s' and 
+					is_free=true and
+					is_bracelet=true
+					`, req.OutletId),
+				})
+				if err != nil {
+					return err
+				}
+				if len(productAdultFree) > 0 {
+					ProductAdultFree = productAdultFree[0]
+					//check stock adult free then update inventory
+					err := u.useInventory.PatchStock(trxCtx, Claims, models.InvPatchStockRequest{
+						OutletId:  req.OutletId,
+						ProductId: ProductAdultFree.ProductId,
+						Qty:       -val.ProductQty,
+					})
+					if err != nil {
+						return err
+					}
+				}
+
+			}
 			//check stock then update inventory
 			err := u.useInventory.PatchStock(trxCtx, Claims, models.InvPatchStockRequest{
 				OutletId:  req.OutletId,
@@ -374,6 +425,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 				ProductQty:   val.ProductQty,
 				Duration:     Product.Duration,
 				Amount:       val.Amount,
+				ProductId:    val.ProductId,
 				Description:  desc,
 			})
 
@@ -395,6 +447,39 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 			err = u.repoTransDetail.Create(trxCtx, trxDetail)
 			if err != nil {
 				return err
+			}
+
+			if val.IsAdultFree {
+				// ProductAdultFree
+				desc := fmt.Sprintf("1 x %s", ProductAdultFree.SkuName)
+				dtl = append(dtl, &models.TransactionDetailResponse{
+					CustomerName: ProductAdultFree.SkuName,
+					ProductQty:   1,
+					Duration:     ProductAdultFree.Duration,
+					ProductId:    ProductAdultFree.ProductId,
+					Amount:       0,
+					Description:  desc,
+				})
+
+				//insert to detail
+				trxDetail := &models.TransactionDetail{
+					AddTransactionDetail: models.AddTransactionDetail{
+						TransactionId: mTransaction.Id,
+						TicketNo:      TicketNo + "/FREE",
+						CustomerId:    val.ChildrenId,
+						IsChildren:    false,
+						ProductId:     ProductAdultFree.ProductId,
+						ProductQty:    1,
+						Amount:        0,
+						Price:         0,
+						Duration:      ProductAdultFree.Duration,
+					},
+				}
+
+				err = u.repoTransDetail.Create(trxCtx, trxDetail)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -461,9 +546,10 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var (
-		now = time.Now()
-		// logger = logging.Logger{}
-		userId = uuid.FromStringOrNil(Claims.UserID)
+		now                = time.Now()
+		logger             = logging.Logger{}
+		userId             = uuid.FromStringOrNil(Claims.UserID)
+		isAllCheckOut bool = true
 	)
 
 	//get data transaction
@@ -484,15 +570,79 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 	// } else {
 	// 	transaction.StatusPayment = models.STATUS_WAITINGPAYMENT
 	// }
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
+		//pembayaran overtime
+		if transaction.StatusTransaction == models.STATUS_OVERTIME {
+			trxDtl, err := u.repoTransaction.GetList(trxCtx, models.ParamList{
+				Page:       1,
+				PerPage:    10,
+				InitSearch: fmt.Sprintf("t.id='%s' and td.is_children = true", transaction.Id),
+			})
+			if err != nil {
+				logger.Error("error get transaction top one ", err)
+				return err
+			}
 
-	transaction.StatusTransaction = models.STATUS_ORDER
+			isAllCheckOut = true
 
-	transaction.UpdatedAt = now
-	transaction.UpdatedBy = userId
+			for _, val := range trxDtl {
+				if val.CheckOut.IsZero() {
+					// if val.TicketNo != req.TicketNo {
+					isAllCheckOut = false
+					// }
+				}
+			}
 
-	err = u.repoTransaction.Update(ctx, transaction.Id, transaction)
-	if err != nil {
-		return nil, err
+			if isAllCheckOut {
+				transaction.StatusTransaction = models.STATUS_FINISH
+			} else {
+				transaction.StatusTransaction = models.STATUS_ACTIVE
+			}
+			//update trx detail is_ov_paid true
+			for _, val := range req.TicketOvertime {
+				// trxDtl, err := u.repoTransDetail.GetDataBy(trxCtx, "ticket_no", val)
+				// if err != nil {
+				// 	return err
+				// }
+				// trxDtl.AddTransactionDetail.IsOvertimePaid = true
+				dtlFree := map[string]interface{}{
+					"is_overtime_paid": true,
+				}
+
+				err = u.repoTransDetail.UpdateBy(trxCtx, fmt.Sprintf("ticket_no='%s' and is_overtime=true", val), dtlFree)
+				if err != nil {
+					logger.Error("error update ticket overtime ", err)
+					return err
+				}
+
+				// dtlFree := map[string]interface{}{
+				// 	"is_overtime_paid": true,
+				// }
+				// err = u.repoTransDetail.UpdateBy(trxCtx, fmt.Sprintf("ticket_no='%s/FREE'", val), dtlFree)
+				// if err != nil {
+				// 	logger.Error("error update ticket overtime free ", err)
+				// 	return err
+				// }
+
+			}
+
+		} else {
+			transaction.StatusTransaction = models.STATUS_ORDER
+		}
+
+		transaction.UpdatedAt = now
+		transaction.UpdatedBy = userId
+
+		err = u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if errTx != nil {
+		return nil, errTx
 	}
 
 	return result, nil
@@ -503,14 +653,18 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	var logger = logging.Logger{}
+
 	transactionDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
 	if err != nil {
+		logger.Error("error get trx detail by ticket no ", req.TicketNo)
 		return err
 	}
 
 	//getHeader
 	transaction, err := u.repoTransaction.GetDataBy(ctx, "id", transactionDetail.AddTransactionDetail.TransactionId.String())
 	if err != nil {
+		logger.Error("error get trx by id ", transactionDetail.AddTransactionDetail.TransactionId)
 		return err
 	}
 	if transaction.Id == uuid.Nil {
@@ -527,12 +681,13 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 
 	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
 
-		trxDtl, err := u.repoTransaction.GetList(ctx, models.ParamList{
+		trxDtl, err := u.repoTransaction.GetList(trxCtx, models.ParamList{
 			Page:       1,
 			PerPage:    10,
 			InitSearch: fmt.Sprintf("t.id='%s' and td.is_children = true", transaction.Id),
 		})
 		if err != nil {
+			logger.Error("error get list trx ", transaction.Id)
 			return err
 		}
 
@@ -550,14 +705,27 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 		transactionDetail.StatusTransactionDtl = models.STATUS_CHECKIN
 		err = u.repoTransDetail.Update(trxCtx, transactionDetail.Id, transactionDetail)
 		if err != nil {
+			logger.Error("error update trx detail ", err)
 			return err
 		}
+
+		// go func() {
+		dtlFree := map[string]interface{}{
+			"check_in":               req.CheckIn,
+			"status_transaction_dtl": models.STATUS_CHECKIN,
+		}
+		err = u.repoTransDetail.UpdateBy(trxCtx, fmt.Sprintf("ticket_no='%s/FREE'", transactionDetail.TicketNo), dtlFree)
+		if err != nil {
+			logger.Error("error update trx detail free", err)
+		}
+		// }()
 
 		if isCheckin {
 			if transaction.StatusTransaction != models.STATUS_ACTIVE {
 				transaction.StatusTransaction = models.STATUS_ACTIVE
 				err = u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
 				if err != nil {
+					logger.Error("error update trx ", err)
 					return err
 				}
 			}
@@ -575,23 +743,21 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 	defer cancel()
 
 	var (
-		now = util.GetTimeNow()
+		logger         = logging.Logger{}
+		isCheckOut     bool
+		isChildStillOV bool = false
 	)
 
 	transactionDetail, err := u.repoTransDetail.GetDataBy(ctx, "ticket_no", req.TicketNo)
 	if err != nil {
+		logger.Error("error get transaction detail", err)
 		return err
 	}
 
 	//getHeader
 	transaction, err := u.repoTransaction.GetDataBy(ctx, "id", transactionDetail.AddTransactionDetail.TransactionId.String())
 	if err != nil {
-		return err
-	}
-
-	//getOutlet for check overtime
-	outlet, err := u.repoOutlet.GetDataBy(ctx, "id", transaction.OutletId.String())
-	if err != nil {
+		logger.Error("error get transaction ", err)
 		return err
 	}
 
@@ -599,25 +765,26 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 		return models.ErrTransactionNotFound
 	}
 
-	if transaction.StatusPayment != models.STATUS_PAYMENTSUCCESS {
-		return models.ErrBadParamInput
-	}
+	// if transaction.StatusPayment != models.STATUS_PAYMENTSUCCESS {
+	// 	return models.ErrBadParamInput
+	// }
 
 	if !transactionDetail.CheckOut.IsZero() {
 		return models.ErrNoStatusCheckIn
 	}
 
 	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
-		trxDtl, err := u.repoTransaction.GetList(ctx, models.ParamList{
+		trxDtl, err := u.repoTransaction.GetList(trxCtx, models.ParamList{
 			Page:       1,
 			PerPage:    10,
 			InitSearch: fmt.Sprintf("t.id='%s' and td.is_children = true", transaction.Id),
 		})
 		if err != nil {
+			logger.Error("error get transaction list ", transaction.Id, err)
 			return err
 		}
 
-		isCheckOut := true
+		isCheckOut = true
 
 		for _, val := range trxDtl {
 			if val.CheckOut.IsZero() {
@@ -626,28 +793,51 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 				}
 
 			}
-		}
-
-		//check overtime
-		diff := now.Sub(req.CheckOut).Minutes() //req.CheckOut.Sub(now).Minutes()
-		timeOut := math.Round(diff)
-
-		if outlet.ToleransiTime > 0 && outlet.ToleransiTime < int64(timeOut) {
-			return models.ErrAccountAlreadyExist
+			if val.IsOvertime && !val.IsOvertimePaid {
+				isChildStillOV = true
+			}
 		}
 
 		transactionDetail.CheckOut = req.CheckOut //.In(util.GetLocation())
 		transactionDetail.StatusTransactionDtl = models.STATUS_CHECKOUT
-		err = u.repoTransDetail.Update(ctx, transactionDetail.Id, transactionDetail)
+		err = u.repoTransDetail.Update(trxCtx, transactionDetail.Id, transactionDetail)
 		if err != nil {
+			logger.Error("error update transaction detail", err)
 			return err
 		}
 
+		// go func() {
+		dtlFree := map[string]interface{}{
+			"check_out":              req.CheckOut,
+			"status_transaction_dtl": models.STATUS_CHECKOUT,
+		}
+		err = u.repoTransDetail.UpdateBy(trxCtx, fmt.Sprintf("ticket_no='%s/FREE'", transactionDetail.TicketNo), dtlFree)
+		if err != nil {
+			logger.Error("error update trx detail free", err)
+		}
+		// }()
+
 		if isCheckOut {
+			//
+			// trxDtlOv, err := u.repoTransaction.GetList(trxCtx, models.ParamList{
+			// 	Page:       1,
+			// 	PerPage:    1,
+			// 	InitSearch: fmt.Sprintf("t.id='%s' and td.is_children = true and td.is_overtime = true and td.is_overtime_paid = false ", transaction.Id),
+			// })
+			// if err != nil {
+			// 	logger.Error("error get transaction top one ", err)
+			// 	return err
+			// }
+
 			if transaction.StatusTransaction != models.STATUS_FINISH {
 				transaction.StatusTransaction = models.STATUS_FINISH
+				if isChildStillOV {
+					transaction.StatusTransaction = models.STATUS_OVERTIME
+				}
+
 				u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
 				if err != nil {
+					logger.Error("error update transaction ", err)
 					return err
 				}
 			}
@@ -656,7 +846,51 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 		return nil
 	})
 
-	return errTx
+	if errTx != nil {
+		return errTx
+	}
+
+	//validasi overtime
+	price, overtimeAmt, hour, errOv := u.Overtime(ctx, transactionDetail, req.CheckOut, transaction.OutletId.String())
+	if errOv != nil && overtimeAmt > 0 {
+		ctxOv := context.Background()
+		go u.repoTrx.Run(ctxOv, func(trxCtx context.Context) error {
+			transactionDetail.Id = uuid.Nil
+			transactionDetail.IsOvertime = true
+			transactionDetail.Amount = overtimeAmt
+			transactionDetail.Price = price
+			transactionDetail.Duration = hour
+			transactionDetail.StatusTransactionDtl = models.STATUS_OVERTIME
+			transactionDetail.IsOvertimePaid = false
+			err = u.repoTransDetail.Create(trxCtx, transactionDetail)
+			if err != nil {
+				logger.Error("error create transaction detail overtime", err)
+				return err
+			}
+
+			transaction.TotalAmount += overtimeAmt
+			// if isCheckOut { //if can partial u can uncomment this validation
+			//if all child has checkout and have overtime then status payment waiting payment
+			transaction.StatusPayment = models.STATUS_WAITINGPAYMENT
+			// }
+			transaction.StatusTransaction = models.STATUS_OVERTIME
+			err = u.repoTransaction.Update(trxCtx, transaction.Id, transaction)
+			if err != nil {
+				logger.Error("error update transaction amount overtime", err)
+				return err
+			}
+			return nil
+		})
+		//
+
+		return errOv
+	}
+
+	if isChildStillOV {
+		return models.ErrOvertime
+	}
+
+	return nil
 }
 
 // GetById implements itransaction.Usecase
@@ -694,4 +928,30 @@ func (u *useTransaction) UpdateHeader(ctx context.Context, Claims util.Claims, I
 		return err
 	}
 	return nil
+}
+
+func (u *useTransaction) Overtime(ctx context.Context, trxDetail *models.TransactionDetail, checkOut time.Time, outletId string) (price float64, amount float64, hour int64, err error) {
+	var (
+		// now = util.GetTimeNow()
+		logger = logging.Logger{}
+	)
+	//getOutlet for check overtime
+	outlet, err := u.repoOutlet.GetDataBy(ctx, "id", outletId)
+	if err != nil {
+		logger.Error("error get outlet ", err)
+		return price, amount, hour, err
+	}
+
+	//check overtime
+	diff := checkOut.Sub(trxDetail.CheckIn).Minutes() //now.Sub(checkOut).Minutes() //req.CheckOut.Sub(now).Minutes()
+	timeOut := math.Round(diff)
+	hour = int64(math.Ceil(float64(timeOut) / float64(60)))
+
+	hour -= trxDetail.Duration
+	if outlet.ToleransiTime > 0 && outlet.ToleransiTime < int64(timeOut-60) {
+
+		overtimeAmount := float64(hour) * outlet.OvertimeAmount
+		return outlet.OvertimeAmount, overtimeAmount, hour, models.ErrOvertime
+	}
+	return price, amount, hour, nil
 }

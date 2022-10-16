@@ -25,6 +25,8 @@ type AddTransactionDetail struct {
 	Amount               float64           `json:"amount" valid:"Required" gorm:"type:numeric(20,2)"`
 	Price                float64           `json:"price"  gorm:"type:numeric(20,2)"`
 	FlagNotifSend        int64             `json:"flag_notif_send" gorm:"type:integer;default:0"`
+	IsOvertime           bool              `json:"is_overtime" gorm:"type:boolean;default:false"`
+	IsOvertimePaid       bool              `json:"is_overtime_paid" gorm:"type:boolean;default:false"`
 	StatusTransactionDtl StatusTransaction `json:"status_transaction_dtl" gorm:"type:integer"`
 }
 

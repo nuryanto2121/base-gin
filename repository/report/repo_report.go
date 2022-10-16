@@ -50,8 +50,12 @@ func (r *repoReport) GetReport(ctx context.Context, sWhere, startDate, endDate, 
 			WHEN t.status_transaction ='2000004' then 'Draf'
 			WHEN t.status_transaction ='2000005' then 'Active'
 			WHEN t.status_transaction ='2000006' then 'Finish'
+			when t.status_transaction = 2000007 then 'Delta'
+			when t.status_transaction = 2000008 then 'Overtime'
 			else ''
 		end as status_transaction
+		,td.is_overtime
+		,td.is_overtime_paid
 		,case 
 			when sm.is_bracelet = true then concat(sm.sku_name,' - ',sm.duration,' Jam' )
 			else sm.sku_name 
@@ -70,7 +74,7 @@ func (r *repoReport) GetReport(ctx context.Context, sWhere, startDate, endDate, 
 		,t.total_ticket as total_booked
 		,td.product_qty as qty
 		,td.price as amount
-		,td.amount as total_amount
+		,td.amount as total_amount		
 	FROM outlets o 
 	inner join role_outlet ro
 		on o.id = ro.outlet_id

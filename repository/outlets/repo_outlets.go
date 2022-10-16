@@ -89,10 +89,14 @@ func (r *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) 
 		 ,coalesce(i.qty,0) as qty
 		 ,sm.price_weekday 
 		 ,sm.price_weekend 
+		 ,sm.is_free
+		 ,sm.is_bracelet
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		 ,ro.user_id 
 		 ,ro.role 
+		 ,o.overtime_amount
+		 ,o.toleransi_time
 		`).Joins(`cross join sku_management sm`).Joins(`
 		inner join role_outlet ro
 		 	on o.id = ro.outlet_id
@@ -118,10 +122,14 @@ func (r *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) 
 		 ,coalesce(i.qty,0) as qty
 		 ,sm.price_weekday 
 		 ,sm.price_weekend 
+		 ,sm.is_free
+		 ,sm.is_bracelet
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		 ,ro.user_id 
 		 ,ro.role 
+		 ,o.overtime_amount
+		 ,o.toleransi_time
 		`).Joins(`cross join sku_management sm`).Joins(`
 		inner join role_outlet ro
 		 	on o.id = ro.outlet_id
@@ -208,20 +216,25 @@ func (r *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (r
 
 	sQuery := `
 	select count(*) from 
-	 (
-		 select  o.id as outlet_id
+	 (select 
+		 o.id as outlet_id
 		 ,sm.id as product_id 
 		 ,i.id as inventory_id
 		 ,o.outlet_name 
 		 ,o.outlet_city 
 		 ,sm.sku_name 
+		 ,sm.duration
 		 ,coalesce(i.qty,0) as qty
 		 ,sm.price_weekday 
 		 ,sm.price_weekend 
+		 ,sm.is_free
+		 ,sm.is_bracelet
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		 ,ro.user_id 
 		 ,ro.role 
+		 ,o.overtime_amount
+		 ,o.toleransi_time
 		 from outlets o 
 		 cross join sku_management sm
 		 inner join role_outlet ro
@@ -310,6 +323,7 @@ func (r *repoOutlets) GetListLookUp(ctx context.Context, queryparam models.Param
 		 ,sm.price_weekend 
 		 ,sm.duration 
 		 ,sm.is_bracelet 
+		 ,sm.is_free
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		`).Joins(`cross join sku_management sm`).Joins(`
@@ -335,6 +349,7 @@ func (r *repoOutlets) GetListLookUp(ctx context.Context, queryparam models.Param
 		 ,sm.price_weekend 
 		 ,sm.duration 
 		 ,sm.is_bracelet 
+		 ,sm.is_free
 		 ,od.outlet_price_weekday 
 		 ,od.outlet_price_weekend 
 		`).Joins(`cross join sku_management sm`).Joins(`

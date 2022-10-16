@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	multilanguage "app/pkg/multiLanguage"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -51,10 +52,12 @@ func (g *Gin) ResponseError(httpCode int, err error) {
 	if errLang != nil {
 		g.C.JSON(httpCode, Response{
 			Error: err.Error(),
+			Msg:   err.Error(),
 		})
 	} else {
 		g.C.JSON(httpCode, Response{
 			Error: message,
+			Msg:   message,
 		})
 	}
 

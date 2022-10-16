@@ -17,12 +17,13 @@ type TransactionScanRequest struct {
 }
 
 type TransactionDetailForm struct {
-	ChildrenId uuid.UUID `json:"children_id"`
-	ProductId  uuid.UUID `json:"product_id"`
-	ProductQty int64     `json:"product_qty"`
-	Duration   int64     `json:"duration"`
-	Price      float64   `json:"price"`
-	Amount     float64   `json:"amount"`
+	ChildrenId  uuid.UUID `json:"children_id"`
+	ProductId   uuid.UUID `json:"product_id"`
+	ProductQty  int64     `json:"product_qty"`
+	Duration    int64     `json:"duration"`
+	Price       float64   `json:"price"`
+	Amount      float64   `json:"amount"`
+	IsAdultFree bool      `json:"is_adult_free"`
 }
 
 type TransactionList struct {
@@ -31,11 +32,13 @@ type TransactionList struct {
 	TicketNo                 string            `json:"ticket_no"`
 	Name                     string            `json:"name" gorm:"name"`
 	PhoneNo                  string            `json:"phone_no" gorm:"phone_no"`
-	IsParent                 bool              `json:"is_parent" gorm:"is_parent"`
+	IsChildren               bool              `json:"is_children" gorm:"is_children"`
 	ParentId                 uuid.UUID         `json:"-" gorm:"parent_id"`
 	CheckIn                  time.Time         `json:"check_in" gorm:"check_in"`
 	CheckOut                 time.Time         `json:"check_out" gorm:"check_out"`
 	Duration                 int64             `json:"duration" gorm:"duration"`
+	IsOvertime               bool              `json:"is_overtime" gorm:"is_overtime"`
+	IsOvertimePaid           bool              `json:"is_overtime_paid" gorm:"is_overtime_paid"`
 	StatusTransaction        StatusTransaction `json:"status_transaction" gorm:"status_transaction"`
 	StatusTransactionDesc    string            `json:"status_transaction_desc,omitempty"`
 	StatusTransactionDtl     StatusTransaction `json:"status_transaction_dtl" gorm:"status_transaction"`
@@ -67,19 +70,23 @@ type TransactionResponse struct {
 }
 
 type TransactionDetailResponse struct {
-	CustomerName string      `json:"customer_name"`
-	Description  string      `json:"description"`
-	ProductId    uuid.UUID   `json:"product_id,omitempty"`
-	ProductQty   int64       `json:"product_qty"`
-	Duration     int64       `json:"duration"`
-	Amount       float64     `json:"amount"`
-	QR           interface{} `json:"qr,omitempty"`
+	CustomerName   string      `json:"customer_name"`
+	Description    string      `json:"description"`
+	ProductId      uuid.UUID   `json:"product_id,omitempty"`
+	ProductQty     int64       `json:"product_qty"`
+	Duration       int64       `json:"duration"`
+	Amount         float64     `json:"amount"`
+	QR             interface{} `json:"qr,omitempty"`
+	TicketNo       string      `json:"ticket_no,omitempty"`
+	IsOvertime     bool        `json:"is_overtime"`
+	IsOvertimePaid bool        `json:"is_overtime_paid"`
 }
 
 type TransactionPaymentForm struct {
-	TransactionId string      `json:"transaction_id"`
-	PaymentCode   PaymentCode `json:"payment_code" valid:"Required"`
-	Description   string      `json:"description"`
+	TransactionId  string      `json:"transaction_id"`
+	PaymentCode    PaymentCode `json:"payment_code" valid:"Required"`
+	TicketOvertime []string    `json:"ticket_overtime,omitempty"`
+	Description    string      `json:"description"`
 }
 
 type TransactionPaymentResponse struct {
