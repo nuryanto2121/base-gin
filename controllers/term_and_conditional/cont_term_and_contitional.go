@@ -24,7 +24,7 @@ func NewContTermAndConditional(e *gin.Engine, useTermAndConditional itermandcond
 	}
 
 	r := e.Group("/v1")
-
+	r.Use(middleware.Versioning())
 	r.GET("/term-and-conditional", cont.Get)
 	r.Use(middleware.Authorize()).POST("/cms/term-and-conditional", cont.Create)
 	// r.PUT("/:id", cont.Update)

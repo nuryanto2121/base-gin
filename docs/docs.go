@@ -4784,10 +4784,13 @@ var doc = `{
         "models.TermAndConditionalForm": {
             "type": "object",
             "properties": {
-                "description": {
+                "id": {
                     "type": "string"
                 },
-                "id": {
+                "kebijakan_and_privacy": {
+                    "type": "string"
+                },
+                "term_and_condition": {
                     "type": "string"
                 }
             }

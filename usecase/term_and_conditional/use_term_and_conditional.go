@@ -44,7 +44,8 @@ func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, 
 
 	if data.Id == "" {
 		var form = &models.TermAndConditional{}
-		form.Description = data.Description
+		form.TermAndCondition = data.TermAndCondition
+		form.KebijakanAndPrivacy = data.KebijakanAndPrivacy
 		form.CreatedBy = uuid.FromStringOrNil(claims.UserID)
 		form.UpdatedBy = uuid.FromStringOrNil(claims.UserID)
 
@@ -64,8 +65,9 @@ func (u *useTermAndConditional) Create(ctx context.Context, claims util.Claims, 
 		}
 
 		TandCupdate := map[string]interface{}{
-			"description": data.Description,
-			"updated_by":  claims.UserID,
+			"term_and_condition":    data.TermAndCondition,
+			"kebijakan_and_privacy": data.KebijakanAndPrivacy,
+			"updated_by":            claims.UserID,
 		}
 
 		err = u.repoTermAndConditional.Update(ctx, ID, TandCupdate)

@@ -348,9 +348,11 @@ definitions:
     type: object
   models.TermAndConditionalForm:
     properties:
-      description:
-        type: string
       id:
+        type: string
+      kebijakan_and_privacy:
+        type: string
+      term_and_condition:
         type: string
     type: object
   models.TransactionDetailForm:
