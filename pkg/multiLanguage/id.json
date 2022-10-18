@@ -53,5 +53,6 @@
     "no_status_check_out":"hanya diizinkan yang status  check out",
     "inventory_not_found":"inventory tidak ditemukan",
     "qty_exceed_stock":"quantity melebihi stock product",
-    "overtime":"kelebihan waktu"
+    "overtime":"kelebihan waktu",
+    "no_match_outlet":"Outlet berbeda dengan transaksi"
 }

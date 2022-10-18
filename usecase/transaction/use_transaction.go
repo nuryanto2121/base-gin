@@ -83,6 +83,10 @@ func (u *useTransaction) GetDataBy(ctx context.Context, Claims util.Claims, tran
 	if trxHeader.Id == uuid.Nil {
 		return nil, models.ErrTransactionNotFound
 	}
+	//validasi outlet active with trx
+	if Claims.OutletId != trxHeader.OutletId.String() {
+		return nil, models.ErrNoMatchOutlet
+	}
 	//get outlet
 	outlet, err := u.repoOutlet.GetDataBy(ctx, "id", trxHeader.OutletId.String())
 	if err != nil {
@@ -562,6 +566,11 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 		return nil, models.ErrTransactionNotFound
 	}
 
+	//validasi outlet active with trx
+	if Claims.OutletId != transaction.OutletId.String() {
+		return nil, models.ErrNoMatchOutlet
+	}
+
 	transaction.PaymentCode = req.PaymentCode
 	transaction.Description = req.Description
 
@@ -671,6 +680,11 @@ func (u *useTransaction) CheckIn(ctx context.Context, Claims util.Claims, req *m
 		return models.ErrTransactionNotFound
 	}
 
+	//validasi outlet active with trx
+	if Claims.OutletId != transaction.OutletId.String() {
+		return models.ErrNoMatchOutlet
+	}
+
 	if transaction.StatusPayment != models.STATUS_PAYMENTSUCCESS {
 		return models.ErrPaymentNeeded
 	}
@@ -763,6 +777,11 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 
 	if transaction.Id == uuid.Nil {
 		return models.ErrTransactionNotFound
+	}
+
+	//validasi outlet active with trx
+	if Claims.OutletId != transaction.OutletId.String() {
+		return models.ErrNoMatchOutlet
 	}
 
 	// if transaction.StatusPayment != models.STATUS_PAYMENTSUCCESS {

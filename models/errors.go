@@ -49,4 +49,5 @@ var (
 	ErrInventoryNotFound         = errors.New("inventory_not_found")
 	ErrQtyExceedStock            = errors.New("qty_exceed_stock")
 	ErrOvertime                  = errors.New("overtime")
+	ErrNoMatchOutlet             = errors.New("no_match_outlet")
 )

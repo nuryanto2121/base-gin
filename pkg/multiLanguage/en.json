@@ -53,5 +53,6 @@
     "no_status_check_out":"only allowed the check out status",
     "inventory_not_found":"inventory not found",
     "qty_exceed_stock":"qty exceed stock",
-    "overtime":"overtime"
+    "overtime":"overtime",
+    "no_match_outlet":"invalid outlet"
 }

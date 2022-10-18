@@ -54,6 +54,7 @@ func NewContTransaction(e *gin.Engine, a itransaction.Usecase) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
+// @Param Outlet-Id header string false "Outlet Id"
 // @Param transactionCode query string true "transactionCode"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/transaction/scan [get]
@@ -93,6 +94,7 @@ func (c *contTransaction) GetDataBy(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
+// @Param Outlet-Id header string false "Outlet Id"
 // @Param transactionId query string true "transactionId"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/transaction/print-ticket [get]
@@ -132,6 +134,7 @@ func (c *contTransaction) GetTicket(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
+// @Param Outlet-Id header string false "Outlet Id"
 // @Param page query int true "Page"
 // @Param perpage query int true "PerPage"
 // @Param search query string false "Search"
@@ -376,6 +379,7 @@ func (c *contTransaction) Delete(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
+// @Param Outlet-Id header string false "Outlet Id"
 // @Param req body models.TransactionPaymentForm true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/transaction/payment [post]
@@ -421,6 +425,7 @@ func (c *contTransaction) Payment(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
+// @Param Outlet-Id header string false "Outlet Id"
 // @Param req body models.CheckInCheckOutForm true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/transaction/check-in [post]
@@ -466,6 +471,7 @@ func (c *contTransaction) CheckIn(e *gin.Context) {
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
+// @Param Outlet-Id header string false "Outlet Id"
 // @Param req body models.CheckInCheckOutForm true "req param #changes are possible to adjust the form of the registration form from frontend"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/transaction/check-out [post]

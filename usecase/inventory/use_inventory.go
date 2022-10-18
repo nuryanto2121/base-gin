@@ -3,6 +3,7 @@ package useinventory
 import (
 	iinventory "app/interface/inventory"
 	"app/models"
+	"app/pkg/logging"
 	util "app/pkg/util"
 	"context"
 	"fmt"
@@ -138,6 +139,7 @@ func (u *useInventory) Delete(ctx context.Context, Claims util.Claims, ID uuid.U
 func (u *useInventory) PatchStock(ctx context.Context, Claims util.Claims, param models.InvPatchStockRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
+	var logger = logging.Logger{}
 
 	invList, err := u.repoInventory.GetList(ctx,
 		models.ParamList{
@@ -145,23 +147,37 @@ func (u *useInventory) PatchStock(ctx context.Context, Claims util.Claims, param
 		},
 	)
 	if err != nil {
+		logger.Error("error inventory/PatchStock list ", err)
 		return err
 	}
 	if len(invList) == 0 {
-		return models.ErrInventoryNotFound
-	}
+		//if no data then insert with zero qty
+		err = u.repoInventory.Create(ctx, &models.Inventory{
+			AddInventory: models.AddInventory{
+				OutletId:  param.OutletId,
+				ProductId: param.ProductId,
+				Qty:       0 - param.Qty,
+			},
+		})
+		if err != nil {
+			logger.Error("error inventory/PatchStock create inventory ", err)
+			return err
+		}
+		// return models.ErrInventoryNotFound
+	} else {
+		inv := invList[0]
 
-	inv := invList[0]
+		// if inv.Qty+param.Qty < 0 {
+		// 	return models.ErrQtyExceedStock
+		// }
 
-	// if inv.Qty+param.Qty < 0 {
-	// 	return models.ErrQtyExceedStock
-	// }
+		inv.Qty += param.Qty
 
-	inv.Qty += param.Qty
-
-	err = u.repoInventory.Update(ctx, inv.Id, inv)
-	if err != nil {
-		return err
+		err = u.repoInventory.Update(ctx, inv.Id, inv)
+		if err != nil {
+			logger.Error("error inventory/PatchStock update inventory ", err)
+			return err
+		}
 	}
 
 	return nil

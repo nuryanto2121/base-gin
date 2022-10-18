@@ -2064,6 +2064,10 @@ paths:
         name: Language
         required: true
         type: string
+      - description: Outlet Id
+        in: header
+        name: Outlet-Id
+        type: string
       - description: Page
         in: query
         name: page
@@ -2117,6 +2121,10 @@ paths:
         name: Language
         required: true
         type: string
+      - description: Outlet Id
+        in: header
+        name: Outlet-Id
+        type: string
       - description: 'req param #changes are possible to adjust the form of the registration
           form from frontend'
         in: body
@@ -2153,6 +2161,10 @@ paths:
         in: header
         name: Language
         required: true
+        type: string
+      - description: Outlet Id
+        in: header
+        name: Outlet-Id
         type: string
       - description: 'req param #changes are possible to adjust the form of the registration
           form from frontend'
@@ -2191,6 +2203,10 @@ paths:
         name: Language
         required: true
         type: string
+      - description: Outlet Id
+        in: header
+        name: Outlet-Id
+        type: string
       - description: 'req param #changes are possible to adjust the form of the registration
           form from frontend'
         in: body
@@ -2228,6 +2244,10 @@ paths:
         name: Language
         required: true
         type: string
+      - description: Outlet Id
+        in: header
+        name: Outlet-Id
+        type: string
       - description: transactionId
         in: query
         name: transactionId
@@ -2262,6 +2282,10 @@ paths:
         in: header
         name: Language
         required: true
+        type: string
+      - description: Outlet Id
+        in: header
+        name: Outlet-Id
         type: string
       - description: transactionCode
         in: query

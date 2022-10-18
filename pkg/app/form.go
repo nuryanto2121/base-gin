@@ -111,6 +111,9 @@ func GetClaims(c *gin.Context) (util.Claims, error) {
 	if err != nil {
 		return clm, models.ErrClaimsDecode
 	}
+	if outletId, ok := c.Keys["outlet_id"]; ok {
+		clm.OutletId = fmt.Sprintf("%v", outletId)
+	}
 
 	return clm, nil
 }

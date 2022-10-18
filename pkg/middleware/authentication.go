@@ -23,6 +23,7 @@ func Versioning() gin.HandlerFunc {
 		var (
 			DeviceType       = e.Request.Header.Get("Device-Type")
 			Versi            = e.Request.Header.Get("Version")
+			OutletId         = e.Request.Header.Get("Outlet-Id")
 			ctx              = e.Request.Context()
 			Version    (int) = 0
 			err        error
@@ -70,6 +71,9 @@ func Versioning() gin.HandlerFunc {
 			}
 			e.AbortWithStatusJSON(http.StatusHTTPVersionNotSupported, resp)
 			return
+		}
+		if OutletId != "" {
+			e.Set("outlet_id", OutletId)
 		}
 
 		// return next(e)

@@ -2540,6 +2540,12 @@ var doc = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
+                    },
+                    {
                         "type": "integer",
                         "description": "Page",
                         "name": "page",
@@ -2619,6 +2625,12 @@ var doc = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
+                    },
+                    {
                         "description": "req param #changes are possible to adjust the form of the registration form from frontend",
                         "name": "req",
                         "in": "body",
@@ -2675,6 +2687,12 @@ var doc = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
+                    },
+                    {
                         "description": "req param #changes are possible to adjust the form of the registration form from frontend",
                         "name": "req",
                         "in": "body",
@@ -2729,6 +2747,12 @@ var doc = `{
                         "name": "Language",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
                     },
                     {
                         "description": "req param #changes are possible to adjust the form of the registration form from frontend",
@@ -2788,6 +2812,12 @@ var doc = `{
                     },
                     {
                         "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
                         "description": "transactionId",
                         "name": "transactionId",
                         "in": "query",
@@ -2839,6 +2869,12 @@ var doc = `{
                         "name": "Language",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
                     },
                     {
                         "type": "string",

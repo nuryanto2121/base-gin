@@ -2524,6 +2524,12 @@
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
+                    },
+                    {
                         "type": "integer",
                         "description": "Page",
                         "name": "page",
@@ -2603,6 +2609,12 @@
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
+                    },
+                    {
                         "description": "req param #changes are possible to adjust the form of the registration form from frontend",
                         "name": "req",
                         "in": "body",
@@ -2659,6 +2671,12 @@
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
+                    },
+                    {
                         "description": "req param #changes are possible to adjust the form of the registration form from frontend",
                         "name": "req",
                         "in": "body",
@@ -2713,6 +2731,12 @@
                         "name": "Language",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
                     },
                     {
                         "description": "req param #changes are possible to adjust the form of the registration form from frontend",
@@ -2772,6 +2796,12 @@
                     },
                     {
                         "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
                         "description": "transactionId",
                         "name": "transactionId",
                         "in": "query",
@@ -2823,6 +2853,12 @@
                         "name": "Language",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Outlet Id",
+                        "name": "Outlet-Id",
+                        "in": "header"
                     },
                     {
                         "type": "string",

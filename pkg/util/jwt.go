@@ -14,7 +14,7 @@ type Claims struct {
 	UserID   string `json:"id,omitempty"`
 	UserName string `json:"user_name,omitempty"`
 	Role     string `json:"role,omitempty"`
-
+	OutletId string `json:"outlet_id,omitempty"`
 	jwt.StandardClaims
 }
 

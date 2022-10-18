@@ -29,6 +29,8 @@ func GetStatusCode(err error) int {
 		return http.StatusBadRequest
 	case models.ErrOvertime:
 		return http.StatusUnprocessableEntity
+	case models.ErrNoMatchOutlet:
+		return http.StatusNotAcceptable
 	default:
 		return http.StatusInternalServerError
 	}
