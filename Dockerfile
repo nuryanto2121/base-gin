@@ -59,7 +59,7 @@ COPY --from=builder /usr/src/app/pkg/multiLanguage/id.json ./pkg/multiLanguage/
 
 # Expose port 8080 to the outside world
 EXPOSE 8000
-EXPOSE 9000
+# EXPOSE 9000
 
 # Declare volumes to mount
 VOLUME [${LOG_DIR}]
