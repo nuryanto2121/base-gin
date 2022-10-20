@@ -31,7 +31,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 
 ######## Start a new stage from scratch #######
-FROM alpine:latest  
+FROM alpine:3.14  
 
 RUN apk --no-cache add ca-certificates
 
@@ -42,7 +42,7 @@ ENV TZ Asia/Jakarta
 WORKDIR /usr/src/app
 
 
-# Build Args
+# Build Argsd
 ARG LOG_DIR=/usr/src/app/wwwroot
 ARG LANG_DIR=/usr/src/app/pkg/multiLanguage
 
