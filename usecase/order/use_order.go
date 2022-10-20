@@ -2,9 +2,11 @@ package useorder
 
 import (
 	iauditlogs "app/interface/audit_logs"
+	iinventory "app/interface/inventory"
 	iorder "app/interface/order"
 	ioutlets "app/interface/outlets"
 	iskumanagement "app/interface/sku_management"
+	itrx "app/interface/trx"
 	"app/models"
 	util "app/pkg/util"
 	"context"
@@ -24,15 +26,27 @@ type useOrder struct {
 	repoOutlet     ioutlets.Repository
 	repoProduct    iskumanagement.Repository
 	useAuditLogs   iauditlogs.Usecase
+	useInventory   iinventory.Usecase
+	repoTrx        itrx.Repository
 	contextTimeOut time.Duration
 }
 
-func NewUseOrder(a iorder.Repository, b ioutlets.Repository, c iskumanagement.Repository, d iauditlogs.Usecase, timeout time.Duration) iorder.Usecase {
+func NewUseOrder(
+	repoOrder iorder.Repository,
+	repoOutlet ioutlets.Repository,
+	repoProduct iskumanagement.Repository,
+	useAuditLogs iauditlogs.Usecase,
+	useInventory iinventory.Usecase,
+	repoTrx itrx.Repository,
+	timeout time.Duration,
+) iorder.Usecase {
 	return &useOrder{
-		repoOrder:      a,
-		repoOutlet:     b,
-		repoProduct:    c,
-		useAuditLogs:   d,
+		repoOrder:      repoOrder,
+		repoOutlet:     repoOutlet,
+		repoProduct:    repoProduct,
+		useAuditLogs:   useAuditLogs,
+		useInventory:   useInventory,
+		repoTrx:        repoTrx,
 		contextTimeOut: timeout}
 }
 
@@ -180,7 +194,12 @@ func (u *useOrder) UpdateStatus(c context.Context, Claims util.Claims, data *mod
 	ctx, cancel := context.WithTimeout(c, u.contextTimeOut)
 	defer cancel()
 
-	var ID = data.ID
+	var (
+		ID              = data.ID
+		qty       int64 = 0
+		qtyChange int64 = 0
+		qtyDelta  int64 = 0
+	)
 	//check data exist
 	order, err := u.repoOrder.GetDataBy(ctx, "id", ID.String())
 	if err != nil {
@@ -196,16 +215,45 @@ func (u *useOrder) UpdateStatus(c context.Context, Claims util.Claims, data *mod
 	if err != nil {
 		return err
 	}
-	if data.Status == models.REJECT {
+
+	errTx := u.repoTrx.Run(ctx, func(trxCtx context.Context) error {
 		//data outlets
-		outlets, err := u.repoOutlet.GetDataBy(ctx, "id", order.OutletId.String())
+		outlets, err := u.repoOutlet.GetDataBy(trxCtx, "id", order.OutletId.String())
 		if err != nil {
 			return err
 		}
 		//data sku
-		product, err := u.repoProduct.GetDataBy(ctx, "id", order.ProductId.String())
+		product, err := u.repoProduct.GetDataBy(trxCtx, "id", order.ProductId.String())
 		if err != nil {
 			return err
+		}
+		//when approve add stock in inventory
+		if data.Status == models.APPROVE {
+			//get data inventory outlet
+			invOutletList, err := u.useInventory.GetList(trxCtx, Claims, models.ParamList{
+				Page:       1,
+				PerPage:    1,
+				InitSearch: fmt.Sprintf("outlet_id ='%s' and product_id = '%s' ", order.OutletId, order.ProductId),
+			})
+			if err != nil {
+				return err
+			}
+
+			err = u.useInventory.PatchStock(trxCtx, Claims, models.InvPatchStockRequest{
+				OutletId:  order.OutletId,
+				ProductId: order.ProductId,
+				Qty:       order.Qty,
+			})
+			if err != nil {
+				return err
+			}
+			inv := invOutletList.Data.([]*models.Inventory)
+			qty = inv[0].Qty //order.Qty
+			qtyDelta = order.Qty
+			qtyChange = order.Qty + inv[0].Qty
+			data.Description = "approve order"
+		} else if data.Status == models.REJECT {
+			qty = order.Qty
 		}
 
 		auditLogs := &models.AddAuditLogs{
@@ -214,18 +262,23 @@ func (u *useOrder) UpdateStatus(c context.Context, Claims util.Claims, data *mod
 			OutletName:  outlets.OutletName,
 			ProductId:   order.ProductId,
 			SkuName:     product.SkuName,
-			Qty:         order.Qty,
-			QtyChange:   order.Qty,
-			QtyDelta:    order.Qty,
+			Qty:         qty,
+			QtyChange:   qtyChange,
+			QtyDelta:    qtyDelta,
 			Source:      "order",
 			Description: data.Description,
 			Username:    Claims.UserName,
 		}
 
-		err = u.useAuditLogs.Create(ctx, Claims, auditLogs)
+		err = u.useAuditLogs.Create(trxCtx, Claims, auditLogs)
 		if err != nil {
 			return err
 		}
+		return nil
+	})
+
+	if errTx != nil {
+		return errTx
 	}
 
 	return nil

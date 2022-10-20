@@ -1,7 +1,10 @@
 package useinventory
 
 import (
+	iauditlogs "app/interface/audit_logs"
 	iinventory "app/interface/inventory"
+	ioutlets "app/interface/outlets"
+	iskumanagement "app/interface/sku_management"
 	"app/models"
 	"app/pkg/logging"
 	util "app/pkg/util"
@@ -11,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/structs"
 	"github.com/jinzhu/copier"
 
 	uuid "github.com/satori/go.uuid"
@@ -19,11 +21,26 @@ import (
 
 type useInventory struct {
 	repoInventory  iinventory.Repository
+	useAuditLogs   iauditlogs.Usecase
+	repoOutlet     ioutlets.Repository
+	repoProduct    iskumanagement.Repository
 	contextTimeOut time.Duration
 }
 
-func NewUseInventory(a iinventory.Repository, timeout time.Duration) iinventory.Usecase {
-	return &useInventory{repoInventory: a, contextTimeOut: timeout}
+func NewUseInventory(
+	repoInventory iinventory.Repository,
+	useAuditLogs iauditlogs.Usecase,
+	repoOutlet ioutlets.Repository,
+	repoProduct iskumanagement.Repository,
+	timeout time.Duration,
+) iinventory.Usecase {
+	return &useInventory{
+		repoInventory:  repoInventory,
+		useAuditLogs:   useAuditLogs,
+		repoOutlet:     repoOutlet,
+		repoProduct:    repoProduct,
+		contextTimeOut: timeout,
+	}
 }
 
 func (u *useInventory) GetDataBy(ctx context.Context, Claims util.Claims, ID uuid.UUID) (result *models.Inventory, err error) {
@@ -93,7 +110,19 @@ func (u *useInventory) Save(ctx context.Context, Claims util.Claims, ID uuid.UUI
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 
+	// var (
+	// 	qty       int64 = 0
+	// 	qtyChange int64 = 0
+	// 	qtyDelta  int64 = 0
+	// 	auditLogs       = &models.AddAuditLogs{
+	// 		AuditDate: util.GetTimeNow(),
+	// 		Source:    "outlet-inventory",
+	// 		Username:  Claims.UserName,
+	// 	}
+	// )
+
 	if ID == uuid.Nil {
+
 		//save data
 		err := u.Create(ctx, Claims, data)
 		if err != nil {
@@ -109,16 +138,48 @@ func (u *useInventory) Save(ctx context.Context, Claims util.Claims, ID uuid.UUI
 		if invOld.Id == uuid.Nil {
 			return models.ErrNotFound
 		}
-		data.Qty = invOld.Qty + data.QtyChange
-		//update data
-		myMap := structs.Map(data)
-		myMap["updated_by"] = Claims.UserID
-		delete(myMap, "QtyChange")
-		fmt.Println(myMap)
-		err = u.repoInventory.Update(ctx, ID, myMap)
+		// data.Qty = invOld.Qty + data.QtyChange
+		// //update data
+		// myMap := structs.Map(data)
+		// myMap["updated_by"] = Claims.UserID
+		// delete(myMap, "QtyChange")
+		// delete(myMap, "Description")
+		invOld.Qty += data.QtyChange
+		invOld.UpdatedBy = uuid.FromStringOrNil(Claims.UserID)
+		err = u.repoInventory.Update(ctx, ID, invOld)
 		if err != nil {
 			return err
 		}
+	}
+	//data outlets
+	outlets, err := u.repoOutlet.GetDataBy(ctx, "id", data.OutletId.String())
+	if err != nil {
+		return err
+	}
+	//data sku
+	product, err := u.repoProduct.GetDataBy(ctx, "id", data.ProductId.String())
+	if err != nil {
+		return err
+	}
+
+	auditLogs := &models.AddAuditLogs{
+		AuditDate:   util.GetTimeNow(),
+		Source:      "outlet-inventory",
+		Username:    Claims.UserName,
+		OutletId:    data.OutletId,
+		OutletName:  outlets.OutletName,
+		ProductId:   data.ProductId,
+		SkuName:     product.SkuName,
+		Qty:         data.Qty,
+		QtyChange:   data.QtyChange + data.Qty,
+		QtyDelta:    data.QtyChange,
+		Description: data.Description,
+	}
+
+	//save audit log
+	err = u.useAuditLogs.Create(ctx, Claims, auditLogs)
+	if err != nil {
+		return err
 	}
 
 	return nil

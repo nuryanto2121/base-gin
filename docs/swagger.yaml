@@ -194,6 +194,8 @@ definitions:
     type: object
   models.InventoryForm:
     properties:
+      description:
+        type: string
       outlet_id:
         type: string
       product_id:

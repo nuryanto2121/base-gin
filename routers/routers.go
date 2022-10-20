@@ -165,12 +165,13 @@ func (g *GinRoutes) Init() {
 	useAuditLogs := _useAuditLogs.NewUseAuditLogs(repoAuditLogs, time.Nanosecond)
 	_contAuditLogs.NewContAuditLogs(g.G, useAuditLogs)
 
+	repoInventory := _repoInventory.NewRepoInventory(dbConn)
+	useInventory := _useInventory.NewUseInventory(repoInventory, useAuditLogs, repoOutlet, repoSkuManagement, timeoutContext)
+
 	repoOrder := _repoOrder.NewRepoOrder(dbConn)
-	useOrder := _useOrder.NewUseOrder(repoOrder, repoOutlet, repoSkuManagement, useAuditLogs, timeoutContext)
+	useOrder := _useOrder.NewUseOrder(repoOrder, repoOutlet, repoSkuManagement, useAuditLogs, useInventory, repoTrx, timeoutContext)
 	_contOrder.NewContOrder(g.G, useOrder)
 
-	repoInventory := _repoInventory.NewRepoInventory(dbConn)
-	useInventory := _useInventory.NewUseInventory(repoInventory, timeoutContext)
 	_contInventory.NewContInventory(g.G, useInventory, useOrder)
 
 	repoTransactionDetail := _repoTransactionDetail.NewRepoTransactionDetail(dbConn)

@@ -82,6 +82,7 @@ func (r *repoOrder) GetList(ctx context.Context, queryparam models.ParamList) (r
 				case when sm.is_bracelet = true then concat(sm.sku_name,', ',sm.duration,' Jam - ',o.qty,' pcs') 
 					else concat(sm.sku_name,', ',o.qty,' pcs') 
 				end as order_lines, 
+				o.start_number,o.end_number,
 				o.status  
 		`).Joins(`inner join outlets o2 on o2.id = o.outlet_id`).Joins(`inner  join sku_management sm on sm.id =o.product_id`).
 			Where(sWhere, queryparam.Search).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
@@ -91,6 +92,7 @@ func (r *repoOrder) GetList(ctx context.Context, queryparam models.ParamList) (r
 				case when sm.is_bracelet = true then concat(sm.sku_name,', ',sm.duration,' Jam - ',o.qty,' pcs') 
 					else concat(sm.sku_name,', ',o.qty,' pcs') 
 				end as order_lines, 
+				o.start_number,o.end_number,
 				o.status  
 		`).Joins(`inner join outlets o2 on o2.id = o.outlet_id`).Joins(`inner  join sku_management sm on sm.id =o.product_id`).
 			Where(sWhere).Offset(pageNum).Limit(pageSize).Order(orderBy).Find(&result).Error
@@ -178,6 +180,7 @@ func (r *repoOrder) Count(ctx context.Context, queryparam models.ParamList) (res
 				case when sm.is_bracelet = true then concat(sm.sku_name,', ',sm.duration,' Jam - ',o.qty,' pcs') 
 					else concat(sm.sku_name,', ',o.qty,' pcs') 
 				end as order_lines, 
+				o.start_number,o.end_number,
 				o.status  
 		`).Joins(`inner join outlets o2 on o2.id = o.outlet_id`).Joins(`inner  join sku_management sm on sm.id =o.product_id`).
 			Where(sWhere, queryparam.Search).Count(&rest).Error
@@ -187,6 +190,7 @@ func (r *repoOrder) Count(ctx context.Context, queryparam models.ParamList) (res
 				case when sm.is_bracelet = true then concat(sm.sku_name,', ',sm.duration,' Jam - ',o.qty,' pcs') 
 					else concat(sm.sku_name,', ',o.qty,' pcs') 
 				end as order_lines, 
+				o.start_number,o.end_number,
 				o.status  
 		`).Joins(`inner join outlets o2 on o2.id = o.outlet_id`).Joins(`inner  join sku_management sm on sm.id =o.product_id`).
 			Where(sWhere).Count(&rest).Error

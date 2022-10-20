@@ -4584,6 +4584,9 @@ var doc = `{
         "models.InventoryForm": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "outlet_id": {
                     "type": "string"
                 },
