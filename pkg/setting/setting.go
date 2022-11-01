@@ -75,33 +75,6 @@ type RedisDB struct {
 
 var RedisDBSetting = &RedisDB{}
 
-type S3 struct {
-	SpaceName   string
-	SpaceKey    string
-	SpaceSecret string
-	SpaceBucket string
-	Region      string
-	EndPoint    string
-}
-
-var S3Setting = &S3{}
-
-type Agora struct {
-	AppID          string
-	AppCertificate string
-}
-
-var AgoraSetting = &Agora{}
-
-type ElasticSearch struct {
-	ElasticHost         string
-	ElasticAuth         bool
-	ElasticAuthUsername string
-	ElasticAuthPassword string
-}
-
-var ElasticSearchSetting = &ElasticSearch{}
-
 type Midtrans struct {
 	ClientID      string
 	ClientKey     string
@@ -137,9 +110,6 @@ func Setup() {
 	mapTo("database", DatabaseSetting)
 	mapTo("redis", RedisDBSetting)
 	mapTo("smtp", SmtpSetting)
-	mapTo("S3", S3Setting)
-	mapTo("Agora", AgoraSetting)
-	mapTo("Elastic", ElasticSearchSetting)
 	mapTo("Midtrans", MidtransCredential)
 	mapTo("Twilio", TwilioCredential)
 

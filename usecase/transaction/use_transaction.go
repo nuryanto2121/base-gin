@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fatih/structs"
@@ -283,10 +284,83 @@ func (u *useTransaction) GetListTicketUser(ctx context.Context, Claims util.Clai
 	} else {
 		queryparam.InitSearch = fmt.Sprintf("t.customer_id = '%s'", Claims.UserID)
 	}
-	result.Data, err = u.repoTransaction.GetListTicketUser(ctx, queryparam)
+	listTicket, err := u.repoTransaction.GetListTicketUser(ctx, queryparam)
 	if err != nil {
 		return result, err
 	}
+	var (
+		wg    sync.WaitGroup
+		sLock = sync.RWMutex{}
+		errc  = make(chan error)
+	)
+
+	for _, ticketDtl := range listTicket {
+		details := []*models.TransactionDetailResponse{}
+
+		wg.Add(1)
+
+		go func(wgd *sync.WaitGroup, ticket *models.TransactionResponse, dtLock *sync.RWMutex, errch chan error) {
+			defer wgd.Done()
+			//get detail
+			trxDetail, err := u.repoTransDetail.GetList(ctx, models.ParamList{
+				Page:       1,
+				PerPage:    100,
+				InitSearch: fmt.Sprintf("transaction_id = '%s'", ticket.ID),
+				SortField:  "ticket_no asc",
+			}) //GetDataBy(ctx, "transaction_id", trxHeader.Id.String())
+			if err != nil {
+				errch <- err
+				return
+			}
+
+			for _, val := range trxDetail {
+				dt := &models.TransactionDetailResponse{}
+
+				//get product
+				product, err := u.repoSkuManagement.GetDataBy(ctx, "id", val.ProductId.String())
+				if err != nil {
+					errch <- err
+				}
+
+				dtLock.Lock()
+				dt.Description = fmt.Sprintf("%d x %s", val.ProductQty, product.SkuName)
+				if val.IsChildren || product.IsFree {
+					child, err := u.repoCustomer.GetDataBy(ctx, "id", val.CustomerId.String())
+					if err != nil {
+						return
+					}
+
+					dt.CustomerName = child.Name
+					dt.Description = fmt.Sprintf("%d x Durasi %d jam", val.ProductQty, product.Duration)
+					if product.IsFree {
+						dt.CustomerName = product.SkuName
+						dt.Description = fmt.Sprintf("1 x %s", product.SkuName)
+					}
+
+				}
+				dt.Amount = val.Amount
+				dt.Duration = val.Duration
+				dt.ProductId = val.ProductId
+				dt.ProductQty = val.ProductQty
+				dt.TicketNo = val.TicketNo
+				if val.IsOvertime {
+					dt.IsOvertime = val.IsOvertime
+					dt.IsOvertimePaid = val.IsOvertimePaid
+				}
+
+				details = append(details, dt)
+				dtLock.Unlock()
+			}
+
+			ticket.Details = details
+
+		}(&wg, ticketDtl, &sLock, errc)
+
+	}
+
+	wg.Wait()
+
+	result.Data = listTicket
 
 	result.Total, err = u.repoTransaction.CountUserList(ctx, queryparam)
 	if err != nil {
@@ -517,7 +591,6 @@ func (u *useTransaction) Update(ctx context.Context, Claims util.Claims, ID uuid
 
 	myMap := structs.Map(data)
 	myMap["user_edit"] = Claims.UserID
-	fmt.Println(myMap)
 	err = u.repoTransaction.Update(ctx, ID, myMap)
 	if err != nil {
 		return err
@@ -609,10 +682,7 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 			}
 			//update trx detail is_ov_paid true
 			for _, val := range req.TicketOvertime {
-				// trxDtl, err := u.repoTransDetail.GetDataBy(trxCtx, "ticket_no", val)
-				// if err != nil {
-				// 	return err
-				// }
+
 				// trxDtl.AddTransactionDetail.IsOvertimePaid = true
 				dtlFree := map[string]interface{}{
 					"is_overtime_paid": true,
@@ -623,15 +693,6 @@ func (u *useTransaction) Payment(ctx context.Context, Claims util.Claims, req *m
 					logger.Error("error update ticket overtime ", err)
 					return err
 				}
-
-				// dtlFree := map[string]interface{}{
-				// 	"is_overtime_paid": true,
-				// }
-				// err = u.repoTransDetail.UpdateBy(trxCtx, fmt.Sprintf("ticket_no='%s/FREE'", val), dtlFree)
-				// if err != nil {
-				// 	logger.Error("error update ticket overtime free ", err)
-				// 	return err
-				// }
 
 			}
 
@@ -837,17 +898,6 @@ func (u *useTransaction) CheckOut(ctx context.Context, Claims util.Claims, req *
 		// }()
 
 		if isCheckOut {
-			//
-			// trxDtlOv, err := u.repoTransaction.GetList(trxCtx, models.ParamList{
-			// 	Page:       1,
-			// 	PerPage:    1,
-			// 	InitSearch: fmt.Sprintf("t.id='%s' and td.is_children = true and td.is_overtime = true and td.is_overtime_paid = false ", transaction.Id),
-			// })
-			// if err != nil {
-			// 	logger.Error("error get transaction top one ", err)
-			// 	return err
-			// }
-
 			if transaction.StatusTransaction != models.STATUS_FINISH {
 				transaction.StatusTransaction = models.STATUS_FINISH
 				if isChildStillOV {

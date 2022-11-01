@@ -9,8 +9,6 @@ import (
 	"app/pkg/middleware"
 	multilanguage "app/pkg/multiLanguage"
 	"app/pkg/redisdb"
-
-	s3gateway "app/pkg/s3"
 	"app/pkg/setting"
 	"app/routers"
 	usecron "app/usecase/cron"
@@ -21,8 +19,6 @@ func init() {
 	multilanguage.Setup()
 	logging.Setup()
 	redisdb.Setup()
-	s3gateway.Setup()
-
 }
 
 // @title Base Playtopia

@@ -23,9 +23,9 @@ import (
 	_useAuth "app/usecase/auth"
 	_useUser "app/usecase/user"
 
-	_contFileUpload "app/controllers/fileupload"
-	_repoFileUpload "app/repository/fileupload"
-	_useFileUpload "app/usecase/fileupload"
+	// _contFileUpload "app/controllers/fileupload"
+	// _repoFileUpload "app/repository/fileupload"
+	// _useFileUpload "app/usecase/fileupload"
 
 	_contHolidays "app/controllers/holidays"
 	_repoHolidays "app/repository/holidays"
@@ -122,9 +122,6 @@ func (g *GinRoutes) Init() {
 
 	repoUserApps := _repoUserApps.NewRepoUserApps(dbConn)
 
-	repoFileUpload := _repoFileUpload.NewRepoFileUpload(dbConn)
-	useFileUpload := _useFileUpload.NewSaFileUpload(repoFileUpload, timeoutContext)
-
 	repoRoles := _repoRoles.NewRepoRoles(dbConn)
 	useRoles := _useRoles.NewRoles(repoRoles, timeoutContext)
 	_contRoles.NewContRole(g.G, useRoles)
@@ -136,14 +133,12 @@ func (g *GinRoutes) Init() {
 	_ = _useRoleOutlet.NewUseRoleOutlet(repoRoleOutlet, timeoutContext)
 
 	repoUser := _repoUser.NewRepoSysUser(dbConn)
-	useAuth := _useAuth.NewUserAuth(repoUser, repoFileUpload, repoUserSession, repoUserRole, repoRoleOutlet, repoUserApps, repoTrx, useSMS, timeoutContext)
+	useAuth := _useAuth.NewUserAuth(repoUser, repoUserSession, repoUserRole, repoRoleOutlet, repoUserApps, repoTrx, useSMS, timeoutContext)
 	useUser := _useUser.NewUserSysUser(repoUser, repoUserRole, repoRoleOutlet, timeoutContext)
 
 	_contUser.NewContUsers(g.G, useUser)
 	_contAuth.NewContAuth(g.G, useAuth)
 	_contAuth.NewContAuthMobile(g.G, useAuth)
-
-	_contFileUpload.NewContFileUpload(g.G, useFileUpload)
 
 	repoHolidays := _repoHolidays.NewRepoHolidays(dbConn)
 	useHolidays := _useHolidays.NewHolidaysHolidays(repoHolidays, timeoutContext)

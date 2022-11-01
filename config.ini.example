@@ -50,11 +50,3 @@ Port =
 Password = 
 Db = 1
 
-[S3]
-SpaceName = 
-SpaceKey = 
-SpaceSecret =
-SpaceBucket =
-Region =
-EndPoint =
-
