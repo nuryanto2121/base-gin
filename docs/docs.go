@@ -4298,10 +4298,7 @@ var doc = `{
                 "is_free": {
                     "type": "boolean"
                 },
-                "price_weekday": {
-                    "type": "number"
-                },
-                "price_weekend": {
+                "price": {
                     "type": "number"
                 },
                 "sku_name": {
