@@ -119,7 +119,7 @@ func (u *useHolidays) Delete(ctx context.Context, claims util.Claims, ID uuid.UU
 	return nil
 }
 
-func (u *useHolidays) IsHoliday(ctx context.Context, orderData time.Time) (bool, error) {
+func (u *useHolidays) StatusDay(ctx context.Context, orderData time.Time) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeOut)
 	defer cancel()
 	var isHoliday = false

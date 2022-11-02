@@ -2055,7 +2055,7 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "InitSearch",
+                        "description": "InitSearch status_day =\u003e 4000001 (weekday) | 4000002 (weekend/holiday)| 4000003 (both)",
                         "name": "initsearch",
                         "in": "query"
                     },
@@ -2111,7 +2111,7 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "description": "this model set from firebase",
+                        "description": "status_day =\u003e 4000001 (weekday) | 4000002 (weekend/holiday)| 4000003 (both)",
                         "name": "req",
                         "in": "body",
                         "required": true,
@@ -4267,10 +4267,7 @@ var doc = `{
                 "outlet_id": {
                     "type": "string"
                 },
-                "outlet_price_weekday": {
-                    "type": "number"
-                },
-                "outlet_price_weekend": {
+                "outlet_price": {
                     "type": "number"
                 },
                 "product_id": {
@@ -4303,6 +4300,9 @@ var doc = `{
                 },
                 "sku_name": {
                     "type": "string"
+                },
+                "status_day": {
+                    "type": "integer"
                 }
             }
         },

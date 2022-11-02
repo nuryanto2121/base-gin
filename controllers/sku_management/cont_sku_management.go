@@ -41,7 +41,7 @@ func NewContSkuManagement(e *gin.Engine, useskumanagement iskumanagement.Usecase
 // @Param Device-Type header string true "Device Type"
 // @Param Version header string true "Version Apps"
 // @Param Language header string true "Language Apps"
-// @Param req body models.AddSkuManagement true "this model set from firebase"
+// @Param req body models.AddSkuManagement true "status_day => 4000001 (weekday) | 4000002 (weekend/holiday)| 4000003 (both)"
 // @Success 200 {object} app.Response
 // @Router /v1/cms/sku-management [post]
 func (c *contskumanagement) Create(e *gin.Context) {
@@ -180,7 +180,7 @@ func (c *contskumanagement) GetById(e *gin.Context) {
 // @Param page query int true "Page"
 // @Param perpage query int true "PerPage"
 // @Param search query string false "Search"
-// @Param initsearch query string false "InitSearch"
+// @Param initsearch query string false "InitSearch status_day => 4000001 (weekday) | 4000002 (weekend/holiday)| 4000003 (both)"
 // @Param sortfield query string false "SortField"
 // @Success 200 {object} models.ResponseModelList
 // @Router /v1/cms/sku-management [get]

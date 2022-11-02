@@ -9,8 +9,7 @@ type OutletDetail struct {
 }
 
 type AddOutletDetail struct {
-	OutletId           uuid.UUID `json:"outlet_id" gorm:"type:uuid;not null"`
-	ProductId          uuid.UUID `json:"product_id" gorm:"type:uuid;not null"`
-	OutletPriceWeekday float32   `json:"outlet_price_weekday" gorm:"type:numeric(20,2)"`
-	OutletPriceWeekend float32   `json:"outlet_price_weekend" gorm:"type:numeric(20,2)"`
+	OutletId    uuid.UUID `json:"outlet_id" gorm:"type:uuid;not null"`
+	ProductId   uuid.UUID `json:"product_id" gorm:"type:uuid;not null"`
+	OutletPrice float32   `json:"outlet_price" gorm:"type:numeric(20,2)"`
 }

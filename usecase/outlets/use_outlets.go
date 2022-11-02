@@ -367,12 +367,16 @@ func (u *useOutlets) GetListPrice(ctx context.Context, Claims util.Claims, req m
 		isHoliday  bool
 	)
 
-	isHoliday, err = u.useHolidays.IsHoliday(ctx, req.TransactionDate)
+	isHoliday, err = u.useHolidays.StatusDay(ctx, req.TransactionDate)
 	if err != nil {
 		return nil, err
 	}
+	statusDay := models.WEEKDAY
+	if isHoliday {
+		statusDay = models.HOLIDAY
+	}
 
-	queryparam.InitSearch = fmt.Sprintf("o.id = '%s' ", req.OutletId)
+	queryparam.InitSearch = fmt.Sprintf("o.id = '%s' and (sm.status_day = %d OR sm.status_day = %d)", req.OutletId, statusDay, models.BOTH)
 	queryparam.PerPage = 1000
 	queryparam.SortField = "is_bracelet desc,sku_name"
 
@@ -387,21 +391,22 @@ func (u *useOutlets) GetListPrice(ctx context.Context, Claims util.Claims, req m
 		price := &models.OutletPriceProductResponse{}
 
 		price.IsBracelet = val.IsBracelet
+		price.StatusDay = val.StatusDay
 		price.Duration = val.Duration
 		price.ProductId = val.ProductId
 		price.SkuName = val.SkuName
-		price.Price = val.OutletPriceWeekday
+		price.Price = val.OutletPrice
 		if price.Price == 0 {
-			price.Price = val.PriceWeekday
+			price.Price = val.Price
 		}
 
 		price.IsFree = val.IsFree
-		if isHoliday {
-			price.Price = val.OutletPriceWeekend
-			if price.Price == 0 {
-				price.Price = val.PriceWeekend
-			}
+		// if isHoliday {
+		price.Price = val.OutletPrice
+		if price.Price == 0 {
+			price.Price = val.Price
 		}
+		// }
 
 		result = append(result, price)
 	}
