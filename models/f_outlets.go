@@ -15,41 +15,39 @@ type OutletForm struct {
 }
 
 type OutletList struct {
-	UserId             uuid.UUID `json:"user_id"`
-	Role               string    `json:"role"`
-	OutletId           uuid.UUID `json:"outlet_id"`
-	ProductId          uuid.UUID `json:"product_id"`
-	InventoryId        uuid.UUID `json:"inventory_id"`
-	OutletName         string    `json:"outlet_name"`
-	OutletCity         string    `json:"outlet_city"`
-	SkuName            string    `json:"sku_name"`
-	Qty                int64     `json:"qty"`
-	IsFree             bool      `json:"is_free"`
-	IsBracelet         bool      `json:"is_bracelet"`
-	Duration           int64     `json:"duration"`
-	OvertimeAmount     float64   `json:"overtime_amount"`
-	ToleransiTime      int64     `json:"toleransi_time"`
-	PriceWeekday       float64   `json:"price_weekday"`
-	PriceWeekend       float64   `json:"price_weekend"`
-	OutletPriceWeekday float64   `json:"outlet_price_weekday"`
-	OutletPriceWeekend float64   `json:"outlet_price_weekend"`
+	UserId         uuid.UUID `json:"user_id"`
+	Role           string    `json:"role"`
+	OutletId       uuid.UUID `json:"outlet_id"`
+	ProductId      uuid.UUID `json:"product_id"`
+	InventoryId    uuid.UUID `json:"inventory_id"`
+	OutletName     string    `json:"outlet_name"`
+	OutletCity     string    `json:"outlet_city"`
+	SkuName        string    `json:"sku_name"`
+	Qty            int64     `json:"qty"`
+	IsFree         bool      `json:"is_free"`
+	IsBracelet     bool      `json:"is_bracelet"`
+	StatusDay      StatusDay `json:"status_day"`
+	Duration       int64     `json:"duration"`
+	OvertimeAmount float64   `json:"overtime_amount"`
+	ToleransiTime  int64     `json:"toleransi_time"`
+	Price          float64   `json:"price"`
+	OutletPrice    float64   `json:"outlet_price"`
 }
 
 type OutletLookupList struct {
-	OutletId           uuid.UUID `json:"outlet_id"`
-	ProductId          uuid.UUID `json:"product_id"`
-	InventoryId        uuid.UUID `json:"inventory_id"`
-	OutletName         string    `json:"outlet_name"`
-	OutletCity         string    `json:"outlet_city"`
-	SkuName            string    `json:"sku_name"`
-	Qty                int64     `json:"qty"`
-	Duration           int64     `json:"duration"`
-	IsBracelet         bool      `json:"is_bracelet"`
-	IsFree             bool      `json:"is_free"`
-	PriceWeekday       float64   `json:"price_weekday"`
-	PriceWeekend       float64   `json:"price_weekend"`
-	OutletPriceWeekday float64   `json:"outlet_price_weekday"`
-	OutletPriceWeekend float64   `json:"outlet_price_weekend"`
+	OutletId    uuid.UUID `json:"outlet_id"`
+	ProductId   uuid.UUID `json:"product_id"`
+	InventoryId uuid.UUID `json:"inventory_id"`
+	OutletName  string    `json:"outlet_name"`
+	OutletCity  string    `json:"outlet_city"`
+	SkuName     string    `json:"sku_name"`
+	Qty         int64     `json:"qty"`
+	Duration    int64     `json:"duration"`
+	IsBracelet  bool      `json:"is_bracelet"`
+	IsFree      bool      `json:"is_free"`
+	StatusDay   StatusDay `json:"status_day"`
+	Price       float64   `json:"price"`
+	OutletPrice float64   `json:"outlet_price"`
 }
 
 type OutletPriceProductRequest struct {
@@ -62,6 +60,7 @@ type OutletPriceProductResponse struct {
 	SkuName    string    `json:"sku_name"`
 	IsBracelet bool      `json:"is_bracelet"`
 	IsFree     bool      `json:"is_free"`
+	StatusDay  StatusDay `json:"status_day"`
 	Duration   int64     `json:"duration"`
 	Price      float64   `json:"price"`
 }

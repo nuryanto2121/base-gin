@@ -484,7 +484,7 @@ func (u *useTransaction) Create(ctx context.Context, Claims util.Claims, req *mo
 				customerName = Customer.Name
 			}
 			//nnti diganti dengan outlet dan hari
-			totalAmount += val.Amount //Product.PriceWeekday
+			totalAmount += val.Amount //Product.Price
 
 			var desc = fmt.Sprintf("%d x %s", val.ProductQty, Product.SkuName)
 			var TicketNo = ""

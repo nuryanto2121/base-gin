@@ -116,3 +116,11 @@ const (
 	//SMS Berhasil Dikirim
 	SMS_SUCCESS
 )
+
+type StatusDay int64
+
+const (
+	WEEKDAY StatusDay = 4000001
+	HOLIDAY StatusDay = 4000002
+	BOTH    StatusDay = 4000003
+)

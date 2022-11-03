@@ -87,12 +87,12 @@ func (r *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) 
 		 ,sm.sku_name 
 		 ,sm.duration
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_weekday 
+		 ,sm.price 
 		 ,sm.price_weekend 
 		 ,sm.is_free
 		 ,sm.is_bracelet
-		 ,od.outlet_price_weekday 
-		 ,od.outlet_price_weekend 
+		 ,sm.status_day
+		 ,od.outlet_price 
 		 ,ro.user_id 
 		 ,ro.role 
 		 ,o.overtime_amount
@@ -120,12 +120,12 @@ func (r *repoOutlets) GetList(ctx context.Context, queryparam models.ParamList) 
 		 ,sm.sku_name 
 		 ,sm.duration
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_weekday 
+		 ,sm.price 
 		 ,sm.price_weekend 
 		 ,sm.is_free
 		 ,sm.is_bracelet
-		 ,od.outlet_price_weekday 
-		 ,od.outlet_price_weekend 
+		 ,sm.status_day
+		 ,od.outlet_price 
 		 ,ro.user_id 
 		 ,ro.role 
 		 ,o.overtime_amount
@@ -225,12 +225,12 @@ func (r *repoOutlets) Count(ctx context.Context, queryparam models.ParamList) (r
 		 ,sm.sku_name 
 		 ,sm.duration
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_weekday 
+		 ,sm.price 
 		 ,sm.price_weekend 
 		 ,sm.is_free
 		 ,sm.is_bracelet
-		 ,od.outlet_price_weekday 
-		 ,od.outlet_price_weekend 
+		 ,sm.status_day
+		 ,od.outlet_price 
 		 ,ro.user_id 
 		 ,ro.role 
 		 ,o.overtime_amount
@@ -319,13 +319,13 @@ func (r *repoOutlets) GetListLookUp(ctx context.Context, queryparam models.Param
 		 ,o.outlet_city 
 		 ,sm.sku_name 
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_weekday 
+		 ,sm.price 
 		 ,sm.price_weekend 
 		 ,sm.duration 
 		 ,sm.is_bracelet 
+		 ,sm.status_day
 		 ,sm.is_free
-		 ,od.outlet_price_weekday 
-		 ,od.outlet_price_weekend 
+		 ,od.outlet_price 
 		`).Joins(`cross join sku_management sm`).Joins(`
 		left join outlet_detail od 
 		 	on od.outlet_id = o.id 
@@ -345,13 +345,13 @@ func (r *repoOutlets) GetListLookUp(ctx context.Context, queryparam models.Param
 		 ,o.outlet_city 
 		 ,sm.sku_name 
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_weekday 
+		 ,sm.price 
 		 ,sm.price_weekend 
 		 ,sm.duration 
 		 ,sm.is_bracelet 
 		 ,sm.is_free
-		 ,od.outlet_price_weekday 
-		 ,od.outlet_price_weekend 
+		 ,sm.status_day
+		 ,od.outlet_price 
 		`).Joins(`cross join sku_management sm`).Joins(`
 		left join outlet_detail od 
 		 	on od.outlet_id = o.id 
@@ -396,12 +396,12 @@ func (r *repoOutlets) CountLookUp(ctx context.Context, queryparam models.ParamLi
 		 ,o.outlet_city 
 		 ,sm.sku_name 
 		 ,coalesce(i.qty,0) as qty
-		 ,sm.price_weekday 
+		 ,sm.price 
 		 ,sm.price_weekend 
 		 ,sm.duration 
 		 ,sm.is_bracelet 
-		 ,od.outlet_price_weekday 
-		 ,od.outlet_price_weekend 
+		 ,sm.status_day
+		 ,od.outlet_price 
 		 from outlets o 
 		 cross join sku_management sm
 		 left join outlet_detail od 
